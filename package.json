@@ -1,0 +1,29 @@
+{
+  "name": "roberto-bot",
+  "version": "0.0.1",
+  "description": "A Discord bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IwaoM/Roberto-bot.git"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "discord.js",
+    "javascript",
+    "node.js"
+  ],
+  "author": "Iwao Meunier",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IwaoM/Roberto-bot/issues"
+  },
+  "homepage": "https://github.com/IwaoM/Roberto-bot#readme",
+  "devDependencies": {
+    "eslint": "^8.24.0"
+  }
+}
