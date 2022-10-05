@@ -25,5 +25,8 @@
   "homepage": "https://github.com/IwaoM/Roberto-bot#readme",
   "devDependencies": {
     "eslint": "^8.24.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.5.0"
   }
 }
