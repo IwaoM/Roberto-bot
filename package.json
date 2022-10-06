@@ -24,9 +24,12 @@
   },
   "homepage": "https://github.com/IwaoM/Roberto-bot#readme",
   "devDependencies": {
+    "@babel/core": "^7.19.3",
+    "@babel/eslint-parser": "^7.19.1",
     "eslint": "^8.24.0"
   },
   "dependencies": {
-    "discord.js": "^14.5.0"
+    "discord.js": "^14.5.0",
+    "pnpm": "^7.13.2"
   }
 }
