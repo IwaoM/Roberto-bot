@@ -2,10 +2,12 @@ const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName("changelog")
-		.setDescription("Shows the latest changelog for Roberto"),
+		.setName("color")
+		.setDescription("Changes your name's color"),
 
 	async execute(interaction) {
-		await interaction.reply("Changelog");
+		await interaction.reply("Color");
 	},
+
+  usage: "bababababa"
 };
