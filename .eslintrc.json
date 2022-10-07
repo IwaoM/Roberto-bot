@@ -1,6 +1,9 @@
 {
 	"extends": "eslint:recommended",
     "parser": "@babel/eslint-parser",
+    "parserOptions": {
+        "requireConfigFile": false
+    },
 	"env": {
 		"node": true,
 		"es6": true
@@ -28,7 +31,6 @@
         "space-in-parens": "error",
         "space-infix-ops": "error",
         "space-unary-ops": "error",
-        "spaced-comment": "error",
         "yoda": "error"
 	}
 }
