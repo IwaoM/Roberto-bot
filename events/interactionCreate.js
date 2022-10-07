@@ -16,7 +16,6 @@ module.exports = {
 
     } else if (interaction.isButton()) {
 
-      // do stuff
       const relatedCommandName = interaction.message.interaction.commandName;
       const relatedCommand = interaction.client.commands.get(relatedCommandName);
       if (!relatedCommand) { return; }
@@ -27,6 +26,20 @@ module.exports = {
         console.error(error);
         await interaction.reply({ content: "There was an error while executing this button interaction!", ephemeral: true });
       }
+    } else if (interaction.isAutocomplete()) {
+
+      const command = interaction.client.commands.get(interaction.commandName);
+      if (!command) { return; }
+
+      try {
+        await command.executeAutocomplete(interaction);
+      } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: "There was an error while executing this autocompletion!", ephemeral: true });
+      }
+
+    } else {
+      return;
     }
 
   },
