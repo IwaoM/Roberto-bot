@@ -33,28 +33,12 @@ module.exports = {
   async execute (interaction) {
 
     // Create button row
-    const buttonRow = new ActionRowBuilder()
-      .addComponents(
-        new ButtonBuilder()
-          .setCustomId("changelog_latest")
-          .setLabel("Latest")
-          .setStyle(ButtonStyle.Primary)
-          .setDisabled(true),
-        new ButtonBuilder()
-          .setCustomId("changelog_next")
-          .setLabel("Next")
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(true),
-        new ButtonBuilder()
-          .setCustomId("changelog_previous")
-          .setLabel("Previous")
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(changelogs.length > 1 ? false : true),
-        new ButtonBuilder()
-          .setCustomId("changelog_dismiss")
-          .setLabel("Dismiss")
-          .setStyle(ButtonStyle.Danger)
-      );
+    const latestButton = new ButtonBuilder().setCustomId("changelog_latest").setLabel("Latest").setStyle(ButtonStyle.Primary).setDisabled(true);
+    const nextButton = new ButtonBuilder().setCustomId("changelog_next").setLabel("Next").setStyle(ButtonStyle.Secondary).setDisabled(true);
+    const previousButton = new ButtonBuilder().setCustomId("changelog_previous").setLabel("Previous").setStyle(ButtonStyle.Secondary).setDisabled(changelogs.length > 1 ? false : true);
+    const dismissButton = new ButtonBuilder().setCustomId("changelog_dismiss").setLabel("Dismiss").setStyle(ButtonStyle.Danger);
+
+    const buttonRow = new ActionRowBuilder().addComponents(latestButton, nextButton, previousButton, dismissButton);
 
     // Create text & message
     let text = `**${changelogs[0].version}**\n${changelogs[0].description}`;
@@ -62,11 +46,27 @@ module.exports = {
 
     // Store interaction ID & associated index of displayed changelog
     changelogIndexes.set(interactionResponse.id, 0);
+
+    // Schedule button disablement & collection entry removal after 10 minutes
+    await setTimeout(async () => {
+      // Disable buttons (excepted Dismiss)
+      const disabledButtonRow = new ActionRowBuilder().addComponents(dismissButton);
+      const replyMsg = await interaction.fetchReply();
+      await interaction.editReply({ content: replyMsg.content, components: [disabledButtonRow] });
+
+      // Delete collection entry
+      changelogIndexes.delete(interactionResponse.id);
+    }, 600000);
   },
 
   async executeButton (interaction) {
-
-    if (!changelogIndexes.has(interaction.message.interaction.id)) { return; }
+    if (!changelogIndexes.has(interaction.message.interaction.id)) { // if entry was deleted in collection
+      if (interaction.customId === "changelog_dismiss") { // and clicked button was dismiss
+        // Then delete the message
+        await interaction.message.delete();
+      }
+      return;
+    }
 
     // Get the index of displayed changelog for this interaction's message
     let changelogIndex = changelogIndexes.get(interaction.message.interaction.id);
@@ -117,6 +117,7 @@ module.exports = {
     } else { // If clicked button was Dismiss
 
       // delete the message & collection entry
+      console.log(interaction.message);
       await interaction.message.delete();
       changelogIndexes.delete(interaction.message.interaction.id);
 
