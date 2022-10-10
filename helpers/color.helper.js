@@ -1,6 +1,7 @@
 const { shuffleArray } = require("./misc.helper.js");
 
 module.exports = {
+
   randomColor (vibrant = false) {
     let colorValue, hexColorValue;
 
@@ -19,4 +20,19 @@ module.exports = {
 
     return hexColorValue;
   },
+
+  checkHexCode (hexCode = "") {
+    if (!hexCode) { return false; }
+
+    if (hexCode.startsWith("#")) { hexCode.splice(0, 1); }
+
+    if (hexCode.length !== 3 && hexCode.length !== 6) { return false; }
+    if (hexCode.length === 3) { hexCode = hexCode[0] + hexCode[0] + hexCode[1] + hexCode[1] + hexCode[2] + hexCode[2]; }
+
+    hexCode = hexCode.toLowerCase();
+    if (!/^([a-f0-9]{6,})$/.test(hexCode)) { return false; }
+
+    return "#" + hexCode;
+  }
+
 };

@@ -1,5 +1,12 @@
 # Ignore node_modules folder
 node_modules
 
-# Ignore config.json file
+# Ignore avatars folder
+avatars
+
+# Ignore config files
 config.json
+guildConfigs.json
+
+# Ignore test file
+test.js

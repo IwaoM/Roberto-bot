@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "discord.js": "^14.5.0",
+    "node-vibrant": "3.2.1-alpha.1",
     "pnpm": "^7.13.2"
   }
 }
