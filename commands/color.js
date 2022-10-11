@@ -42,6 +42,7 @@ module.exports = {
     ),
 
   async execute (interaction) {
+    console.log(interaction);
     const subcommand = interaction.options.getSubcommand();
     let hexCode;
 
@@ -71,7 +72,32 @@ module.exports = {
       hexCode = "#000001";
     }
 
+    // check client & member top roles
+    const userMember = interaction.member;
+    const userMemberRoleList = userMember.roles.cache;
+    const userMemberTopRole = { name: "", id: "", pos: 0 };
+    for (let role of userMemberRoleList.entries()) {
+      if (role[1].rawPosition > userMemberTopRole.pos) {
+        userMemberTopRole.name = role[1].name;
+        userMemberTopRole.id = role[1].id;
+        userMemberTopRole.pos = role[1].rawPosition;
+      }
+    }
 
+    const guildMemberList = await interaction.member.guild.members.fetch();
+    const botMember = guildMemberList.get(interaction.applicationId);
+    const botMemberRoleList = botMember.roles.cache;
+    const botMemberTopRole = { name: "", id: "", pos: 0 };
+    for (let role of botMemberRoleList.entries()) {
+      if (role[1].rawPosition > botMemberTopRole.pos) {
+        botMemberTopRole.name = role[1].name;
+        botMemberTopRole.id = role[1].id;
+        botMemberTopRole.pos = role[1].rawPosition;
+      }
+    }
+
+    console.log(userMemberTopRole);
+    console.log(botMemberTopRole);
 
     await interaction.reply(hexCode);
   },

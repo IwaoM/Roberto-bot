@@ -28,7 +28,6 @@ module.exports = {
     const imgFolder = path.join(path.dirname(__dirname), "avatars");
 
     let imgUrl = member.user.displayAvatarURL().replace(".webp", ".jpg");
-    console.log(imgUrl);
 
     const imgDir = path.join(imgFolder, member.user.id + ".jpg");
     await saveImageToDisk(imgUrl, imgDir);
