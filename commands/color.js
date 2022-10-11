@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require("discord.js");
 const { randomColor, checkHexCode } = require("../helpers/color.helper.js");
 const { saveUserAvatar } = require("../helpers/misc.helper.js");
 const Vibrant = require("node-vibrant");
+const fs = require("node:fs");
 
 const dominantChoices = [
   { name: "main", value: "Vibrant" },
@@ -42,29 +43,41 @@ module.exports = {
     ),
 
   async execute (interaction) {
-    console.log(interaction);
     const subcommand = interaction.options.getSubcommand();
     let hexCode;
 
     // get a hex color to apply depending on the subcommand & arguments if any
     if (subcommand === "hex") {
+
       const commandOption = interaction.options.getString("hex-code");
       hexCode = checkHexCode(commandOption);
       if (!hexCode) {
         await interaction.reply(`**${commandOption}** is not a valid hex color code.`);
         return;
       }
+
     } else if (subcommand === "random") {
+
       hexCode = randomColor();
+
     } else if (subcommand === "random-vibrant") {
+
       hexCode = randomColor(true);
+
     } else if (subcommand === "dominant") {
+
       const commandOption = interaction.options.getString("type");
       const avatarDir = await saveUserAvatar(interaction.member);
       const palette = await Vibrant.from(avatarDir).getPalette();
       hexCode = palette[commandOption].hex;
+      await fs.unlink(avatarDir, err => {
+        if (err) { throw err; }
+      });
+
     } else if (subcommand === "remove") {
+
       hexCode = "none";
+
     }
 
     // #000000 disables name color, we don't want that
@@ -72,34 +85,43 @@ module.exports = {
       hexCode = "#000001";
     }
 
-    // check client & member top roles
+    // find any color roles already assigned to user
     const userMember = interaction.member;
     const userMemberRoleList = userMember.roles.cache;
-    const userMemberTopRole = { name: "", id: "", pos: 0 };
-    for (let role of userMemberRoleList.entries()) {
-      if (role[1].rawPosition > userMemberTopRole.pos) {
-        userMemberTopRole.name = role[1].name;
-        userMemberTopRole.id = role[1].id;
-        userMemberTopRole.pos = role[1].rawPosition;
+    const userMemberColorRoleList = userMemberRoleList.filter(role => checkHexCode(role.name));
+
+    for (let role of userMemberColorRoleList.entries()) {
+      if (role[1].members.size > 1) {
+        // remove the color role from the user
+        await userMember.roles.remove(role[1]);
+      } else {
+        // delete role if no one else used it
+        await role[1].delete();
       }
     }
 
-    const guildMemberList = await interaction.member.guild.members.fetch();
-    const botMember = guildMemberList.get(interaction.applicationId);
-    const botMemberRoleList = botMember.roles.cache;
-    const botMemberTopRole = { name: "", id: "", pos: 0 };
-    for (let role of botMemberRoleList.entries()) {
-      if (role[1].rawPosition > botMemberTopRole.pos) {
-        botMemberTopRole.name = role[1].name;
-        botMemberTopRole.id = role[1].id;
-        botMemberTopRole.pos = role[1].rawPosition;
+    if (hexCode !== "none") {
+      // check if a color role for hexCode exists
+      const guildRoles = await interaction.member.guild.roles.fetch();
+      let wantedColorRole = guildRoles.find(role => role.name === hexCode);
+
+      if (!wantedColorRole) {
+        // if not : create it
+        wantedColorRole = await interaction.member.guild.roles.create({ name: hexCode, color: hexCode });
+        await wantedColorRole.setPermissions([]);
+        await wantedColorRole.setMentionable(true);
       }
+
+      // assign the found or created color role to user
+      userMember.roles.add(wantedColorRole);
+
+      await interaction.reply(`Color **<@&${wantedColorRole.id}>** was given to **<@${interaction.user.id}>**`);
+
+    } else {
+
+      await interaction.reply(`Color was reset for **<@${interaction.user.id}>**`);
+
     }
-
-    console.log(userMemberTopRole);
-    console.log(botMemberTopRole);
-
-    await interaction.reply(hexCode);
   },
 
   usage: "bababababa"
