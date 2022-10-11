@@ -32,17 +32,17 @@ module.exports = {
       const command = interaction.client.commands.get(commandOption);
       answer = `- **${commandOption}** -`;
       if (command.data.description) {
-        answer += `\n${command.data.description}`;
+        answer += `\n\n${command.data.description}`;
       }
       if (command.usage) {
-        answer += `\n${command.usage}`;
+        answer += `\n\n${command.usage}`;
       }
 
     } else { // If no argument was provided
 
       // List all available commands
       const commandNames = optionChoices.map(command => command.name);
-      answer = `List of available commands : \n•  \`/${commandNames.join("`\n•  `/")}\``;
+      answer = `List of available commands : \n• \`/${commandNames.join("`\n•  `/")}\``;
 
     }
 

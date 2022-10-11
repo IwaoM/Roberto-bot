@@ -2,16 +2,6 @@ const fs = require("node:fs");
 const path = require("node:path");
 const https = require("https");
 
-async function saveImageToDisk (url, localPath) {
-  const file = fs.createWriteStream(localPath);
-  return new Promise((resolve) => {
-    https.get(url, response => {
-      response.pipe(file);
-      resolve();
-    });
-  });
-}
-
 module.exports = {
 
   shuffleArray (arr) {
@@ -30,7 +20,14 @@ module.exports = {
     let imgUrl = member.user.displayAvatarURL().replace(".webp", ".jpg");
 
     const imgDir = path.join(imgFolder, member.user.id + ".jpg");
-    await saveImageToDisk(imgUrl, imgDir);
+    const file = fs.createWriteStream(imgDir);
+
+    await new Promise((resolve) => {
+      https.get(imgUrl, response => {
+        response.pipe(file);
+        resolve();
+      });
+    });
 
     return imgDir;
   },

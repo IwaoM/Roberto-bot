@@ -96,7 +96,16 @@ module.exports = {
         await userMember.roles.remove(role[1]);
       } else {
         // delete role if no one else used it
-        await role[1].delete();
+        try {
+          await role[1].delete();
+        } catch (err) {
+          if (err.code === 50013) { // Missing permissions : Roberto role incorrectly placed in role list
+            await interaction.reply("The command could not be executed - Roberto's role should be placed above color roles in the server's role list");
+            return;
+          } else {
+            throw err;
+          }
+        }
       }
     }
 
@@ -124,5 +133,19 @@ module.exports = {
     }
   },
 
-  usage: "bababababa"
+  usage: `• \`/color hex <hex-code>\`: gives your name color *hex-code*
+    • *hex-code* should be a valid hex color code (with or without the \`#\`)
+    • 6-characters as well as 3-characters hex color codes are accepted
+    • Example: \`/color hex #ff7f00\`
+    • Hex color picker : https://www.w3schools.com/colors/colors_picker.asp
+
+• \`/color random\`: gives your name a random color
+
+• \`/color random-vibrant\`: gives your name a random vibrant color
+
+• \`/color dominant <type>\`: gives your name a dominant color from your profile picture
+    • *type* can be either **main**, **dark** or **light**
+
+• \`/color remove\`: removes your current name color
+`
 };
