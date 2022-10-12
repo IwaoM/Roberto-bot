@@ -9,7 +9,6 @@ module.exports = {
       name: guild.name,
       greetNewMembers: false,
       colorNewMembers: true,
-      changelogIndexes: [],
       robertoAdminRoleId: "",
       robertoOperatorRoleId: ""
     };
