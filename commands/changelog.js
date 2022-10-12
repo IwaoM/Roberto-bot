@@ -1,5 +1,8 @@
 const { SlashCommandBuilder } = require("discord.js");
-const changelogs = require("../changelogs.json");
+const { OctokitToken } = require("../config.json");
+const { Octokit } = require("octokit");
+
+const octokit = new Octokit({ auth: OctokitToken });
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -7,8 +10,11 @@ module.exports = {
     .setDescription("Shows the latest changelog for Roberto"),
 
   async execute (interaction) {
+    // get latest release from github
+    let latestRelease = await octokit.request("GET /repos/IwaoM/Roberto-bot/releases/latest");
+
     // Create text & message
-    const text = `**${changelogs[0].version}**\n${changelogs[0].description}`;
+    const text = `**${latestRelease.data.tag_name}**\n${latestRelease.data.body}\n\nFull list of releases : https://github.com/IwaoM/Roberto-bot/releases`;
     await interaction.reply(text);
   },
 };
