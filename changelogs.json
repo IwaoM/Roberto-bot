@@ -1,0 +1,14 @@
+[
+  {
+    "version": "0.0.3",
+    "description": "Development version\n•  More stuff was added\n•  Features are still missing though"
+  },
+  {
+    "version": "0.0.2",
+    "description": "Development version\n•  Some stuff was added\n•  Better than the previous version"
+  },
+  {
+    "version": "0.0.1",
+    "description": "Development version\n•  Not much to say\n•  Stuff will be added later"
+  }
+]

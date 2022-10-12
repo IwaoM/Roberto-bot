@@ -1,29 +1,6 @@
-const { Collection } = require("discord.js");
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-
-const changelogs = [
-  {
-    version: "0.0.3",
-    description: `Development version
-•  More stuff was added
-•  Features are still missing though`,
-  },
-  {
-    version: "0.0.2",
-    description: `Development version
-•  Some stuff was added
-•  Better than the previous version`,
-  },
-  {
-    version: "0.0.1",
-    description: `Development version
-•  Not much to say
-•  Stuff will be added later`,
-  },
-];
-
-// Init collection of interaction IDs & indexes
-const changelogIndexes = new Collection();
+const changelogs = require("../changelogs.json");
+const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/misc.helper.js")
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -31,6 +8,8 @@ module.exports = {
     .setDescription("Shows the latest changelog for Roberto"),
 
   async execute (interaction) {
+    const guildId = interaction.guild.id;
+    let guildConfig, changelogIndexesArray;
 
     // Create button row
     const latestButton = new ButtonBuilder().setCustomId("changelog_latest").setLabel("Latest").setStyle(ButtonStyle.Primary).setDisabled(true);
@@ -45,22 +24,39 @@ module.exports = {
     let interactionResponse = await interaction.reply({ content: text, components: [buttonRow] });
 
     // Store interaction ID & associated index of displayed changelog
-    changelogIndexes.set(interactionResponse.id, 0);
+    guildConfig = await getGuildConfigs(guildId);
+    changelogIndexesArray = guildConfig.changelogIndexes;
+    changelogIndexesArray.push([interactionResponse.id, 0]);
+    await updateGuildConfigEntry(guildId, { changelogIndexes: changelogIndexesArray });
 
-    // Schedule button disablement & collection entry removal after 10 minutes
+    // Schedule button disablement & array entry removal after 10 minutes
+    /*
+      TODO change changelogIndexes' data structure to include a timestamp, use it to delete old entries instead of a setTimeout()
+      Currently, entries that are still in the array when the bot restarts are forgotten by the script and pile up
+    */
     await setTimeout(async () => {
       // Disable buttons (excepted Dismiss)
       const disabledButtonRow = new ActionRowBuilder().addComponents(dismissButton);
       const replyMsg = await interaction.fetchReply();
       await interaction.editReply({ content: replyMsg.content, components: [disabledButtonRow] });
 
-      // Delete collection entry
-      changelogIndexes.delete(interactionResponse.id);
+      // Delete array entry
+      guildConfig = await getGuildConfigs(guildId);
+      changelogIndexesArray = guildConfig.changelogIndexes;
+      const itemToRemoveIndex = changelogIndexesArray.findIndex(item => item[0] === interactionResponse.id);
+      changelogIndexesArray.splice(itemToRemoveIndex, 1);
+      await updateGuildConfigEntry(guildId, { changelogIndexes: changelogIndexesArray });
     }, 600000);
   },
 
   async executeButton (interaction) {
-    if (!changelogIndexes.has(interaction.message.interaction.id)) { // if entry was deleted in collection
+    const guildId = interaction.guild.id;
+    let guildConfig, changelogIndexesArray;
+
+    guildConfig = await getGuildConfigs(guildId);
+    changelogIndexesArray = guildConfig.changelogIndexes;
+    const itemToFindIndex = changelogIndexesArray.findIndex(item => item[0] === interaction.message.interaction.id);
+    if (itemToFindIndex === -1) { // if entry was deleted in array
       if (interaction.customId === "changelog_dismiss") { // and clicked button was dismiss
         // Then delete the message
         await interaction.message.delete();
@@ -69,7 +65,7 @@ module.exports = {
     }
 
     // Get the index of displayed changelog for this interaction's message
-    let changelogIndex = changelogIndexes.get(interaction.message.interaction.id);
+    let changelogIndex = changelogIndexesArray[itemToFindIndex][1];
 
     if (interaction.customId === "changelog_latest") {
       changelogIndex = 0;
@@ -84,7 +80,8 @@ module.exports = {
     if (changelogIndex >= 0) { // If clicked button was Latest, Next or Previous
       // Change text
       let newText = `**${changelogs[changelogIndex].version}**\n${changelogs[changelogIndex].description}`;
-      changelogIndexes.set(interaction.message.interaction.id, changelogIndex);
+      changelogIndexesArray[itemToFindIndex][1] = changelogIndex;
+      await updateGuildConfigEntry(guildId, { changelogIndexes: changelogIndexesArray });
 
       // Change button enablement status
       let oldButtonRow = interaction.message.components[0];
@@ -117,9 +114,9 @@ module.exports = {
     } else { // If clicked button was Dismiss
 
       // delete the message & collection entry
-      console.log(interaction.message);
       await interaction.message.delete();
-      changelogIndexes.delete(interaction.message.interaction.id);
+      changelogIndexesArray.splice(itemToFindIndex, 1);
+      await updateGuildConfigEntry(guildId, { changelogIndexes: changelogIndexesArray });
 
     }
 
