@@ -124,11 +124,11 @@ module.exports = {
       // assign the found or created color role to user
       userMember.roles.add(wantedColorRole);
 
-      await interaction.reply(`Color **<@&${wantedColorRole.id}>** was given to **<@${interaction.user.id}>**`);
+      await interaction.reply(`Color <@&${wantedColorRole.id}> was given to <@${interaction.user.id}>`);
 
     } else {
 
-      await interaction.reply(`Color was reset for **<@${interaction.user.id}>**`);
+      await interaction.reply(`Color was reset for <@${interaction.user.id}>`);
 
     }
   },
@@ -146,6 +146,5 @@ module.exports = {
 • \`/color dominant <type>\`: gives your name a dominant color from your profile picture
     • *type* can be either **main**, **dark** or **light**
 
-• \`/color remove\`: removes your current name color
-`
+• \`/color remove\`: removes your current name color`
 };

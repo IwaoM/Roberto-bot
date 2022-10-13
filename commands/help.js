@@ -42,7 +42,7 @@ module.exports = {
 
       // List all available commands
       const commandNames = optionChoices.map(command => command.name);
-      answer = `List of available commands : \n• \`/${commandNames.join("`\n•  `/")}\``;
+      answer = `List of available commands : \n• \`/${commandNames.join("`\n• `/")}\``;
 
     }
 
