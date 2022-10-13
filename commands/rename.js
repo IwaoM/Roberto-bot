@@ -44,8 +44,8 @@ module.exports = {
     }
   },
 
-  usage: `• \`/rename @jeanmi foo\`: gives nickname *foo* to user *@jeanmi*
-• \`/rename @jeanmi\`: removes user *@jeanmi*'s current nickname
+  usage: `• \`/rename @user <name>\`: gives nickname *name* to user *@user*
+• \`/rename @user\`: removes user *@user*'s current nickname
 
 Note : the server owner cannot be renamed by this command`
 };

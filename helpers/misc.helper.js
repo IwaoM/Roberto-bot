@@ -182,5 +182,9 @@ module.exports = {
       letters.splice(indexToRemove, 1);
     }
     return letters.join("");
+  },
+
+  capitalizeFirstLetter (str) {
+    return str[0].toUpperCase() + str.slice(1);
   }
 };
