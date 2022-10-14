@@ -188,6 +188,46 @@ module.exports = {
     return str[0].toUpperCase() + str.slice(1);
   },
 
+  async createRobertoRoles (guild) {
+    const robertoAdminRole = await guild.roles.create({ name: "Roberto Admin" });
+    await robertoAdminRole.setPermissions([]);
+    await robertoAdminRole.setMentionable(true);
+
+    const robertoOperatorRole = await guild.roles.create({ name: "Roberto Operator" });
+    await robertoOperatorRole.setPermissions([]);
+    await robertoOperatorRole.setMentionable(true);
+
+    return {
+      admin: robertoAdminRole.id,
+      operator: robertoOperatorRole.id
+    };
+  },
+
+  async getInviterUser (guild, client) {
+
+    // get latest logs and look for Roberto's invite log entry
+    let logs = await guild.fetchAuditLogs();
+    let botInvites = logs.entries.filter(entry => entry.action === 28);
+    let robertoInvite = botInvites.find(entry => entry.target?.id === client.user.id);
+
+    // search through older logs until the wanted log is found or end of logs is reached
+    let oldestLog;
+    while (!robertoInvite && logs.entries.size === 50) {
+      oldestLog = logs.entries.at(49);
+      logs = await guild.fetchAuditLogs({ before: oldestLog });
+      botInvites = logs.entries.filter(entry => entry.action === 28);
+      robertoInvite = botInvites.find(entry => entry.target?.id === client.user.id);
+    }
+
+    // return the executor of Roberto's invite (ie the inviter) or false if not found
+    if (robertoInvite) {
+      return robertoInvite.executor;
+    } else {
+      return false;
+    }
+
+  },
+
   async dmUsers (text, users) {
     const recipientList = [];
 
