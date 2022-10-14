@@ -68,7 +68,23 @@ module.exports = {
 
       const commandOption = interaction.options.getString("type");
       const avatarDir = await saveUserAvatar(interaction.member);
-      const palette = await Vibrant.from(avatarDir).getPalette();
+
+      // getPalette sometimes fails - retry twice before returning an error
+      let palette, errorCount = 0;
+      for (let i = 0; i < 3; i++) {
+        try {
+          palette = await Vibrant.from(avatarDir).getPalette();
+          break;
+        } catch (err) {
+          console.log(`Palette fetch failed ${i + 1} time(s)`);
+          errorCount++;
+        }
+      }
+      if (errorCount === 3) {
+        await interaction.reply({ content: "Dominant color processing failed - please retry later", ephemeral: true });
+        return;
+      }
+
       hexCode = palette[commandOption].hex;
       await fs.unlink(avatarDir, err => {
         if (err) { throw err; }

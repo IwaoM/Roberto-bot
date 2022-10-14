@@ -1,10 +1,10 @@
 module.exports = {
   name: "interactionCreate",
 
-  async execute (interaction) {
+  async execute (interaction, client) {
     if (interaction.isChatInputCommand()) {
 
-      const command = interaction.client.commands.get(interaction.commandName);
+      const command = client.commands.get(interaction.commandName);
       if (!command) { return; }
 
       try {
@@ -17,7 +17,7 @@ module.exports = {
     } else if (interaction.isButton()) {
 
       const relatedCommandName = interaction.message.interaction.commandName;
-      const relatedCommand = interaction.client.commands.get(relatedCommandName);
+      const relatedCommand = client.commands.get(relatedCommandName);
       if (!relatedCommand) { return; }
 
       try {
@@ -28,7 +28,7 @@ module.exports = {
       }
     } else if (interaction.isAutocomplete()) {
 
-      const command = interaction.client.commands.get(interaction.commandName);
+      const command = client.commands.get(interaction.commandName);
       if (!command) { return; }
 
       try {

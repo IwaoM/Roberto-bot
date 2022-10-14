@@ -186,5 +186,20 @@ module.exports = {
 
   capitalizeFirstLetter (str) {
     return str[0].toUpperCase() + str.slice(1);
+  },
+
+  async dmUsers (text, users) {
+    const recipientList = [];
+
+    for (let user of users) {
+      if (recipientList.findIndex(elem => elem.id === user.id) === -1) {
+        recipientList.push(user);
+      }
+    }
+
+    for (let recipient of recipientList) {
+      const recipientDm = await recipient.createDM();
+      recipientDm.send(text);
+    }
   }
 };
