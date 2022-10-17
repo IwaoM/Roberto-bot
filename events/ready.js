@@ -1,4 +1,4 @@
-const { getGuildConfigs } = require("../helpers/misc.helper.js");
+const { getGuildConfigs } = require("../helpers/files.helper.js");
 const guildCreate = require("./guildCreate.js");
 const guildDelete = require("./guildDelete.js");
 

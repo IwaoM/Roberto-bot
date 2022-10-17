@@ -1,4 +1,4 @@
-const { removeGuildConfigEntry } = require("../helpers/misc.helper.js");
+const { removeGuildConfigEntry } = require("../helpers/files.helper.js");
 
 module.exports = {
   name: "guildDelete",

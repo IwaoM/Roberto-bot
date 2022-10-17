@@ -1,4 +1,5 @@
-const { addGuildConfigEntry, createRobertoRoles, getInviterUser, dmUsers } = require("../helpers/misc.helper.js");
+const { createRobertoRoles, getInviterUser, dmUsers } = require("../helpers/discord.helper.js");
+const { addGuildConfigEntry } = require("../helpers/files.helper.js");
 
 module.exports = {
   name: "guildCreate",

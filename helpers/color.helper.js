@@ -22,15 +22,22 @@ module.exports = {
     return hexColorValue;
   },
 
-  checkHexCode (hexCode = "") {
+  checkHexCode (hexCode = "", strictMode = false) {
+    // strict modes doesn't allow hex codes without "#" or with uppercase letters
     if (!hexCode) { return false; }
 
-    if (hexCode.startsWith("#")) { hexCode = hexCode.slice(1); }
+    if (hexCode.startsWith("#")) {
+      hexCode = hexCode.slice(1);
+    } else if (strictMode) {
+      return false;
+    }
 
     if (hexCode.length !== 3 && hexCode.length !== 6) { return false; }
     if (hexCode.length === 3) { hexCode = hexCode[0] + hexCode[0] + hexCode[1] + hexCode[1] + hexCode[2] + hexCode[2]; }
 
-    hexCode = hexCode.toLowerCase();
+    if (!strictMode) {
+      hexCode = hexCode.toLowerCase();
+    }
     if (!/^([a-f0-9]{6,})$/.test(hexCode)) { return false; }
 
     return "#" + hexCode;

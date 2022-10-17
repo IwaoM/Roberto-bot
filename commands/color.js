@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { randomColor, checkHexCode, getDominantColor } = require("../helpers/color.helper.js");
-const { saveUserAvatar, updateColorRole } = require("../helpers/misc.helper.js");
+const { updateColorRole } = require("../helpers/discord.helper.js");
+const { saveUserAvatar } = require("../helpers/files.helper.js");
 const fs = require("node:fs");
 
 const dominantChoices = [
