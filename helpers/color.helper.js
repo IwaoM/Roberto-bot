@@ -1,4 +1,5 @@
 const { shuffleArray } = require("./misc.helper.js");
+const Vibrant = require("node-vibrant");
 
 module.exports = {
 
@@ -33,6 +34,29 @@ module.exports = {
     if (!/^([a-f0-9]{6,})$/.test(hexCode)) { return false; }
 
     return "#" + hexCode;
+  },
+
+  async getDominantColor (commandOption, dir) {
+    if (!commandOption || !dir) { return false; }
+
+    // getPalette sometimes fails - retry twice before returning an error
+    let palette, errorCount = 0;
+    for (let i = 0; i < 3; i++) {
+      try {
+        palette = await Vibrant.from(dir).getPalette();
+        break;
+      } catch (err) {
+        console.log(`Palette fetch failed ${i + 1} time(s)`);
+        errorCount++;
+      }
+    }
+    if (errorCount === 3) {
+      console.log(`Dominant color processing failed for commandOption = "${commandOption}", dir = "${dir}"`);
+      return false;
+    }
+
+    const hexCode = palette[commandOption].hex;
+    return hexCode;
   }
 
 };

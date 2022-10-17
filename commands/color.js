@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
-const { randomColor, checkHexCode } = require("../helpers/color.helper.js");
-const { saveUserAvatar } = require("../helpers/misc.helper.js");
-const Vibrant = require("node-vibrant");
+const { randomColor, checkHexCode, getDominantColor } = require("../helpers/color.helper.js");
+const { saveUserAvatar, updateColorRole } = require("../helpers/misc.helper.js");
 const fs = require("node:fs");
 
 const dominantChoices = [
@@ -69,23 +68,12 @@ module.exports = {
       const commandOption = interaction.options.getString("type");
       const avatarDir = await saveUserAvatar(interaction.member);
 
-      // getPalette sometimes fails - retry twice before returning an error
-      let palette, errorCount = 0;
-      for (let i = 0; i < 3; i++) {
-        try {
-          palette = await Vibrant.from(avatarDir).getPalette();
-          break;
-        } catch (err) {
-          console.log(`Palette fetch failed ${i + 1} time(s)`);
-          errorCount++;
-        }
-      }
-      if (errorCount === 3) {
+      hexCode = await getDominantColor(commandOption, avatarDir);
+      if (!hexCode) {
         await interaction.reply({ content: "Dominant color processing failed - please retry later", ephemeral: true });
         return;
       }
 
-      hexCode = palette[commandOption].hex;
       await fs.unlink(avatarDir, err => {
         if (err) { throw err; }
       });
@@ -96,57 +84,7 @@ module.exports = {
 
     }
 
-    // #000000 disables name color, we don't want that
-    if (hexCode === "#000000") {
-      hexCode = "#000001";
-    }
-
-    // find any color roles already assigned to user
-    const userMember = interaction.member;
-    const userMemberRoleList = userMember.roles.cache;
-    const userMemberColorRoleList = userMemberRoleList.filter(role => checkHexCode(role.name));
-
-    for (let role of userMemberColorRoleList.entries()) {
-      if (role[1].members.size > 1) {
-        // remove the color role from the user
-        await userMember.roles.remove(role[1]);
-      } else {
-        // delete role if no one else used it
-        try {
-          await role[1].delete();
-        } catch (err) {
-          if (err.code === 50013) { // Missing permissions : Roberto role incorrectly placed in role list
-            await interaction.reply("The command could not be executed - Roberto's role should be placed above color roles in the server's role list");
-            return;
-          } else {
-            throw err;
-          }
-        }
-      }
-    }
-
-    if (hexCode !== "none") {
-      // check if a color role for hexCode exists
-      const guildRoles = await interaction.member.guild.roles.fetch();
-      let wantedColorRole = guildRoles.find(role => role.name === hexCode);
-
-      if (!wantedColorRole) {
-        // if not : create it
-        wantedColorRole = await interaction.member.guild.roles.create({ name: hexCode, color: hexCode });
-        await wantedColorRole.setPermissions([]);
-        await wantedColorRole.setMentionable(true);
-      }
-
-      // assign the found or created color role to user
-      userMember.roles.add(wantedColorRole);
-
-      await interaction.reply(`Color <@&${wantedColorRole.id}> was given to <@${interaction.user.id}>`);
-
-    } else {
-
-      await interaction.reply(`Color was reset for <@${interaction.user.id}>`);
-
-    }
+    await updateColorRole(hexCode, interaction.member, interaction);
   },
 
   usage: `• \`/color hex <hex-code>\`: gives your name color *hex-code*
