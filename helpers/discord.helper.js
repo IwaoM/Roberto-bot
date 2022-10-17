@@ -1,19 +1,25 @@
 const { checkHexCode } = require("./color.helper.js");
+const { adminRoleName, operatorRoleName } = require("../config.json");
 
 module.exports = {
-  async createRobertoRoles (guild) {
-    const robertoAdminRole = await guild.roles.create({ name: "Roberto Admin" });
-    await robertoAdminRole.setPermissions([]);
-    await robertoAdminRole.setMentionable(true);
+  async createRobertoRoles (guild, roleNames = "admin operator") {
+    const roleIds = {};
 
-    const robertoOperatorRole = await guild.roles.create({ name: "Roberto Operator" });
-    await robertoOperatorRole.setPermissions([]);
-    await robertoOperatorRole.setMentionable(true);
+    if (roleNames.search("admin") >= 0) {
+      const robertoAdminRole = await guild.roles.create({ name: adminRoleName });
+      await robertoAdminRole.setPermissions([]);
+      await robertoAdminRole.setMentionable(true);
+      roleIds.robertoAdminRoleId = robertoAdminRole.id;
+    }
 
-    return {
-      admin: robertoAdminRole.id,
-      operator: robertoOperatorRole.id
-    };
+    if (roleNames.search("operator") >= 0) {
+      const robertoOperatorRole = await guild.roles.create({ name: operatorRoleName });
+      await robertoOperatorRole.setPermissions([]);
+      await robertoOperatorRole.setMentionable(true);
+      roleIds.robertoOperatorRoleId = robertoOperatorRole.id;
+    }
+
+    return roleIds;
   },
 
   async updateColorRole (hexCode, userMember, interaction) {
@@ -113,5 +119,14 @@ module.exports = {
       const recipientDm = await recipient.createDM();
       recipientDm.send(text);
     }
+  },
+
+  checkRoleAssignment (member, roleId) {
+    if (!member || !roleId) {
+      return false;
+    }
+
+    const userRoles = member.roles.cache;
+    return userRoles.get(roleId);
   }
 };
