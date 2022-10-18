@@ -153,5 +153,12 @@ module.exports = {
     }
   },
 
-  usage: `• \`/config\``
+  usage: `• \`/config auto-color <enable|disable|show>\`: enables, disables or shows the current value for the option to automatically give a color role to new server members
+  • The applied color will be the new members's profile picture's dominant color
+• \`/config auto-greet <enable|disable|show>\`: same, but for the option to automatically greet new server members
+  • If enabled, it is recommended to disable the native option from Discord to greet new members to avoid double greetings
+• \`/config roles-show\`: Shows the current role names and IDs for Roberto admins and operators (if found)
+• \`/config roles-repair\`: Regenerates the Roberto admin and operator roles and deletes unused roles with the same name
+
+Most of those commands are only usable by members with the Roberto admin role, the only exception being \`/config roles-repair\``
 };
