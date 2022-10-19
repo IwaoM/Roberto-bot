@@ -16,14 +16,14 @@ module.exports = {
       const resultSection = {};
 
       // section title
-      resultSection.title = trimAll(htmlToPlainText(section.getElementsByTagName("h3")[0].toString()));
+      resultSection.title = trimAll(htmlToPlainText(section.getElementsByTagName("h3")[0].toString()), "fr");
 
       // grammatical gender
       while (section.getElementsByTagName("p")[0].childNodes.length && !section.getElementsByTagName("p")[0].childNodes[0].classList?.value?.length) {
         section.getElementsByTagName("p")[0].childNodes.splice(0, 1);
       }
       if (section.getElementsByTagName("p")[0].childNodes.length) {
-        resultSection.gender = trimAll(htmlToPlainText(section.getElementsByTagName("p")[0].toString()));
+        resultSection.gender = trimAll(htmlToPlainText(section.getElementsByTagName("p")[0].toString()), "fr");
       }
 
       // definition list (filter out empty text nodes)
@@ -32,7 +32,7 @@ module.exports = {
       for (let i = 0; i < definitionList.length; i++) {
         // remove lists of examples
         definitionList[i].childNodes = definitionList[i].childNodes.filter(elem => elem.rawTagName !== "ol" && elem.rawTagName !== "ul");
-        definitionTexts.push(trimAll(htmlToPlainText(definitionList[i].toString())));
+        definitionTexts.push(trimAll(htmlToPlainText(definitionList[i].toString()), "fr"));
       }
       resultSection.definitions = definitionTexts;
 

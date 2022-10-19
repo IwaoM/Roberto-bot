@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const HTMLParser = require("node-html-parser");
 const { bodyToJsonFrench } = require("../helpers/wiktionary.helper.js");
 const { trimAll } = require("../helpers/misc.helper.js");
@@ -57,11 +57,39 @@ module.exports = {
       // TODO get english definition
     } else if (subcommand === "fr") {
       // TODO get french definition
+      dictionaryResult.language = "fr";
       dictionaryResult.resultData = bodyToJsonFrench(body);
       console.log(dictionaryResult);
     }
 
-    await interaction.editReply(commandOption);
+    // construct embed
+    const definitionFields = [];
+    for (let data of dictionaryResult.resultData) {
+      let name = `**${data.title}**`;
+      if (data.gender) {
+        name += ` - *${data.gender}*`;
+      }
+
+      let value = `1. ${data.definitions[0]}`;
+      for (let i = 1; i < data.definitions.length; i++) {
+        if (`${value}\n${i + 1}. ${data.definitions[i]}`.length <= 1024) {
+          value += `\n${i + 1}. ${data.definitions[i]}`;
+        } else {
+          break;
+        }
+      }
+
+      definitionFields.push({ name, value });
+    }
+
+    const dictionaryEmbed = new EmbedBuilder()
+      .setColor(0xe7c78d)
+      .setTitle(dictionaryResult.word)
+      .setAuthor({ name: "Wiktionary", iconURL: "https://upload.wikimedia.org/wikipedia/meta/6/61/Wiktionary_propsed-smurrayinchester.png" })
+      .setDescription(dictionaryResult.directUrl)
+      .addFields(...definitionFields);
+
+    await interaction.editReply({ embeds: [dictionaryEmbed] });
   },
 
   usage: ""
