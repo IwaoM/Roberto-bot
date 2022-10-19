@@ -29,13 +29,15 @@ module.exports = {
     ),
 
   async execute (interaction) {
+    await interaction.deferReply();
+
     const locationOption = interaction.options.getString("location");
     const locationResp = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${locationOption}&appid=${openWeatherToken}&limit=5`);
     const location = await locationResp.json();
 
     if (!location.length) {
 
-      await interaction.reply(`No results have been found for "${locationOption}"`);
+      await interaction.editReply(`No results have been found for "${locationOption}"`);
       return;
 
     } else {
@@ -47,7 +49,7 @@ module.exports = {
       const weatherEmbed = new EmbedBuilder()
         .setColor(0xe96d4a)
         .setTitle(`${location[0].name}, ${location[0].state}, ${location[0].country}`)
-        .setAuthor({name: "OpenWeather", iconURL: "https://pbs.twimg.com/profile_images/1173919481082580992/f95OeyEW_400x400.jpg" })
+        .setAuthor({ name: "OpenWeather", iconURL: "https://pbs.twimg.com/profile_images/1173919481082580992/f95OeyEW_400x400.jpg" })
         .setDescription(`**${Math.round(weather.main.temp)}°C -** ${capitalizeFirstLetter(weather.weather[0].description)}
 Feels like ${Math.round(weather.main.feels_like)}°C`)
         .setThumbnail(`http://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`)
@@ -58,7 +60,7 @@ Feels like ${Math.round(weather.main.feels_like)}°C`)
         )
         .setTimestamp(new Date());
 
-      interaction.reply({ embeds: [weatherEmbed] });
+      interaction.editReply({ embeds: [weatherEmbed] });
 
     }
   },

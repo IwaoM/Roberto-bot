@@ -46,7 +46,7 @@ module.exports = {
         } catch (err) {
           if (err.code === 50013) { // Missing permissions : Roberto role incorrectly placed in role list
             if (interaction) {
-              await interaction.reply("The command could not be executed - Roberto's role should be placed above color roles in the server's role list");
+              await interaction.editReply("The command could not be executed - Roberto's role should be placed above color roles in the server's role list");
             }
             return false;
           } else {
@@ -71,12 +71,12 @@ module.exports = {
       // assign the found or created color role to user
       userMember.roles.add(wantedColorRole);
       if (interaction) {
-        await interaction.reply(`Color <@&${wantedColorRole.id}> was given to <@${interaction.user.id}>`);
+        await interaction.editReply(`Color <@&${wantedColorRole.id}> was given to <@${interaction.user.id}>`);
       }
 
     } else if (interaction) {
 
-      await interaction.reply(`Color was reset for <@${interaction.user.id}>`);
+      await interaction.editReply(`Color was reset for <@${interaction.user.id}>`);
 
     }
   },

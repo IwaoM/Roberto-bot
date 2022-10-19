@@ -31,6 +31,8 @@ module.exports = {
     ),
 
   async execute (interaction) {
+    await interaction.deferReply();
+
     const guildConfig = await getGuildConfigs(interaction.guildId);
 
     // check subcommand
@@ -51,7 +53,7 @@ module.exports = {
         if (commandOption === "show") {
 
           // display current value for the option
-          interaction.reply({ content: `Current setting for ${subcommand} : ${guildConfig[configOption] ? "enabled" : "disabled"}`, ephemeral: true });
+          await interaction.editReply({ content: `Current setting for ${subcommand} : ${guildConfig[configOption] ? "enabled" : "disabled"}`, ephemeral: true });
 
         } else if (commandOption === "enable") {
 
@@ -59,9 +61,9 @@ module.exports = {
           const argObject = {};
           argObject[configOption] = true;
           if (await updateGuildConfigEntry(interaction.guildId, argObject)) {
-            interaction.reply({ content: `The ${subcommand} option has been enabled`, ephemeral: true });
+            await interaction.editReply({ content: `The ${subcommand} option has been enabled`, ephemeral: true });
           } else {
-            interaction.reply({ content: `An error occurred when enabling ${subcommand} - please retry later`, ephemeral: true });
+            await interaction.editReply({ content: `An error occurred when enabling ${subcommand} - please retry later`, ephemeral: true });
           }
 
         } else if (commandOption === "disable") {
@@ -70,14 +72,14 @@ module.exports = {
           const argObject = {};
           argObject[configOption] = false;
           if (await updateGuildConfigEntry(interaction.guildId, argObject)) {
-            interaction.reply({ content: `The ${subcommand} option has been disabled`, ephemeral: true });
+            await interaction.editReply({ content: `The ${subcommand} option has been disabled`, ephemeral: true });
           } else {
-            interaction.reply({ content: `An error occurred when disabling ${subcommand} - please retry later`, ephemeral: true });
+            await interaction.editReply({ content: `An error occurred when disabling ${subcommand} - please retry later`, ephemeral: true });
           }
 
         }
       } else {
-        interaction.reply({ content: "This command can only be used by Roberto administrators", ephemeral: true });
+        await interaction.editReply({ content: "This command can only be used by Roberto administrators", ephemeral: true });
       }
 
     } else if (subcommand === "roles-show") {
@@ -97,10 +99,10 @@ module.exports = {
           messageText += `Roberto Operator role : not found`;
         }
 
-        interaction.reply({ content: messageText, ephemeral: true });
+        await interaction.editReply({ content: messageText, ephemeral: true });
 
       } else {
-        interaction.reply({ content: "This command can only be used by Roberto administrators", ephemeral: true });
+        await interaction.editReply({ content: "This command can only be used by Roberto administrators", ephemeral: true });
       }
 
     } else if (subcommand === "roles-repair") {
@@ -149,7 +151,7 @@ module.exports = {
         messageText = `No repair was needed`;
       }
 
-      interaction.reply({ content: messageText, ephemeral: true });
+      await interaction.editReply({ content: messageText, ephemeral: true });
     }
   },
 

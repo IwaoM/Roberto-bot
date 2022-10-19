@@ -61,4 +61,33 @@ module.exports = {
   capitalizeFirstLetter (str) {
     return str[0].toUpperCase() + str.slice(1);
   },
+
+  htmlToPlainText (htmlText) {
+    return htmlText.replace(/<[^>]+>/g, "").replace(/\n/g, "");
+  },
+
+  trimAll (text, lang = "en") {
+    // trim all unneeded spaces
+    text = text.trim().replace(/\s+/g, " ");
+
+    // remove spaces before punctuation depending on the language's conventions
+    if (lang === "en") {
+      text = text
+        .replace(/\s+\./g, ".")
+        .replace(/\s+,/g, ",")
+        .replace(/\s+:/g, ":")
+        .replace(/\s+;/g, ";")
+        .replace(/\s+\?/g, "?")
+        .replace(/\s+!/g, "!")
+        .replace(/\s+…/g, "…")
+        .replace(/\s+'/g, "'");
+    } else if (lang === "fr") {
+      text = text
+        .replace(/\s+\./g, ".")
+        .replace(/\s+,/g, ",")
+        .replace(/\s+'/g, "'");
+    }
+
+    return text;
+  }
 };

@@ -43,6 +43,8 @@ module.exports = {
     ),
 
   async execute (interaction) {
+    await interaction.deferReply();
+
     const subcommand = interaction.options.getSubcommand();
     let hexCode;
 
@@ -52,7 +54,7 @@ module.exports = {
       const commandOption = interaction.options.getString("hex-code");
       hexCode = checkHexCode(commandOption);
       if (!hexCode) {
-        await interaction.reply(`**${commandOption}** is not a valid hex color code.`);
+        await interaction.editReply(`**${commandOption}** is not a valid hex color code.`);
         return;
       }
 
@@ -71,7 +73,7 @@ module.exports = {
 
       hexCode = await getDominantColor(commandOption, avatarDir);
       if (!hexCode) {
-        await interaction.reply({ content: "Dominant color processing failed - please retry later", ephemeral: true });
+        await interaction.editReply({ content: "Dominant color processing failed - please retry later", ephemeral: true });
         return;
       }
 
