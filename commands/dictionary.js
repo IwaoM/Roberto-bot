@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const HTMLParser = require("node-html-parser");
-const { bodyToJsonFrench } = require("../helpers/wiktionary.helper.js");
+const { bodyToListFrench, bodyToListEnglish } = require("../helpers/wiktionary.helper.js");
 const { trimAll } = require("../helpers/misc.helper.js");
 
 module.exports = {
@@ -54,12 +54,11 @@ module.exports = {
 
     // Parse the HTML body to get relevant info
     if (subcommand === "en") {
-      // TODO get english definition
+      dictionaryResult.language = "en";
+      dictionaryResult.resultData = bodyToListEnglish(body);
     } else if (subcommand === "fr") {
-      // TODO get french definition
       dictionaryResult.language = "fr";
-      dictionaryResult.resultData = bodyToJsonFrench(body);
-      console.log(dictionaryResult);
+      dictionaryResult.resultData = bodyToListFrench(body);
     }
 
     // construct embed
