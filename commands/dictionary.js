@@ -29,6 +29,12 @@ module.exports = {
     // Search for the word in wiktionary of the chosen language
     const searchResponse = await fetch(`http://${subcommand}.wiktionary.org/w/rest.php/v1/search/page?q=${commandOption}&limit=5`);
     const searchData = await searchResponse.json();
+
+    if (!searchData.pages.length) {
+      await interaction.editReply(`No results were found for "${commandOption}"`);
+      return;
+    }
+
     const similarKeyPages = searchData.pages.filter (page => page.key.toLowerCase() === searchData.pages[0].key.toLowerCase());
 
     // choose the result with the same case as the query, or the first result by default
