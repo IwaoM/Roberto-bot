@@ -93,23 +93,54 @@ module.exports = {
 
   randomDice (sides, rolls) {
     const result = [];
+
     for (let i = 0; i < rolls; i++) {
       result.push(Math.ceil(Math.random() * sides));
     }
+
     return result;
   },
 
   randomDraw (total, draws) {
     const result = [];
+
     const pool = [];
     for (let i = 0; i < total; i++) {
       pool.push(i + 1);
     }
+
     for (let i = 0; i < draws; i++) {
       const drawIndex = Math.floor(Math.random() * pool.length);
       result.push(pool[drawIndex]);
       pool.splice(drawIndex, 1);
     }
+
     return result;
+  },
+
+  randomTeams (peopleCount, teamCount) {
+    const membersToSplit = [];
+    for (let i = 0; i < peopleCount; i++) {
+      membersToSplit.push(i + 1);
+    }
+
+    const teams = [];
+    for (let i = 0; i < teamCount; i++) {
+      teams.push([]);
+    }
+
+    let cursor = 0;
+    while (membersToSplit.length) {
+      const memberIndex = Math.floor(Math.random() * membersToSplit.length);
+      teams[cursor].push(membersToSplit[memberIndex]);
+      membersToSplit.splice(memberIndex, 1);
+      if (cursor === teamCount - 1) {
+        cursor = 0;
+      } else {
+        cursor++;
+      }
+    }
+
+    return teams;
   }
 };

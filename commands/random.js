@@ -58,7 +58,6 @@ module.exports = {
     }
 
     const buttonRow = new ActionRowBuilder().addComponents(againButton);
-
     await interaction.reply({ content: text, components: [buttonRow] });
   },
 
