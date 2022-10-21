@@ -65,14 +65,33 @@ module.exports = {
       // create button & text
       againButton = new ButtonBuilder().setCustomId("random-channel_teams_again").setLabel("Generate again").setStyle(ButtonStyle.Primary);
 
-      text = `Splitting channel members into ${teamsOption} teams`;
+      text = `Splitting ${channelMemberNames.length} channel members into ${teamsOption} teams:`;
       for (let i = 0; i < teams.length; i++) {
         text += `\n${i + 1}. [**${teams[i].join("** - **")}**]`;
       }
 
-
     } else if (subcommand === "draw") {
-      // TODO
+
+      // get & check option values
+      const drawsOption = interaction.options.getInteger("draws");
+      if (drawsOption > channelMemberNames.length) {
+        interaction.editReply("Invalid number of teams");
+        return;
+      }
+
+      // drawing users
+      const numberSample = randomDraw(channelMemberNames.length, drawsOption);
+      const sample = [];
+      for (let num of numberSample) {
+        sample.push(channelMemberNames[num - 1]);
+      }
+
+      // create button & text
+      againButton = new ButtonBuilder().setCustomId("random-channel_draw_again").setLabel("Draw again").setStyle(ButtonStyle.Primary);
+
+      text = `Drawing ${drawsOption} channel members among ${channelMemberNames.length}:`;
+      text += `\n[**${sample.join("** - **")}**]`;
+
     }
 
     const buttonRow = new ActionRowBuilder().addComponents(againButton);
