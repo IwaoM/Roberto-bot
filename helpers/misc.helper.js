@@ -89,5 +89,27 @@ module.exports = {
     }
 
     return text;
+  },
+
+  randomDice (sides, rolls) {
+    const result = [];
+    for (let i = 0; i < rolls; i++) {
+      result.push(Math.ceil(Math.random() * sides));
+    }
+    return result;
+  },
+
+  randomDraw (total, draws) {
+    const result = [];
+    const pool = [];
+    for (let i = 0; i < total; i++) {
+      pool.push(i + 1);
+    }
+    for (let i = 0; i < draws; i++) {
+      const drawIndex = Math.floor(Math.random() * pool.length);
+      result.push(pool[drawIndex]);
+      pool.splice(drawIndex, 1);
+    }
+    return result;
   }
 };

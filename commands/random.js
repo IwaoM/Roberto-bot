@@ -1,9 +1,10 @@
 const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
+const { randomDice, randomDraw } = require("../helpers/misc.helper.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("random")
-    .setDescription("Generate random numbers and lists (dice rolls, draws...)")
+    .setDescription("Generates random numbers and lists (dice rolls, draws...)")
     .addSubcommand(subcommand =>
       subcommand
         .setName("dice")
@@ -33,13 +34,8 @@ module.exports = {
       againButton = new ButtonBuilder().setCustomId("random_dice_again").setLabel("Roll again").setStyle(ButtonStyle.Primary);
 
       text = `Throwing a ${sidesOption}-sided dice ${rollsOption} times:\n1. [**`;
-      for (let i = 0; i < rollsOption; i++) {
-        if (i > 0) {
-          text += "** - **";
-        }
-        text += Math.ceil(Math.random() * sidesOption);
-      }
-      text += "**]";
+      const diceResultText = randomDice(sidesOption, rollsOption).join("** - **");
+      text += `${diceResultText}**]`; `${diceResultText}**]`;
 
     } else if (subcommand === "draw") {
 
@@ -56,19 +52,8 @@ module.exports = {
       againButton = new ButtonBuilder().setCustomId("random_draw_again").setLabel("Draw again").setStyle(ButtonStyle.Primary);
 
       text = `Drawing ${drawsOption} values among ${totalOption} total options:\n1. [**`;
-      const pool = [];
-      for (let i = 0; i < totalOption; i++) {
-        pool.push(i + 1);
-      }
-      for (let i = 0; i < drawsOption; i++) {
-        const drawIndex = Math.floor(Math.random() * pool.length);
-        if (i > 0) {
-          text += "** - **";
-        }
-        text += pool[drawIndex];
-        pool.splice(drawIndex, 1);
-      }
-      text += "**]";
+      const drawResultText = randomDraw(totalOption, drawsOption).join("** - **");
+      text += `${drawResultText}**]`;
 
     }
 
@@ -78,9 +63,34 @@ module.exports = {
   },
 
   async executeButton (interaction) {
-    const name = "";
-    await interaction.update(name);
+    const replyText = interaction.message.content;
+    const replyLines = replyText.split("\n");
+    const lastLineIndex = parseInt(replyLines[replyLines.length - 1].split(".")[0]);
+    if (replyLines.length > 10) {
+      replyLines.splice(1, 1);
+    }
+
+    let newLineText;
+    if (interaction.customId === "random_dice_again") {
+      const sidesOption = parseInt(replyLines[0].split(" ")[2].split("-")[0]);
+      const rollsOption = parseInt(replyLines[0].split(" ")[4]);
+      const diceResultText = randomDice(sidesOption, rollsOption).join("** - **");
+      newLineText = `${lastLineIndex + 1}. [**${diceResultText}**]`;
+    } else if (interaction.customId === "random_draw_again") {
+      const totalOption = parseInt(replyLines[0].split(" ")[4]);
+      const drawsOption = parseInt(replyLines[0].split(" ")[1]);
+      const drawResultText = randomDraw(totalOption, drawsOption).join("** - **");
+      newLineText = `${lastLineIndex + 1}. [**${drawResultText}**]`;
+    }
+
+    replyLines.push(newLineText);
+    const newText = replyLines.join("\n");
+
+    await interaction.update(newText);
   },
 
-  usage: `• \`/random\`: `
+  usage: `• \`/random dice <sides> <rolls>\`: rolls a *sides*-sided dice *rolls* times
+  • The dice can have up to 1000000 sides and be rolled 20 times
+• \`/random draw <total> <draws>\`: draws *draws* values among *total* total options
+  • Up to 1000000 options and 20 draws are supported, and the number of draws cannot exceed the number of options`
 };

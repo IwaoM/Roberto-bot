@@ -16,7 +16,7 @@ module.exports = {
 
     } else if (interaction.isButton()) {
 
-      const relatedCommandName = interaction.message.interaction.commandName;
+      const relatedCommandName = interaction.message.interaction.commandName.split(" ")[0]; // for commands with subcommands
       const relatedCommand = client.commands.get(relatedCommandName);
       if (!relatedCommand) { return; }
 
