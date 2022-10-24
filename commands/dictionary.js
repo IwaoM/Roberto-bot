@@ -6,7 +6,7 @@ const { trimAll } = require("../helpers/misc.helper.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("dictionary")
-    .setDescription("Searches the definition for a word")
+    .setDescription("Looks up definitions for a word")
     .addSubcommand(subcommand =>
       subcommand
         .setName("en")
@@ -31,7 +31,7 @@ module.exports = {
     const searchData = await searchResponse.json();
 
     if (!searchData.pages.length) {
-      await interaction.editReply(`No results were found for "${commandOption}"`);
+      await interaction.editReply(`No results were found for "${commandOption}".`);
       return;
     }
 
@@ -97,5 +97,6 @@ module.exports = {
     await interaction.editReply({ embeds: [dictionaryEmbed] });
   },
 
-  usage: ""
+  usage: `• \`/dictionary [en|fr] <word>\`: looks up and returns definitions for *word* in the selected language code's dictionary.
+    • The returned definition may be trucated - the returned embed also contains a link to the full Wiktionary page for this word.`
 };

@@ -44,7 +44,7 @@ module.exports = {
       const drawsOption = interaction.options.getInteger("draws");
 
       if (drawsOption > totalOption) {
-        interaction.reply("The number of draws is invalid - it should be below or equal to the number of drawable values");
+        interaction.reply({ content: "The number of draws should be less than or equal to the number of drawable values.", ephemeral: true });
         return;
       }
 
@@ -62,6 +62,12 @@ module.exports = {
   },
 
   async executeButton (interaction) {
+    // return if the user who pressed the button is not the user who called the original command
+    if (interaction.user.id !== interaction.message.interaction.user.id) {
+      await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });
+      return;
+    }
+
     const replyText = interaction.message.content;
     const replyLines = replyText.split("\n");
     const lastLineIndex = parseInt(replyLines[replyLines.length - 1].split(".")[0]);
@@ -71,15 +77,19 @@ module.exports = {
 
     let newLineText;
     if (interaction.customId === "random_dice_again") {
+
       const sidesOption = parseInt(replyLines[0].split(" ")[2].split("-")[0]);
       const rollsOption = parseInt(replyLines[0].split(" ")[4]);
       const diceResultText = randomDice(sidesOption, rollsOption).join("** - **");
       newLineText = `${lastLineIndex + 1}. [**${diceResultText}**]`;
+
     } else if (interaction.customId === "random_draw_again") {
+
       const totalOption = parseInt(replyLines[0].split(" ")[4]);
       const drawsOption = parseInt(replyLines[0].split(" ")[1]);
       const drawResultText = randomDraw(totalOption, drawsOption).join("** - **");
       newLineText = `${lastLineIndex + 1}. [**${drawResultText}**]`;
+
     }
 
     replyLines.push(newLineText);

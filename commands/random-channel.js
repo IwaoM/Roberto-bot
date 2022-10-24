@@ -94,10 +94,9 @@ module.exports = {
   },
 
   async executeButton (interaction) {
-
     // return if the user who pressed the button is not the user who called the original command
     if (interaction.user.id !== interaction.message.interaction.user.id) {
-      await interaction.reply({ content: "Only the original command caller can press this button.", ephemeral: true });
+      await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });
       return;
     }
 

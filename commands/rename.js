@@ -25,18 +25,18 @@ module.exports = {
 
       await memberToRename.setNickname(nicknameOption);
       if (nicknameOption) {
-        await interaction.editReply(`Nickname **${nicknameOption}** was given to <@${userOption.id}> by <@${interaction.user.id}>`);
+        await interaction.editReply(`Nickname **${nicknameOption}** was given to <@${userOption.id}> by <@${interaction.user.id}>.`);
       } else {
-        await interaction.editReply(`Nickname of <@${userOption.id}> was reset by <@${interaction.user.id}>`);
+        await interaction.editReply(`Nickname of <@${userOption.id}> was reset by <@${interaction.user.id}>.`);
       }
 
     } catch (err) {
 
-      if (err.code === 50013) { // Missing permissions : Roberto role incorrectly placed in role list
+      if (err.code === 50013) { // Missing permissions : Roberto role incorrectly placed in role list or renamed user is the server owner
         if (interaction.member.guild.ownerId === userOption.id) {
-          await interaction.editReply("The command could not be executed - The server owner cannot be renamed by this command");
+          await interaction.editReply("The command could not be executed - The server owner cannot be renamed by this command.");
         } else {
-          await interaction.editReply("The command could not be executed - Roberto's role should be placed above all roles of the user to rename in the server's role list");
+          await interaction.editReply("The command could not be executed - Roberto's role should be placed above all roles of the user to rename in the server's role list.");
         }
         return;
       } else {
@@ -46,8 +46,8 @@ module.exports = {
     }
   },
 
-  usage: `• \`/rename @user <name>\`: gives nickname *name* to user *@user*
-• \`/rename @user\`: removes user *@user*'s current nickname
+  usage: `• \`/rename @user <name>\`: gives nickname *name* to user *@user*.
+• \`/rename @user\`: removes user *@user*'s current nickname.
 
-Note : the server owner cannot be renamed by this command`
+Note : the server owner cannot be renamed by this command.`
 };

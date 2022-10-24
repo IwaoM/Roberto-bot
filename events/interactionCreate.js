@@ -11,7 +11,7 @@ module.exports = {
         await command.execute(interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+        await interaction.reply({ content: "There was an error while executing this command.", ephemeral: true });
       }
 
     } else if (interaction.isButton()) {
@@ -24,7 +24,7 @@ module.exports = {
         await relatedCommand.executeButton(interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "There was an error while executing this button interaction!", ephemeral: true });
+        await interaction.reply({ content: "There was an error while executing this button interaction.", ephemeral: true });
       }
     } else if (interaction.isAutocomplete()) {
 
@@ -35,7 +35,7 @@ module.exports = {
         await command.executeAutocomplete(interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "There was an error while executing this autocompletion!", ephemeral: true });
+        await interaction.reply({ content: "There was an error while executing this autocompletion.", ephemeral: true });
       }
 
     } else {

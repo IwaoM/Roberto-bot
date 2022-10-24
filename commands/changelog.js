@@ -19,4 +19,6 @@ module.exports = {
     const text = `**${latestRelease.data.tag_name}**\n${latestRelease.data.body}\n\nFull list of releases : https://github.com/IwaoM/Roberto-bot/releases`;
     await interaction.editReply(text);
   },
+
+  usage: `• \`/changelog\`: gets and displays the changelog of the latest release of Roberto from GitHub.`
 };

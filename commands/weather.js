@@ -24,7 +24,7 @@ module.exports = {
     .setDescription("Fetches the weather for the given location")
     .addStringOption(option =>
       option.setName("location")
-        .setDescription("The name of the location to get the weather of")
+        .setDescription("Name of the location to get the weather of")
         .setRequired(true)
     ),
 
@@ -37,7 +37,7 @@ module.exports = {
 
     if (!location.length) {
 
-      await interaction.editReply(`No results have been found for "${locationOption}"`);
+      await interaction.editReply(`No results have been found for "${locationOption}".`);
       return;
 
     } else {
@@ -65,5 +65,5 @@ Feels like ${Math.round(weather.main.feels_like)}°C`)
     }
   },
 
-  usage: `• \`/weather <location>\`: Fetches the current weather for *location*`
+  usage: `• \`/weather <location>\`: Fetches the current weather for *location*.`
 };

@@ -15,10 +15,16 @@ module.exports = {
   },
 
   async executeButton (interaction) {
+    // return if the user who pressed the button is not the user who called the original command
+    if (interaction.user.id !== interaction.message.interaction.user.id) {
+      await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });
+      return;
+    }
+
     const name = generatePhoenix();
     await interaction.update(name);
   },
 
-  usage: `• \`/px\`: generates a new variant of the name
-• Tap the *Again!* button to regenerate`
+  usage: `• \`/px\`: generates a new variant of the name.
+    • Tap the *Again!* button to regenerate.`
 };

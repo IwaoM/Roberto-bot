@@ -73,7 +73,7 @@ module.exports = {
 
       hexCode = await getDominantColor(commandOption, avatarDir);
       if (!hexCode) {
-        await interaction.editReply({ content: "Dominant color processing failed - please retry later", ephemeral: true });
+        await interaction.editReply({ content: "Dominant color processing failed - please retry later.", ephemeral: true });
         return;
       }
 
@@ -90,18 +90,14 @@ module.exports = {
     await updateColorRole(hexCode, interaction.member, interaction);
   },
 
-  usage: `• \`/color hex <hex-code>\`: gives your name color *hex-code*
-    • *hex-code* should be a valid hex color code (with or without the \`#\`)
-    • 6-characters as well as 3-characters hex color codes are accepted
+  usage: `• \`/color hex <hex-code>\`: gives your name color *hex-code*.
+    • *hex-code* should be a valid hex color code (with or without the \`#\`).
+    • 6-characters as well as 3-characters hex color codes are accepted.
     • Example: \`/color hex #ff7f00\`
     • Hex color picker : https://www.w3schools.com/colors/colors_picker.asp
-
-• \`/color random\`: gives your name a random color
-
-• \`/color random-vibrant\`: gives your name a random vibrant color
-
-• \`/color dominant <type>\`: gives your name a dominant color from your profile picture
-    • *type* can be either **main**, **dark** or **light**
-
-• \`/color remove\`: removes your current name color`
+• \`/color random\`: gives your name a random color.
+• \`/color random-vibrant\`: gives your name a random vibrant color.
+• \`/color dominant <type>\`: gives your name a dominant color from your profile picture.
+    • *type* can be either **main**, **dark** or **light**.
+• \`/color remove\`: removes your current name color.`
 };

@@ -53,7 +53,7 @@ module.exports = {
         if (commandOption === "show") {
 
           // display current value for the option
-          await interaction.editReply({ content: `Current setting for ${subcommand} : ${guildConfig[configOption] ? "enabled" : "disabled"}`, ephemeral: true });
+          await interaction.editReply({ content: `Current setting for ${subcommand} : **${guildConfig[configOption] ? "enabled" : "disabled"}**.`, ephemeral: true });
 
         } else if (commandOption === "enable") {
 
@@ -61,9 +61,9 @@ module.exports = {
           const argObject = {};
           argObject[configOption] = true;
           if (await updateGuildConfigEntry(interaction.guildId, argObject)) {
-            await interaction.editReply({ content: `The ${subcommand} option has been enabled`, ephemeral: true });
+            await interaction.editReply({ content: `The ${subcommand} option has been enabled.`, ephemeral: true });
           } else {
-            await interaction.editReply({ content: `An error occurred when enabling ${subcommand} - please retry later`, ephemeral: true });
+            await interaction.editReply({ content: `An error occurred when enabling ${subcommand} - please retry later.`, ephemeral: true });
           }
 
         } else if (commandOption === "disable") {
@@ -72,14 +72,14 @@ module.exports = {
           const argObject = {};
           argObject[configOption] = false;
           if (await updateGuildConfigEntry(interaction.guildId, argObject)) {
-            await interaction.editReply({ content: `The ${subcommand} option has been disabled`, ephemeral: true });
+            await interaction.editReply({ content: `The ${subcommand} option has been disabled.`, ephemeral: true });
           } else {
-            await interaction.editReply({ content: `An error occurred when disabling ${subcommand} - please retry later`, ephemeral: true });
+            await interaction.editReply({ content: `An error occurred when disabling ${subcommand} - please retry later.`, ephemeral: true });
           }
 
         }
       } else {
-        await interaction.editReply({ content: "This command can only be used by Roberto administrators", ephemeral: true });
+        await interaction.editReply({ content: "This command can only be used by Roberto administrators.", ephemeral: true });
       }
 
     } else if (subcommand === "roles-show") {
@@ -102,7 +102,7 @@ module.exports = {
         await interaction.editReply({ content: messageText, ephemeral: true });
 
       } else {
-        await interaction.editReply({ content: "This command can only be used by Roberto administrators", ephemeral: true });
+        await interaction.editReply({ content: "This command can only be used by Roberto administrators.", ephemeral: true });
       }
 
     } else if (subcommand === "roles-repair") {
@@ -114,20 +114,20 @@ module.exports = {
       const rolesToDelete = guildRoles.filter(
         role => !role.members.size && ((role.name === adminRoleName && role.id !== guildConfig.robertoAdminRoleId) || (role.name === operatorRoleName && role.id !== guildConfig.robertoOperatorRoleId))
       );
-      let messageText = "Roles repaired";
+      let messageText = "Roles repaired:";
 
       // regenerate admin role if not found
       if (!adminRole) {
         const newAdminRole = await createRobertoRoles(interaction.guild, "admin");
         await updateGuildConfigEntry(interaction.guildId, newAdminRole);
-        messageText += `\n• Roberto admin role was recreated (ID ${newAdminRole.robertoAdminRoleId})`;
+        messageText += `\n• Roberto admin role was recreated (ID ${newAdminRole.robertoAdminRoleId}).`;
       }
 
       // regenerate operator role if not found
       if (!operatorRole) {
         const newOperatorRole = await createRobertoRoles(interaction.guild, "operator");
         await updateGuildConfigEntry(interaction.guildId, newOperatorRole);
-        messageText += `\n• Roberto operator role was recreated (ID ${newOperatorRole.robertoOperatorRoleId})`;
+        messageText += `\n• Roberto operator role was recreated (ID ${newOperatorRole.robertoOperatorRoleId}).`;
       }
 
       // delete unused roles with the same name as the admin or operator role if any
@@ -145,22 +145,23 @@ module.exports = {
         if (!roleDeleteSuccess) {
           messageText += ` (${rolesToDelete.size - deletedCount} could not be deleted - Roberto's role should be placed above other roles in the server's role list)`;
         }
+        messageText += ".";
       }
 
       if (messageText === "Roles repaired") {
-        messageText = `No repair was needed`;
+        messageText = `No repair was needed.`;
       }
 
       await interaction.editReply({ content: messageText, ephemeral: true });
     }
   },
 
-  usage: `• \`/config auto-color <enable|disable|show>\`: enables, disables or shows the current value for the option to automatically give a color role to new server members
-  • The applied color will be the new members's profile picture's dominant color
-• \`/config auto-greet <enable|disable|show>\`: same, but for the option to automatically greet new server members
-  • If enabled, it is recommended to disable the native option from Discord to greet new members to avoid double greetings
-• \`/config roles-show\`: Shows the current role names and IDs for Roberto admins and operators (if found)
-• \`/config roles-repair\`: Regenerates the Roberto admin and operator roles and deletes unused roles with the same name
+  usage: `• \`/config auto-color <enable|disable|show>\`: enables, disables or shows the current value for the option to automatically give a color role to new server members.
+    • The applied color will be the new members's profile picture's dominant color.
+• \`/config auto-greet <enable|disable|show>\`: same, but for the option to automatically greet new server members.
+    • If enabled, it is recommended to disable the native option from Discord to greet new members to avoid double greetings.
+• \`/config roles-show\`: Shows the current role names and IDs for Roberto admins and operators (if found).
+• \`/config roles-repair\`: Regenerates the Roberto admin and operator roles and deletes unused roles with the same name.
 
-Most of those commands are only usable by members with the Roberto admin role, the only exception being \`/config roles-repair\``
+Most of those commands are only usable by members with the Roberto admin role, the only exception being \`/config roles-repair\`.`
 };
