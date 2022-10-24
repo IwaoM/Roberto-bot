@@ -128,5 +128,20 @@ module.exports = {
 
     const userRoles = member.roles.cache;
     return userRoles.get(roleId);
+  },
+
+  getVoiceChannelMembers (channel) {
+    // if argument is null, return
+    if (!channel) {
+      return [];
+    }
+
+    // otherwise, get channel members
+    const channelMemberNames = [];
+    for (let i = 0; i < channel.members.size; i++) {
+      channelMemberNames.push(channel.members.at(i).nickname ? channel.members.at(i).nickname : channel.members.at(i).user.username);
+    }
+
+    return channelMemberNames;
   }
 };

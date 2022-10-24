@@ -88,8 +88,6 @@ module.exports = {
     await interaction.update(newText);
   },
 
-  usage: `• \`/random dice <sides> <rolls>\`: rolls a *sides*-sided dice *rolls* times
-  • The dice can have up to 1000000 sides and be rolled 20 times
-• \`/random draw <total> <draws>\`: draws *draws* values among *total* total options
-  • Up to 1000000 options and 20 draws are supported, and the number of draws cannot exceed the number of options`
+  usage: `• \`/random dice <sides> <rolls>\`: rolls a *sides*-sided dice *rolls* times.
+• \`/random draw <total> <draws>\`: draws *draws* values among *total* total options.`
 };

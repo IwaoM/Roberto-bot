@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
 const { randomTeams, randomDraw } = require("../helpers/misc.helper.js");
+const { getVoiceChannelMembers } = require("../helpers/discord.helper.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -19,26 +20,20 @@ module.exports = {
     ),
 
   async execute (interaction) {
-    await interaction.deferReply();
+    // return if the caller is not in a voice channel or the channel doesn't have enough members
+    const channelMemberNames = getVoiceChannelMembers(interaction.member.voice.channel);
 
-    const memberVoiceChannel = await interaction.member.voice.channel;
-    if (!memberVoiceChannel) {
-      interaction.editReply("You are not connected to a voice channel");
+    if (!channelMemberNames.length) {
+      await interaction.reply({ content: "You are not connected to a voice channel.", ephemeral: true });
       return;
     }
 
-    const channelMembers = memberVoiceChannel.members;
-    if (channelMembers.size <= 1) { // TODO revert to 2
-      interaction.editReply("Not enough members in this voice channel");
+    if (channelMemberNames.length <= 2) {
+      await interaction.reply({ content: "Not enough members in this voice channel.", ephemeral: true });
       return;
     }
 
-    const channelMemberNames = [];
-    for (let i = 0; i < channelMembers.size; i++) {
-      channelMemberNames.push(channelMembers.at(i).nickname ? channelMembers.at(i).nickname : channelMembers.at(i).user.username);
-    }
-    channelMemberNames.push("Bob", "Mauricette", "Ricardo", "Bobine", "C3PO"); // TODO remove this
-
+    // get subcommand & init variables
     const subcommand = interaction.options.getSubcommand();
     let text, againButton;
 
@@ -47,7 +42,7 @@ module.exports = {
       // get & check option values
       const teamsOption = interaction.options.getInteger("teams");
       if (teamsOption >= channelMemberNames.length) {
-        interaction.editReply("Invalid number of teams");
+        await interaction.reply({ content: "The number of teams should be less than the channel member count.", ephemeral: true });
         return;
       }
 
@@ -75,7 +70,7 @@ module.exports = {
       // get & check option values
       const drawsOption = interaction.options.getInteger("draws");
       if (drawsOption > channelMemberNames.length) {
-        interaction.editReply("Invalid number of teams");
+        await interaction.reply({ content: "The number of draws should be less than or equal to the channel member count.", ephemeral: true });
         return;
       }
 
@@ -89,14 +84,93 @@ module.exports = {
       // create button & text
       againButton = new ButtonBuilder().setCustomId("random-channel_draw_again").setLabel("Draw again").setStyle(ButtonStyle.Primary);
 
-      text = `Drawing ${drawsOption} channel members among ${channelMemberNames.length}:`;
+      text = `Drawing ${drawsOption} channel member${drawsOption > 1 ? "s" : ""} among ${channelMemberNames.length} connected users:`;
       text += `\n[**${sample.join("** - **")}**]`;
 
     }
 
     const buttonRow = new ActionRowBuilder().addComponents(againButton);
-    await interaction.editReply({ content: text, components: [buttonRow] });
+    await interaction.reply({ content: text, components: [buttonRow] });
   },
 
-  usage: `• \`/random dice <sides> <rolls>\`: `
+  async executeButton (interaction) {
+
+    // return if the user who pressed the button is not the user who called the original command
+    if (interaction.user.id !== interaction.message.interaction.user.id) {
+      await interaction.reply({ content: "Only the original command caller can press this button.", ephemeral: true });
+      return;
+    }
+
+    // return if the caller is not in a voice channel or the channel doesn't have enough members
+    const channelMemberNames = getVoiceChannelMembers(interaction.member.voice.channel);
+
+    if (!channelMemberNames.length) {
+      await interaction.reply({ content: "You are not connected to a voice channel.", ephemeral: true });
+      return;
+    }
+
+    if (channelMemberNames.length <= 2) {
+      await interaction.reply({ content: "Not enough members in this voice channel.", ephemeral: true });
+      return;
+    }
+
+    // get the text of the original command reply & init variables
+    const replyText = interaction.message.content;
+    const replyLines = replyText.split("\n");
+    let text;
+
+    if (interaction.customId === "random-channel_teams_again") {
+
+      // get & check option values
+      const teamsOption = parseInt(replyLines[0].split(" ")[5]);
+      if (teamsOption >= channelMemberNames.length) {
+        await interaction.reply({ content: "The number of teams should be less than the channel member count.", ephemeral: true });
+        return;
+      }
+
+      // creating teams
+      const numberTeams = randomTeams(channelMemberNames.length, teamsOption);
+      const teams = [];
+      for (let numberTeam of numberTeams) {
+        const team = [];
+        for (let num of numberTeam) {
+          team.push(channelMemberNames[num - 1]);
+        }
+        teams.push(team);
+      }
+
+      // create text
+      text = `Splitting ${channelMemberNames.length} channel members into ${teamsOption} teams:`;
+      for (let i = 0; i < teams.length; i++) {
+        text += `\n${i + 1}. [**${teams[i].join("** - **")}**]`;
+      }
+
+    } else if (interaction.customId === "random-channel_draw_again") {
+
+      // get & check option values
+      const drawsOption = parseInt(replyLines[0].split(" ")[1]);
+      if (drawsOption > channelMemberNames.length) {
+        await interaction.reply({ content: "The number of draws should be less than or equal to the channel member count.", ephemeral: true });
+        return;
+      }
+
+      // drawing users
+      const numberSample = randomDraw(channelMemberNames.length, drawsOption);
+      const sample = [];
+      for (let num of numberSample) {
+        sample.push(channelMemberNames[num - 1]);
+      }
+
+      // create button & text
+      text = `Drawing ${drawsOption} channel member${drawsOption > 1 ? "s" : ""} among ${channelMemberNames.length} connected users:`;
+      text += `\n[**${sample.join("** - **")}**]`;
+
+    }
+
+    await interaction.update(text);
+  },
+
+  usage: `To use these commands, a user should be connected to a voice channel. The channel also needs to have enough connected members.
+• \`/random-channel teams <teams>\`: splits all voice channel members into *teams* teams.
+• \`/random-channel draw <draws>\`: draws <draws> members among all users connected to the voice channel.`
 };
