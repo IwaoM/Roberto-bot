@@ -9,8 +9,8 @@ module.exports = {
 
     // create roles
     const robertoRoleIds = await createRobertoRoles(guild);
-    // const robertoRoleIds = { admin: "", operator: "" }; // used for tests
-    console.log(`* Roberto admin [${robertoRoleIds.admin}] and operator [${robertoRoleIds.operator}] roles created`);
+    // const robertoRoleIds = { admin: "" }; // used for tests
+    console.log(`* Roberto admin [${robertoRoleIds.robertoAdminRoleId}] role created`);
 
     // create new entry in guildConfigs.json
     const newEntry = {
@@ -18,8 +18,7 @@ module.exports = {
       name: guild.name,
       greetNewMembers: false,
       colorNewMembers: true,
-      robertoAdminRoleId: robertoRoleIds.admin,
-      robertoOperatorRoleId: robertoRoleIds.operator
+      robertoAdminRoleId: robertoRoleIds.robertoAdminRoleId
     };
 
     const configAdded = await addGuildConfigEntry(newEntry);
@@ -30,7 +29,7 @@ module.exports = {
     // DM the server owner & inviter
     const dmText = `Hello there my name is Roberto
 - A default Roberto role has been created, it should be put at the top of the role list
-- Roberto Admin and Operator roles have been created, they are required to run some commands
+- Roberto Admin role has been created, it is required to run some commands
 - My behavior can be configured`;
 
     const owner = (await guild.fetchOwner()).user;

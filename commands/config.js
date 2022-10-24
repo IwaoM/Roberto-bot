@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { checkRoleAssignment, createRobertoRoles } = require("../helpers/discord.helper.js");
 const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/files.helper.js");
-const { adminRoleName, operatorRoleName } = require("../config.json");
+const { adminRoleName } = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -22,16 +22,16 @@ module.exports = {
     .addSubcommand(subcommand =>
       subcommand
         .setName("roles-show")
-        .setDescription("Shows the admin & operator roles used by Roberto and their IDs")
+        .setDescription("Shows the admin role used by Roberto and its ID")
     )
     .addSubcommand(subcommand =>
       subcommand
         .setName("roles-repair")
-        .setDescription("Recreates the admin & operator roles in case they were deleted")
+        .setDescription("Recreates the admin role in case it was deleted")
     ),
 
   async execute (interaction) {
-    await interaction.deferReply();
+    await interaction.deferReply({ ephemeral: true });
 
     const guildConfig = await getGuildConfigs(interaction.guildId);
 
@@ -89,15 +89,7 @@ module.exports = {
 
         // admin role always exists or the command couldn't be called in the first place
         const adminRole = await interaction.guild.roles.fetch(guildConfig.robertoAdminRoleId);
-        let messageText = `Roberto Administrator role : "${adminRole.name}" - ID ${guildConfig.robertoAdminRoleId}\n`;
-
-        // the same can't be said for the operator role, so check its existence
-        const operatorRole = await interaction.guild.roles.fetch(guildConfig.robertoOperatorRoleId);
-        if (operatorRole) {
-          messageText += `Roberto Operator role : "${operatorRole.name}" - ID ${guildConfig.robertoOperatorRoleId}`;
-        } else {
-          messageText += `Roberto Operator role : not found`;
-        }
+        const messageText = `Roberto Administrator role : "${adminRole.name}" - ID ${guildConfig.robertoAdminRoleId}`;
 
         await interaction.editReply({ content: messageText, ephemeral: true });
 
@@ -110,9 +102,8 @@ module.exports = {
       // this command is allowed for everyone (in case the Roberto admin role is deleted)
       const guildRoles = await interaction.guild.roles.fetch();
       const adminRole = guildRoles.get(guildConfig.robertoAdminRoleId);
-      const operatorRole = guildRoles.get(guildConfig.robertoOperatorRoleId);
       const rolesToDelete = guildRoles.filter(
-        role => !role.members.size && ((role.name === adminRoleName && role.id !== guildConfig.robertoAdminRoleId) || (role.name === operatorRoleName && role.id !== guildConfig.robertoOperatorRoleId))
+        role => !role.members.size && (role.name === adminRoleName && role.id !== guildConfig.robertoAdminRoleId)
       );
       let messageText = "Roles repaired:";
 
@@ -123,14 +114,7 @@ module.exports = {
         messageText += `\n• Roberto admin role was recreated (ID ${newAdminRole.robertoAdminRoleId}).`;
       }
 
-      // regenerate operator role if not found
-      if (!operatorRole) {
-        const newOperatorRole = await createRobertoRoles(interaction.guild, "operator");
-        await updateGuildConfigEntry(interaction.guildId, newOperatorRole);
-        messageText += `\n• Roberto operator role was recreated (ID ${newOperatorRole.robertoOperatorRoleId}).`;
-      }
-
-      // delete unused roles with the same name as the admin or operator role if any
+      // delete unused roles with the same name as the admin role if any
       let roleDeleteSuccess = true, deletedCount = 0;
       for (let i = 0; i < rolesToDelete.size; i++) {
         try {
@@ -141,14 +125,14 @@ module.exports = {
         }
       }
       if (rolesToDelete.size) {
-        messageText += `\n• ${deletedCount} unused roles were deleted`;
+        messageText += `\n• ${deletedCount} unused role${deletedCount === 1 ? " was" : "s were"} deleted`;
         if (!roleDeleteSuccess) {
           messageText += ` (${rolesToDelete.size - deletedCount} could not be deleted - Roberto's role should be placed above other roles in the server's role list)`;
         }
         messageText += ".";
       }
 
-      if (messageText === "Roles repaired") {
+      if (messageText.split("\n").length === 1) {
         messageText = `No repair was needed.`;
       }
 
@@ -160,8 +144,8 @@ module.exports = {
     • The applied color will be the new members's profile picture's dominant color.
 • \`/config auto-greet <enable|disable|show>\`: same, but for the option to automatically greet new server members.
     • If enabled, it is recommended to disable the native option from Discord to greet new members to avoid double greetings.
-• \`/config roles-show\`: Shows the current role names and IDs for Roberto admins and operators (if found).
-• \`/config roles-repair\`: Regenerates the Roberto admin and operator roles and deletes unused roles with the same name.
+• \`/config roles-show\`: Shows the current Roberto admin role name and ID.
+• \`/config roles-repair\`: Regenerates the Roberto adminrole and deletes unused roles with the same name.
 
 Most of those commands are only usable by members with the Roberto admin role, the only exception being \`/config roles-repair\`.`
 };

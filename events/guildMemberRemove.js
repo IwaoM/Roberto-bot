@@ -3,7 +3,12 @@ const { checkHexCode } = require("../helpers/color.helper.js");
 module.exports = {
   name: "guildMemberRemove",
 
-  async execute (member) {
+  async execute (member, client) {
+    // return if the removed member was Roberto themself
+    if (member.id === client.user.id) {
+      return;
+    }
+
     // prune unused color roles
     const allRoles = await member.guild.roles.fetch();
     const unusedColorRoles = allRoles.filter(role => checkHexCode(role.name, true) && !role.members.size);

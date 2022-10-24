@@ -169,7 +169,8 @@ module.exports = {
     await interaction.update(text);
   },
 
-  usage: `To use these commands, a user should be connected to a voice channel. The channel also needs to have enough connected members.
-• \`/random-channel teams <teams>\`: splits all voice channel members into *teams* teams.
-• \`/random-channel draw <draws>\`: draws <draws> members among all users connected to the voice channel.`
+  usage: `• \`/random-channel teams <teams>\`: splits all voice channel members into *teams* teams.
+• \`/random-channel draw <draws>\`: draws <draws> members among all users connected to the voice channel.
+
+To use these commands, a user should be connected to a voice channel. The channel also needs to have enough connected members.`
 };

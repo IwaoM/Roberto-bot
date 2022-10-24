@@ -1,8 +1,8 @@
 const { checkHexCode } = require("./color.helper.js");
-const { adminRoleName, operatorRoleName } = require("../config.json");
+const { adminRoleName } = require("../config.json");
 
 module.exports = {
-  async createRobertoRoles (guild, roleNames = "admin operator") {
+  async createRobertoRoles (guild, roleNames = "admin") {
     const roleIds = {};
 
     if (roleNames.search("admin") >= 0) {
@@ -10,13 +10,6 @@ module.exports = {
       await robertoAdminRole.setPermissions([]);
       await robertoAdminRole.setMentionable(true);
       roleIds.robertoAdminRoleId = robertoAdminRole.id;
-    }
-
-    if (roleNames.search("operator") >= 0) {
-      const robertoOperatorRole = await guild.roles.create({ name: operatorRoleName });
-      await robertoOperatorRole.setPermissions([]);
-      await robertoOperatorRole.setMentionable(true);
-      roleIds.robertoOperatorRoleId = robertoOperatorRole.id;
     }
 
     return roleIds;
