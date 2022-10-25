@@ -23,6 +23,8 @@ module.exports = {
     ),
 
   async execute (interaction) {
+    // No specific permission needed
+
     let answer;
     const commandOption = interaction.options.getString("command");
 

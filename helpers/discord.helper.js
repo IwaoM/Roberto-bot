@@ -15,7 +15,7 @@ module.exports = {
     return roleIds;
   },
 
-  async updateColorRole (hexCode, userMember, interaction) {
+  async updateColorRole (hexCode, userMember) {
     if (!hexCode || !userMember) { return false; }
 
     // #000000 disables name color, we don't want that
@@ -38,12 +38,9 @@ module.exports = {
           await role[1].delete();
         } catch (err) {
           if (err.code === 50013) { // Missing permissions : Roberto role incorrectly placed in role list
-            if (interaction) {
-              await interaction.editReply("The command could not be executed - Roberto's role should be placed above color roles in the server's role list.");
-            }
-            return false;
+            throw new Error("Missing permissions");
           } else {
-            throw err;
+            throw new Error("Unknown error");
           }
         }
       }
@@ -63,15 +60,10 @@ module.exports = {
 
       // assign the found or created color role to user
       userMember.roles.add(wantedColorRole);
-      if (interaction) {
-        await interaction.editReply(`Color <@&${wantedColorRole.id}> was given to <@${interaction.user.id}>.`);
-      }
-
-    } else if (interaction) {
-
-      await interaction.editReply(`Color was reset for <@${interaction.user.id}>.`);
-
+      return wantedColorRole.id;
     }
+
+    return hexCode;
   },
 
   async getInviterUser (guild, client) {
@@ -136,5 +128,15 @@ module.exports = {
     }
 
     return channelMemberNames;
+  },
+
+  async checkOwnMissingPermissions (client, guild, missingPermissions) {
+    const ownPermissions = (await guild.members.fetch(client.user.id)).permissions.toArray();
+    for (let permission of ownPermissions) {
+      if (missingPermissions.indexOf(permission) >= 0) {
+        missingPermissions.splice(missingPermissions.indexOf(permission), 1); // if permission is found, remove from missing permissions
+      }
+    }
+    return missingPermissions;
   }
 };

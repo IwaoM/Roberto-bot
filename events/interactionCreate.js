@@ -8,10 +8,10 @@ module.exports = {
       if (!command) { return; }
 
       try {
-        await command.execute(interaction);
+        await command.execute(interaction, client, interaction.guild);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "There was an error while executing this command.", ephemeral: true });
+        await interaction.reply({ content: "The command could not be executed - unknown error.", ephemeral: true });
       }
 
     } else if (interaction.isButton()) {
@@ -24,7 +24,7 @@ module.exports = {
         await relatedCommand.executeButton(interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "There was an error while executing this button interaction.", ephemeral: true });
+        await interaction.reply({ content: "The button interaction could not be executed - unknown error.", ephemeral: true });
       }
     } else if (interaction.isAutocomplete()) {
 
@@ -35,7 +35,7 @@ module.exports = {
         await command.executeAutocomplete(interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "There was an error while executing this autocompletion.", ephemeral: true });
+        await interaction.reply({ content: "The autocompletion could not be executed - unknown error.", ephemeral: true });
       }
 
     } else {

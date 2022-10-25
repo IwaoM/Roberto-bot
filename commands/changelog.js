@@ -10,6 +10,8 @@ module.exports = {
     .setDescription("Shows the latest changelog for Roberto"),
 
   async execute (interaction) {
+    // No specific permission needed
+
     await interaction.deferReply();
 
     // get latest release from github

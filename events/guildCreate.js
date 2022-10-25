@@ -1,4 +1,4 @@
-const { createRobertoRoles, getInviterUser, dmUsers } = require("../helpers/discord.helper.js");
+const { createRobertoRoles, getInviterUser, dmUsers, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { addGuildConfigEntry } = require("../helpers/files.helper.js");
 
 module.exports = {
@@ -8,20 +8,16 @@ module.exports = {
     console.log(`\nGuild ${guild.name} (ID ${guild.id}) joined`);
 
     // check own permissions
-    const missingPermissions = ["ViewAuditLog", "ViewChannel", "ManageRoles", "SendMessages", "ManageNicknames"];
-    const ownPermissions = (await guild.members.fetch(client.user.id)).permissions.toArray();
-    for (let permission of ownPermissions) {
-      if (missingPermissions.indexOf(permission) >= 0) {
-        missingPermissions.splice(missingPermissions.indexOf(permission), 1); // if permission is found, remove from missing permissions
-      }
-    }
+    const neededPermissions = ["ViewAuditLog", "ViewChannel", "ManageRoles", "SendMessages", "ManageNicknames"];
+    const missingPermissions = await checkOwnMissingPermissions(client, guild, neededPermissions);
+
     console.log(`* Missing permissions : [${missingPermissions.join(", ")}] (${missingPermissions.length})`);
 
     // check if managed role was created
     const ownManagedRole = (await guild.roles.fetch()).find(role => role.name === client.user.username && role.managed && role.tags?.botId === client.user.id);
 
     let robertoRoleIds;
-    if (ownPermissions.indexOf("ManageRoles") >= 0) {
+    if (missingPermissions.indexOf("ManageRoles") === -1) {
       // create admin role
       robertoRoleIds = await createRobertoRoles(guild);
       console.log(`* Roberto admin [${robertoRoleIds.robertoAdminRoleId}] role created`);
@@ -44,7 +40,7 @@ module.exports = {
     }
 
     // construct DM text
-    let dmText = `Hello! Thanks for adding me to your server **${guild.name}**.`;
+    let dmText = `Hello! Thanks for adding me to your server **${guild.name}**.\n`;
 
     if (ownManagedRole) {
       dmText += `\n• A default *Roberto* role (marked as "managed by an integration") should have been created in your server and applied to me. It is recommended to put it at the top of your server's role list (this is needed to run some commands).`;
@@ -56,7 +52,7 @@ module.exports = {
       dmText += `\n    • **Please note that the following permission${missingPermissions.length === 1 ? " is" : "s are"} missing :** [${missingPermissions.join(", ")}]. I need ${missingPermissions.length === 1 ? "this permission" : "those permissions"} to function correctly! Please refer to the GitHub link for more details about why each requested permission is required.`;
     }
 
-    if (ownPermissions.indexOf("ManageRoles") >= 0) {
+    if (missingPermissions.indexOf("ManageRoles") === -1) {
       dmText += `\n• A *Roberto Admin* role has been created${ownManagedRole ? " as well" : ""}. This role's position in the role list and permissions are irrelevant to its usage. Only members with this role will be able to run my \`/config\` commands.`;
     } else {
       dmText += `\n• A *Roberto Admin* role should have been created but couldn't, as I did not have the ManageRoles permission required to create roles. Please refer to the GitHub link for more details about why this role is needed and how to create it afterwards.`;
@@ -70,7 +66,7 @@ For more info about commands, bot permissions and other things, please visit my 
     // DM the server owner & inviter
     const owner = (await guild.fetchOwner()).user;
     let inviter = null;
-    if (ownPermissions.indexOf("ViewAuditLog") >= 0) {
+    if (missingPermissions.indexOf("ViewAuditLog") === -1) {
       inviter = await getInviterUser(guild, client);
     }
     if (inviter) {

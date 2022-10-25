@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { randomColor, checkHexCode, getDominantColor } = require("../helpers/color.helper.js");
-const { updateColorRole } = require("../helpers/discord.helper.js");
+const { updateColorRole, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { saveUserAvatar } = require("../helpers/files.helper.js");
 const fs = require("node:fs");
 
@@ -42,7 +42,15 @@ module.exports = {
         .setDescription("Removes your currently assigned color")
     ),
 
-  async execute (interaction) {
+  async execute (interaction, client, guild) {
+    // before anything else, check if Roberto has the required permissions
+    const neededPermissions = ["ManageRoles"];
+    const missingPermissions = await checkOwnMissingPermissions(client, guild, neededPermissions);
+    if (missingPermissions.length) {
+      interaction.reply(`The command could not be executed - missing permissions : [${neededPermissions.join(", ")}]`);
+      return;
+    }
+
     await interaction.deferReply();
 
     const subcommand = interaction.options.getSubcommand();
@@ -73,7 +81,7 @@ module.exports = {
 
       hexCode = await getDominantColor(commandOption, avatarDir);
       if (!hexCode) {
-        await interaction.editReply({ content: "Dominant color processing failed - please retry later.", ephemeral: true });
+        await interaction.editReply({ content: "The command could not be executed - dominant color processing failed, please retry later.", ephemeral: true });
         return;
       }
 
@@ -87,7 +95,25 @@ module.exports = {
 
     }
 
-    await updateColorRole(hexCode, interaction.member, interaction);
+    try {
+
+      const resultRoleId = await updateColorRole(hexCode, interaction.member);
+
+      if (resultRoleId === "none") {
+        await interaction.editReply(`Color was reset for <@${interaction.user.id}>.`);
+      } else {
+        await interaction.editReply(`Color <@&${resultRoleId}> was given to <@${interaction.user.id}>.`);
+      }
+
+    } catch (err) {
+
+      if (err.message === "Missing permissions") {
+        await interaction.editReply("The command could not be executed - Roberto's role should be placed above color roles in the server's role list.");
+      } else {
+        throw err;
+      }
+
+    }
   },
 
   usage: `• \`/color hex <hex-code>\`: gives your name color *hex-code*.
