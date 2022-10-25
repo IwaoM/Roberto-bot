@@ -7,10 +7,27 @@ module.exports = {
   async execute (guild, client) {
     console.log(`\nGuild ${guild.name} (ID ${guild.id}) joined`);
 
-    // create roles
-    const robertoRoleIds = await createRobertoRoles(guild);
-    // const robertoRoleIds = { admin: "" }; // used for tests
-    console.log(`* Roberto admin [${robertoRoleIds.robertoAdminRoleId}] role created`);
+    // check own permissions
+    const missingPermissions = ["ViewAuditLog", "ViewChannel", "ManageRoles", "SendMessages", "ManageNicknames"];
+    const ownPermissions = (await guild.members.fetch(client.user.id)).permissions.toArray();
+    for (let permission of ownPermissions) {
+      if (missingPermissions.indexOf(permission) >= 0) {
+        missingPermissions.splice(missingPermissions.indexOf(permission), 1); // if permission is found, remove from missing permissions
+      }
+    }
+    console.log(`* Missing permissions : [${missingPermissions.join(", ")}] (${missingPermissions.length})`);
+
+    // check if managed role was created
+    const ownManagedRole = (await guild.roles.fetch()).find(role => role.name === client.user.username && role.managed && role.tags?.botId === client.user.id);
+
+    let robertoRoleIds;
+    if (ownPermissions.indexOf("ManageRoles") >= 0) {
+      // create admin role
+      robertoRoleIds = await createRobertoRoles(guild);
+      console.log(`* Roberto admin [${robertoRoleIds.robertoAdminRoleId}] role created`);
+    } else {
+      console.log(`* Roberto admin role could not be created - missing permission ManageRoles`);
+    }
 
     // create new entry in guildConfigs.json
     const newEntry = {
@@ -18,7 +35,7 @@ module.exports = {
       name: guild.name,
       greetNewMembers: false,
       colorNewMembers: true,
-      robertoAdminRoleId: robertoRoleIds.robertoAdminRoleId
+      robertoAdminRoleId: robertoRoleIds?.robertoAdminRoleId || ""
     };
 
     const configAdded = await addGuildConfigEntry(newEntry);
@@ -26,14 +43,36 @@ module.exports = {
       console.log(`* New entry [${guild.name} - ${guild.id}] added in guildConfigs.json`);
     }
 
-    // DM the server owner & inviter
-    const dmText = `Hello there my name is Roberto
-- A default Roberto role has been created, it should be put at the top of the role list
-- Roberto Admin role has been created, it is required to run some commands
-- My behavior can be configured`;
+    // construct DM text
+    let dmText = `Hello! Thanks for adding me to your server **${guild.name}**.`;
 
+    if (ownManagedRole) {
+      dmText += `\n• A default *Roberto* role (marked as "managed by an integration") should have been created in your server and applied to me. It is recommended to put it at the top of your server's role list (this is needed to run some commands).`;
+    } else {
+      dmText += `\n• A default *Roberto* role should have been created, but was not - likely because no new role was needed to grant me the permissions I was given when added to the server.`;
+    }
+
+    if (missingPermissions.length) {
+      dmText += `\n    • **Please note that the following permission${missingPermissions.length === 1 ? " is" : "s are"} missing :** [${missingPermissions.join(", ")}]. I need ${missingPermissions.length === 1 ? "this permission" : "those permissions"} to function correctly! Please refer to the GitHub link for more details about why each requested permission is required.`;
+    }
+
+    if (ownPermissions.indexOf("ManageRoles") >= 0) {
+      dmText += `\n• A *Roberto Admin* role has been created${ownManagedRole ? " as well" : ""}. This role's position in the role list and permissions are irrelevant to its usage. Only members with this role will be able to run my \`/config\` commands.`;
+    } else {
+      dmText += `\n• A *Roberto Admin* role should have been created but couldn't, as I did not have the ManageRoles permission required to create roles. Please refer to the GitHub link for more details about why this role is needed and how to create it afterwards.`;
+    }
+
+    dmText += `\n• Elements of my behavior can be configured using \`/config\` - at the moment, available options are *auto-color* and *auto-greet*.
+• Use \`/help\` in a server channel to see all available commands and their usage.
+    
+For more info about commands, bot permissions and other things, please visit my GitHub page: https://github.com/IwaoM/Roberto-bot#readme`;
+
+    // DM the server owner & inviter
     const owner = (await guild.fetchOwner()).user;
-    const inviter = await getInviterUser(guild, client);
+    let inviter = null;
+    if (ownPermissions.indexOf("ViewAuditLog") >= 0) {
+      inviter = await getInviterUser(guild, client);
+    }
     if (inviter) {
       await dmUsers(dmText, [inviter, owner]);
       if (inviter.id === owner.id) {
