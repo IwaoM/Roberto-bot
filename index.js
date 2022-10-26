@@ -32,9 +32,21 @@ for (const file of eventFiles) {
   const filePath = path.join(eventsPath, file);
   const event = require(filePath);
   if (event.once) {
-    client.once(event.name, (...args) => event.execute(...args));
+    client.once(event.name, (...args) => {
+      try {
+        event.execute(...args);
+      } catch (err) {
+        console.log(`Failed to handle event ${event.name} with arguments [${[...args].join(", ")}]`);
+      }
+    });
   } else {
-    client.on(event.name, (...args) => event.execute(...args, client));
+    client.on(event.name, (...args) => {
+      try {
+        event.execute(...args, client);
+      } catch (err) {
+        console.log(`Failed to handle event ${event.name} with arguments [${[...args].join(", ")}]`);
+      }
+    });
   }
 }
 

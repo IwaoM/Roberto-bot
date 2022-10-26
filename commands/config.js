@@ -33,7 +33,17 @@ module.exports = {
   async execute (interaction, client, guild) {
     await interaction.deferReply({ ephemeral: true });
 
-    const guildConfig = await getGuildConfigs(interaction.guildId);
+    let guildConfig;
+    try {
+      guildConfig = await getGuildConfigs(interaction.guildId);
+    } catch (err) {
+      if (err.message === "Config entry not found") {
+        await interaction.editReply(`The command could not be executed - guild config was not found`);
+        return;
+      } else {
+        throw err;
+      }
+    }
 
     // check subcommand
     const subcommand = interaction.options.getSubcommand();

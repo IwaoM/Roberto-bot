@@ -33,7 +33,7 @@ module.exports = {
       if (guildConfig) {
         return guildConfig;
       } else {
-        return false;
+        throw new Error("Config entry not found");
       }
 
     } else { // return all configs
@@ -45,26 +45,22 @@ module.exports = {
 
   // add the input object to the guild configs array if it does not already exist
   // returns the added entry or false if invalid argument
-  async addGuildConfigEntry (config) {
-    if (!config.id) {
-      return false;
-    }
-
+  async addGuildConfigEntry (entry) {
     const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
     let data = await fs.promises.readFile(guildConfigsDir);
     const guildConfigs = JSON.parse(data);
 
-    let configIndex = guildConfigs.findIndex(conf => conf.id = config.id);
+    let configIndex = guildConfigs.findIndex(conf => conf.id = entry.id);
     if (configIndex >= 0) {
 
-      return false;
+      throw new Error("Config entry already exists");
 
     } else {
 
-      guildConfigs.push(config);
+      guildConfigs.push(entry);
       data = JSON.stringify(guildConfigs, null, 2);
       await fs.promises.writeFile(guildConfigsDir, data);
-      return config;
+      return entry;
 
     }
   },
@@ -72,10 +68,6 @@ module.exports = {
   // remove an entry in the guild configs array by guild id
   // returns the updated array or false if invalid argument
   async removeGuildConfigEntry (id) {
-    if (!id) {
-      return false;
-    }
-
     const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
     let data = await fs.promises.readFile(guildConfigsDir);
     const guildConfigs = JSON.parse(data);
@@ -90,7 +82,7 @@ module.exports = {
 
     } else {
 
-      return false;
+      throw new Error("Config entry not found");
 
     }
   },

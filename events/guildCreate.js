@@ -34,9 +34,15 @@ module.exports = {
       robertoAdminRoleId: robertoRoleIds?.robertoAdminRoleId || "none"
     };
 
-    const configAdded = await addGuildConfigEntry(newEntry);
-    if (configAdded) {
+    try {
+      await addGuildConfigEntry(newEntry);
       console.log(`* New entry [${guild.name} - ${guild.id}] added in guildConfigs.json`);
+    } catch (err) {
+      if (err.message === "Config entry already exists") {
+        console.log(`* Failed to add entry [${guild.name} - ${guild.id}] in guildConfigs.json - entry with the same ID already exists`);
+      } else {
+        console.log(`* Failed to add entry [${guild.name} - ${guild.id}] in guildConfigs.json - unknown error`);
+      }
     }
 
     // construct DM text

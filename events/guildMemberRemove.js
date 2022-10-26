@@ -18,9 +18,9 @@ module.exports = {
         await unusedColorRoles.at(i).delete();
       } catch (err) {
         if (err.code === 50013) { // Missing permissions : Roberto role incorrectly placed in role list
-          return false;
+          console.log(`Failed to delete unused color role [${unusedColorRoles.at(i).name}] - the Roberto role is incorrectly placed in the role list`);
         } else {
-          throw err;
+          console.log(`Failed to delete unused color role [${unusedColorRoles.at(i).name}] - Unknown error`);
         }
       }
     }

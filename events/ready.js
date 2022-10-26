@@ -25,7 +25,13 @@ module.exports = {
       console.log(`* ${guild.name} (ID ${guild.id}) - ${guild.members.cache.size} members`);
     }
 
-    const guildConfigs = await getGuildConfigs();
+    let guildConfigs;
+    try {
+      guildConfigs = await getGuildConfigs();
+    } catch (err) {
+      console.log("Failed to retrieve the guild config list");
+      return;
+    }
 
     // Check for guilds joined while Roberto was offline & perform join actions for them
     let guildUpdateCount = 0;

@@ -62,7 +62,17 @@ module.exports = {
   name: "guildMemberAdd",
 
   async execute (member) {
-    const currentGuildConfig = await getGuildConfigs(member.guild.id);
+    let currentGuildConfig;
+    try {
+      currentGuildConfig = await getGuildConfigs(member.guild.id);
+    } catch (err) {
+      if (err.message === "Config entry not found") {
+        console.log(`Failed to handle new guild member - guild config was not found`);
+        return;
+      } else {
+        throw err;
+      }
+    }
 
     // auto color new members
     if (currentGuildConfig.colorNewMembers) {
