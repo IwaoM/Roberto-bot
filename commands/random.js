@@ -21,6 +21,8 @@ module.exports = {
     ),
 
   async execute (interaction) {
+    // No specific permission needed
+
     const subcommand = interaction.options.getSubcommand();
     let text, againButton;
 
@@ -44,7 +46,7 @@ module.exports = {
       const drawsOption = interaction.options.getInteger("draws");
 
       if (drawsOption > totalOption) {
-        interaction.reply({ content: "The number of draws should be less than or equal to the number of drawable values.", ephemeral: true });
+        interaction.reply({ content: "The command could not be executed - the number of draws should be less than or equal to the number of drawable values.", ephemeral: true });
         return;
       }
 
@@ -62,6 +64,8 @@ module.exports = {
   },
 
   async executeButton (interaction) {
+    // No specific permission needed
+
     // return if the user who pressed the button is not the user who called the original command
     if (interaction.user.id !== interaction.message.interaction.user.id) {
       await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });

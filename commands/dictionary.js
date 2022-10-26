@@ -29,8 +29,14 @@ module.exports = {
     const commandOption = trimAll(interaction.options.getString("word"));
 
     // Search for the word in wiktionary of the chosen language
-    const searchResponse = await fetch(`http://${subcommand}.wiktionary.org/w/rest.php/v1/search/page?q=${commandOption}&limit=5`);
-    const searchData = await searchResponse.json();
+    let searchData;
+    try {
+      const searchResponse = await fetch(`http://${subcommand}.wiktionary.org/w/rest.php/v1/search/page?q=${commandOption}&limit=5`);
+      searchData = await searchResponse.json();
+    } catch (err) {
+      await interaction.editReply(`The command could not be executed - the Wikimedia search API returned an error.`);
+      return;
+    }
 
     if (!searchData.pages.length) {
       await interaction.editReply(`No results were found for "${commandOption}".`);
@@ -50,8 +56,14 @@ module.exports = {
     const pageToGet = similarKeyPages[indexToGet];
 
     // get the corresponding page's html
-    const pageResponse = await fetch(`http://${subcommand}.wiktionary.org/w/rest.php/v1/page/${pageToGet.key}/html`);
-    const pageHtml = await pageResponse.text();
+    let pageHtml;
+    try {
+      const pageResponse = await fetch(`http://${subcommand}.wiktionary.org/w/rest.php/v1/page/${pageToGet.key}/html`);
+      pageHtml = await pageResponse.text();
+    } catch (err) {
+      await interaction.editReply(`The command could not be executed - the Wikimedia page fetch API returned an error.`);
+      return;
+    }
     const parsedHtml = HTMLParser.parse(pageHtml);
     const body = parsedHtml.getElementsByTagName("html")[0].getElementsByTagName("body")[0];
 

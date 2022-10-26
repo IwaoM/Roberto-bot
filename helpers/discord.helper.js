@@ -2,15 +2,13 @@ const { checkHexCode } = require("./color.helper.js");
 const { adminRoleName } = require("../config.json");
 
 module.exports = {
-  async createRobertoRoles (guild, roleNames = "admin") {
+  async createRobertoAdminRole (guild) {
     const roleIds = {};
 
-    if (roleNames.search("admin") >= 0) {
-      const robertoAdminRole = await guild.roles.create({ name: adminRoleName });
-      await robertoAdminRole.setPermissions([]);
-      await robertoAdminRole.setMentionable(true);
-      roleIds.robertoAdminRoleId = robertoAdminRole.id;
-    }
+    const robertoAdminRole = await guild.roles.create({ name: adminRoleName });
+    await robertoAdminRole.setPermissions([]);
+    await robertoAdminRole.setMentionable(true);
+    roleIds.robertoAdminRoleId = robertoAdminRole.id;
 
     return roleIds;
   },

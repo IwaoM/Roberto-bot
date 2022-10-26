@@ -20,16 +20,19 @@ module.exports = {
     ),
 
   async execute (interaction) {
+    // No specific permission needed
+
     // return if the caller is not in a voice channel or the channel doesn't have enough members
     const channelMemberNames = getVoiceChannelMembers(interaction.member.voice.channel);
+    // channelMemberNames.push("Bob", "Mauricette", "Ricardo", "Bobine"); // used for testing
 
     if (!channelMemberNames.length) {
-      await interaction.reply({ content: "You are not connected to a voice channel.", ephemeral: true });
+      await interaction.reply({ content: "The command could not be executed - you are not connected to a voice channel.", ephemeral: true });
       return;
     }
 
     if (channelMemberNames.length <= 2) {
-      await interaction.reply({ content: "Not enough members in this voice channel.", ephemeral: true });
+      await interaction.reply({ content: "The command could not be executed - not enough members in this voice channel.", ephemeral: true });
       return;
     }
 
@@ -42,7 +45,7 @@ module.exports = {
       // get & check option values
       const teamsOption = interaction.options.getInteger("teams");
       if (teamsOption >= channelMemberNames.length) {
-        await interaction.reply({ content: "The number of teams should be less than the channel member count.", ephemeral: true });
+        await interaction.reply({ content: "The command could not be executed - the number of teams should be less than the channel member count.", ephemeral: true });
         return;
       }
 
@@ -70,7 +73,7 @@ module.exports = {
       // get & check option values
       const drawsOption = interaction.options.getInteger("draws");
       if (drawsOption > channelMemberNames.length) {
-        await interaction.reply({ content: "The number of draws should be less than or equal to the channel member count.", ephemeral: true });
+        await interaction.reply({ content: "The command could not be executed - the number of draws should be less than or equal to the channel member count.", ephemeral: true });
         return;
       }
 
@@ -94,6 +97,8 @@ module.exports = {
   },
 
   async executeButton (interaction) {
+    // No specific permission needed
+
     // return if the user who pressed the button is not the user who called the original command
     if (interaction.user.id !== interaction.message.interaction.user.id) {
       await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });
@@ -102,14 +107,15 @@ module.exports = {
 
     // return if the caller is not in a voice channel or the channel doesn't have enough members
     const channelMemberNames = getVoiceChannelMembers(interaction.member.voice.channel);
+    // channelMemberNames.push("Bob", "Mauricette", "Ricardo", "Bobine"); // used for testing
 
     if (!channelMemberNames.length) {
-      await interaction.reply({ content: "You are not connected to a voice channel.", ephemeral: true });
+      await interaction.reply({ content: "The command could not be executed - you are not connected to a voice channel.", ephemeral: true });
       return;
     }
 
     if (channelMemberNames.length <= 2) {
-      await interaction.reply({ content: "Not enough members in this voice channel.", ephemeral: true });
+      await interaction.reply({ content: "The command could not be executed - not enough members in this voice channel.", ephemeral: true });
       return;
     }
 
@@ -123,7 +129,7 @@ module.exports = {
       // get & check option values
       const teamsOption = parseInt(replyLines[0].split(" ")[5]);
       if (teamsOption >= channelMemberNames.length) {
-        await interaction.reply({ content: "The number of teams should be less than the channel member count.", ephemeral: true });
+        await interaction.reply({ content: "The command could not be executed - the number of teams should be less than the channel member count.", ephemeral: true });
         return;
       }
 
@@ -149,7 +155,7 @@ module.exports = {
       // get & check option values
       const drawsOption = parseInt(replyLines[0].split(" ")[1]);
       if (drawsOption > channelMemberNames.length) {
-        await interaction.reply({ content: "The number of draws should be less than or equal to the channel member count.", ephemeral: true });
+        await interaction.reply({ content: "The command could not be executed - the number of draws should be less than or equal to the channel member count.", ephemeral: true });
         return;
       }
 

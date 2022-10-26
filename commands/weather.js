@@ -29,11 +29,19 @@ module.exports = {
     ),
 
   async execute (interaction) {
+    // No specific permission needed
+
     await interaction.deferReply();
 
     const locationOption = interaction.options.getString("location");
-    const locationResp = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${locationOption}&appid=${openWeatherToken}&limit=5`);
-    const location = await locationResp.json();
+    let location;
+    try {
+      const locationResp = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${locationOption}&appid=${openWeatherToken}&limit=5`);
+      location = await locationResp.json();
+    } catch (err) {
+      await interaction.editReply(`The command could not be executed - the OpenWeather geocoding API returned an error.`);
+      return;
+    }
 
     if (!location.length) {
 
@@ -42,13 +50,19 @@ module.exports = {
 
     } else {
 
-      const weatherResp = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${location[0].lat}&lon=${location[0].lon}&appid=${openWeatherToken}&units=metric`);
-      const weather = await weatherResp.json();
+      let weather;
+      try {
+        const weatherResp = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${location[0].lat}&lon=${location[0].lon}&appid=${openWeatherToken}&units=metric`);
+        weather = await weatherResp.json();
+      } catch (err) {
+        await interaction.editReply(`The command could not be executed - the OpenWeather current weather API returned an error.`);
+        return;
+      }
 
       const currentWindType = windTypes.find(type => type.speed < weather.wind.speed);
       const weatherEmbed = new EmbedBuilder()
         .setColor(0xe96d4a)
-        .setTitle(`${location[0].name}, ${location[0].state}, ${location[0].country}`)
+        .setTitle(`${location[0].name}, ${location[0].state ? `${location[0].state}, ` : ""}${location[0].country}`)
         .setAuthor({ name: "OpenWeather", iconURL: "https://pbs.twimg.com/profile_images/1173919481082580992/f95OeyEW_400x400.jpg" })
         .setDescription(`**${Math.round(weather.main.temp)}°C -** ${capitalizeFirstLetter(weather.weather[0].description)}
 Feels like ${Math.round(weather.main.feels_like)}°C`)

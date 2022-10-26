@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
-const { checkRoleAssignment, createRobertoRoles, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
+const { checkRoleAssignment, createRobertoAdminRole, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/files.helper.js");
 const { adminRoleName } = require("../config.json");
 
@@ -27,7 +27,7 @@ module.exports = {
     .addSubcommand(subcommand =>
       subcommand
         .setName("roles-repair")
-        .setDescription("Recreates the admin role in case it was deleted")
+        .setDescription("Recreates the admin role if it was deleted")
     ),
 
   async execute (interaction, client, guild) {
@@ -38,7 +38,7 @@ module.exports = {
       guildConfig = await getGuildConfigs(interaction.guildId);
     } catch (err) {
       if (err.message === "Config entry not found") {
-        await interaction.editReply(`The command could not be executed - guild config was not found`);
+        await interaction.editReply(`The command could not be executed - guild config was not found.`);
         return;
       } else {
         throw err;
@@ -77,7 +77,7 @@ module.exports = {
             if (err.message === "Invalid argument") {
               await interaction.editReply(`The command could not be executed - unknown config option.`);
             } else if (err.message === "Config entry not found") {
-              await interaction.editReply(`The command could not be executed - guild config was not found`);
+              await interaction.editReply(`The command could not be executed - guild config was not found.`);
             } else {
               throw err;
             }
@@ -95,7 +95,7 @@ module.exports = {
             if (err.message === "Invalid argument") {
               await interaction.editReply(`The command could not be executed - unknown config option.`);
             } else if (err.message === "Config entry not found") {
-              await interaction.editReply(`The command could not be executed - guild config was not found`);
+              await interaction.editReply(`The command could not be executed - guild config was not found.`);
             } else {
               throw err;
             }
@@ -155,19 +155,23 @@ module.exports = {
 
       // regenerate admin role if not found
       if (!adminRole) {
-        const newAdminRole = await createRobertoRoles(interaction.guild, "admin");
+        const newAdminRole = await createRobertoAdminRole(interaction.guild);
         try {
           await updateGuildConfigEntry(interaction.guildId, newAdminRole);
           messageText += `\n• Roberto admin role was recreated (ID ${newAdminRole.robertoAdminRoleId}).`;
         } catch (err) {
-          messageText += `\n• Failed to recreate the Roberto admin role.`;
+          if (err.message === "Invalid argument") {
+            messageText += `\n• Failed to recreate the Roberto admin role.`;
+          } else if (err.message === "Config entry not found") {
+            messageText += `\n• The Roberto admin role was incorrectly created.`;
+          }
         }
         interaction.editReply(messageText);
       }
 
       // delete unused roles with the same name as the admin role if any
       if (rolesToDelete.size) {
-        messageText += `\n• ${rolesToDelete.size} unused role${rolesToDelete.size === 1 ? " was" : "s were"} found`;
+        messageText += `\n• ${rolesToDelete.size} unused role${rolesToDelete.size === 1 ? " was" : "s were"} found.`;
         interaction.editReply(messageText);
       }
       let deletedCount = 0, notDeletedCount = 0;

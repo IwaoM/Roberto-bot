@@ -1,4 +1,4 @@
-const { createRobertoRoles, getInviterUser, dmUsers, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
+const { createRobertoAdminRole, getInviterUser, dmUsers, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { addGuildConfigEntry } = require("../helpers/files.helper.js");
 
 module.exports = {
@@ -19,7 +19,7 @@ module.exports = {
     let robertoRoleIds;
     if (missingPermissions.indexOf("ManageRoles") === -1) {
       // create admin role
-      robertoRoleIds = await createRobertoRoles(guild);
+      robertoRoleIds = await createRobertoAdminRole(guild);
       console.log(`* Roberto admin [${robertoRoleIds.robertoAdminRoleId}] role created`);
     } else {
       console.log(`* Roberto admin role could not be created - missing permission ManageRoles`);

@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
+const { checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -14,7 +15,15 @@ module.exports = {
         .setDescription("The nickname to apply (leave empty to remove the current nickname)")
     ),
 
-  async execute (interaction) {
+  async execute (interaction, client, guild) {
+    // before anything else, check if Roberto has the required permissions
+    const neededPermissions = ["ManageNicknames"];
+    const missingPermissions = await checkOwnMissingPermissions(client, guild, neededPermissions);
+    if (missingPermissions.length) {
+      interaction.reply(`The command could not be executed - missing permissions : [${neededPermissions.join(", ")}]`);
+      return;
+    }
+
     await interaction.deferReply();
 
     const userOption = interaction.options.getUser("user");
