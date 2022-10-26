@@ -99,8 +99,8 @@ module.exports = {
   // the pair can set a new attribute for the entry or update an existing one
   // returns the updated entry or false if invalid argument
   async updateGuildConfigEntry (id, configItem) {
-    if (!id || !configItem) {
-      return false;
+    if (!configItem) {
+      throw new Error("Invalid argument");
     }
 
     const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
@@ -119,7 +119,7 @@ module.exports = {
 
     } else {
 
-      return false;
+      throw new Error("Config entry not found");
 
     }
   },

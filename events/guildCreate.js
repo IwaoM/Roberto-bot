@@ -31,7 +31,7 @@ module.exports = {
       name: guild.name,
       greetNewMembers: false,
       colorNewMembers: true,
-      robertoAdminRoleId: robertoRoleIds?.robertoAdminRoleId || ""
+      robertoAdminRoleId: robertoRoleIds?.robertoAdminRoleId || "none"
     };
 
     const configAdded = await addGuildConfigEntry(newEntry);

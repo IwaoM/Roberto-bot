@@ -72,7 +72,8 @@ module.exports = {
         allGrammarClasses.push(...enSections.filter(section => (
           section.getElementsByTagName("h3").length &&
           section.getElementsByTagName("h3")[0].id.startsWith(className)
-        )));
+        ))
+        );
       }
 
     } else if (etymologies.length > 1) {
@@ -104,7 +105,16 @@ module.exports = {
       const resultEntry = {};
 
       // entry title
-      resultEntry.title = trimAll(htmlToPlainText(grammarClass.getElementsByTagName(titleLevel)[0].toString()), "en");
+      // number occurrences of the same grammar class within different etymologies if there are more than 1
+      if (allGrammarClasses.filter(entry => trimAll(htmlToPlainText(entry.getElementsByTagName(titleLevel)[0].toString()), "en") === trimAll(htmlToPlainText(grammarClass.getElementsByTagName(titleLevel)[0].toString()), "en")).length > 1) {
+        let grammarClassIndex = 1;
+        while (result.findIndex(entry => entry.title === trimAll(htmlToPlainText(grammarClass.getElementsByTagName(titleLevel)[0].toString()), "en") + " " + grammarClassIndex) >= 0) {
+          grammarClassIndex++;
+        }
+        resultEntry.title = trimAll(htmlToPlainText(grammarClass.getElementsByTagName(titleLevel)[0].toString()), "en") + " " + grammarClassIndex;
+      } else {
+        resultEntry.title = trimAll(htmlToPlainText(grammarClass.getElementsByTagName(titleLevel)[0].toString()), "en");
+      }
 
       // definition list (filter out empty text nodes)
       const definitionTexts = [];

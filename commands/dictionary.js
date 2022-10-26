@@ -21,6 +21,8 @@ module.exports = {
     ),
 
   async execute (interaction) {
+    // No specific permission needed
+
     await interaction.deferReply();
 
     const subcommand = interaction.options.getSubcommand();

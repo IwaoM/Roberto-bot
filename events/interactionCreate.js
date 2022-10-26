@@ -11,7 +11,13 @@ module.exports = {
         await command.execute(interaction, client, interaction.guild);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "The command could not be executed - unknown error.", ephemeral: true });
+        try {
+          await interaction.reply({ content: "The command could not be executed - unknown error.", ephemeral: true });
+        } catch (err) {
+          if (err.code === "InteractionAlreadyReplied") {
+            await interaction.editReply({ content: "The command could not be executed - unknown error.", ephemeral: true });
+          }
+        }
       }
 
     } else if (interaction.isButton()) {
@@ -24,7 +30,13 @@ module.exports = {
         await relatedCommand.executeButton(interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "The button interaction could not be executed - unknown error.", ephemeral: true });
+        try {
+          await interaction.reply({ content: "The button interaction could not be executed - unknown error.", ephemeral: true });
+        } catch (err) {
+          if (err.code === "InteractionAlreadyReplied") {
+            await interaction.editReply({ content: "The button interaction could not be executed - unknown error.", ephemeral: true });
+          }
+        }
       }
     } else if (interaction.isAutocomplete()) {
 
@@ -35,7 +47,13 @@ module.exports = {
         await command.executeAutocomplete(interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "The autocompletion could not be executed - unknown error.", ephemeral: true });
+        try {
+          await interaction.reply({ content: "The autocompletion could not be executed - unknown error.", ephemeral: true });
+        } catch (err) {
+          if (err.code === "InteractionAlreadyReplied") {
+            await interaction.editReply({ content: "The autocompletion could not be executed - unknown error.", ephemeral: true });
+          }
+        }
       }
 
     } else {

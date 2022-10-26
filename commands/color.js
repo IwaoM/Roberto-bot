@@ -62,7 +62,7 @@ module.exports = {
       const commandOption = interaction.options.getString("hex-code");
       hexCode = checkHexCode(commandOption);
       if (!hexCode) {
-        await interaction.editReply(`**${commandOption}** is not a valid hex color code.`);
+        await interaction.editReply(`The command could not be executed - "${commandOption}" is not a valid hex color code.`);
         return;
       }
 
@@ -80,6 +80,7 @@ module.exports = {
       const avatarDir = await saveUserAvatar(interaction.member);
 
       hexCode = await getDominantColor(commandOption, avatarDir);
+      // sometimes the dominant color sampler fails
       if (!hexCode) {
         await interaction.editReply({ content: "The command could not be executed - dominant color processing failed, please retry later.", ephemeral: true });
         return;
@@ -97,6 +98,8 @@ module.exports = {
 
     try {
 
+      // unassign any previous color, delete the role if not needed anymore
+      // assign the new color - use the existing color role if it exists, create a new one otherwise
       const resultRoleId = await updateColorRole(hexCode, interaction.member);
 
       if (resultRoleId === "none") {
@@ -108,7 +111,7 @@ module.exports = {
     } catch (err) {
 
       if (err.message === "Missing permissions") {
-        await interaction.editReply("The command could not be executed - Roberto's role should be placed above color roles in the server's role list.");
+        await interaction.editReply("The command could not be executed - the Roberto managed role should be placed above color roles in the server's role list.");
       } else {
         throw err;
       }

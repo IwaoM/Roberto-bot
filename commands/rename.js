@@ -36,7 +36,7 @@ module.exports = {
         if (interaction.member.guild.ownerId === userOption.id) {
           await interaction.editReply("The command could not be executed - The server owner cannot be renamed by this command.");
         } else {
-          await interaction.editReply("The command could not be executed - Roberto's role should be placed above all roles of the user to rename in the server's role list.");
+          await interaction.editReply("The command could not be executed - the Roberto managed role should be placed above all roles of the user to rename in the server's role list.");
         }
         return;
       } else {

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
-const { checkRoleAssignment, createRobertoRoles } = require("../helpers/discord.helper.js");
+const { checkRoleAssignment, createRobertoRoles, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/files.helper.js");
 const { adminRoleName } = require("../config.json");
 
@@ -30,7 +30,7 @@ module.exports = {
         .setDescription("Recreates the admin role in case it was deleted")
     ),
 
-  async execute (interaction) {
+  async execute (interaction, client, guild) {
     await interaction.deferReply({ ephemeral: true });
 
     const guildConfig = await getGuildConfigs(interaction.guildId);
@@ -60,10 +60,17 @@ module.exports = {
           // set the option's value to true
           const argObject = {};
           argObject[configOption] = true;
-          if (await updateGuildConfigEntry(interaction.guildId, argObject)) {
-            await interaction.editReply({ content: `The ${subcommand} option has been enabled.`, ephemeral: true });
-          } else {
-            await interaction.editReply({ content: `An error occurred when enabling ${subcommand} - please retry later.`, ephemeral: true });
+          try {
+            await updateGuildConfigEntry(interaction.guildId, argObject);
+            await interaction.editReply(`The ${subcommand} option has been enabled.`);
+          } catch (err) {
+            if (err.message === "Invalid argument") {
+              await interaction.editReply(`The command could not be executed - unknown config option.`);
+            } else if (err.message === "Config entry not found") {
+              await interaction.editReply(`The command could not be executed - guild config was not found`);
+            } else {
+              throw err;
+            }
           }
 
         } else if (commandOption === "disable") {
@@ -71,15 +78,29 @@ module.exports = {
           // set the option's value to false
           const argObject = {};
           argObject[configOption] = false;
-          if (await updateGuildConfigEntry(interaction.guildId, argObject)) {
-            await interaction.editReply({ content: `The ${subcommand} option has been disabled.`, ephemeral: true });
-          } else {
-            await interaction.editReply({ content: `An error occurred when disabling ${subcommand} - please retry later.`, ephemeral: true });
+          try {
+            await updateGuildConfigEntry(interaction.guildId, argObject);
+            await interaction.editReply(`The ${subcommand} option has been disabled.`);
+          } catch (err) {
+            if (err.message === "Invalid argument") {
+              await interaction.editReply(`The command could not be executed - unknown config option.`);
+            } else if (err.message === "Config entry not found") {
+              await interaction.editReply(`The command could not be executed - guild config was not found`);
+            } else {
+              throw err;
+            }
           }
 
         }
       } else {
-        await interaction.editReply({ content: "This command can only be used by Roberto administrators.", ephemeral: true });
+
+        let message = "The command could not be executed - this command can only be used by Roberto administrators.";
+        const adminRole = await interaction.guild.roles.fetch(guildConfig.robertoAdminRoleId);
+        if (!adminRole) {
+          message += "\nCurrently, the role does not exist. This can be fixed with the `/config roles-repair` command.";
+        }
+        await interaction.editReply(message);
+
       }
 
     } else if (subcommand === "roles-show") {
@@ -91,13 +112,27 @@ module.exports = {
         const adminRole = await interaction.guild.roles.fetch(guildConfig.robertoAdminRoleId);
         const messageText = `Roberto Administrator role : "${adminRole.name}" - ID ${guildConfig.robertoAdminRoleId}`;
 
-        await interaction.editReply({ content: messageText, ephemeral: true });
+        await interaction.editReply(messageText);
 
       } else {
-        await interaction.editReply({ content: "This command can only be used by Roberto administrators.", ephemeral: true });
+
+        let message = "The command could not be executed - this command can only be used by Roberto administrators.";
+        const adminRole = await interaction.guild.roles.fetch(guildConfig.robertoAdminRoleId);
+        if (!adminRole) {
+          message += "\nCurrently, the role does not exist. This can be fixed with the `/config roles-repair` command.";
+        }
+        await interaction.editReply(message);
+
       }
 
     } else if (subcommand === "roles-repair") {
+      // before anything else, check if Roberto has the required permissions
+      const neededPermissions = ["ManageRoles"];
+      const missingPermissions = await checkOwnMissingPermissions(client, guild, neededPermissions);
+      if (missingPermissions.length) {
+        interaction.editReply(`The command could not be executed - missing permissions : [${neededPermissions.join(", ")}]`);
+        return;
+      }
 
       // this command is allowed for everyone (in case the Roberto admin role is deleted)
       const guildRoles = await interaction.guild.roles.fetch();
@@ -105,38 +140,48 @@ module.exports = {
       const rolesToDelete = guildRoles.filter(
         role => !role.members.size && (role.name === adminRoleName && role.id !== guildConfig.robertoAdminRoleId)
       );
-      let messageText = "Roles repaired:";
+      let messageText = "Repairing roles...";
+      interaction.editReply(messageText);
 
       // regenerate admin role if not found
       if (!adminRole) {
         const newAdminRole = await createRobertoRoles(interaction.guild, "admin");
-        await updateGuildConfigEntry(interaction.guildId, newAdminRole);
-        messageText += `\n• Roberto admin role was recreated (ID ${newAdminRole.robertoAdminRoleId}).`;
+        try {
+          await updateGuildConfigEntry(interaction.guildId, newAdminRole);
+          messageText += `\n• Roberto admin role was recreated (ID ${newAdminRole.robertoAdminRoleId}).`;
+        } catch (err) {
+          messageText += `\n• Failed to recreate the Roberto admin role.`;
+        }
+        interaction.editReply(messageText);
       }
 
       // delete unused roles with the same name as the admin role if any
-      let roleDeleteSuccess = true, deletedCount = 0;
+      if (rolesToDelete.size) {
+        messageText += `\n• ${rolesToDelete.size} unused role${rolesToDelete.size === 1 ? " was" : "s were"} found`;
+        interaction.editReply(messageText);
+      }
+      let deletedCount = 0, notDeletedCount = 0;
+
+      let tempMessageText;
       for (let i = 0; i < rolesToDelete.size; i++) {
         try {
           await rolesToDelete.at(i).delete();
           deletedCount++;
         } catch (err) {
-          roleDeleteSuccess = false;
+          notDeletedCount++;
         }
+        tempMessageText = messageText;
+        tempMessageText += (deletedCount ? `\n    • ${deletedCount} unused role${deletedCount === 1 ? " was" : "s were"} deleted.` : "");
+        tempMessageText += notDeletedCount ? `\n    • ${notDeletedCount} could not be deleted - the Roberto managed role should be placed above other roles in the server's role list.` : "";
+        interaction.editReply(tempMessageText);
       }
-      if (rolesToDelete.size) {
-        messageText += `\n• ${deletedCount} unused role${deletedCount === 1 ? " was" : "s were"} deleted`;
-        if (!roleDeleteSuccess) {
-          messageText += ` (${rolesToDelete.size - deletedCount} could not be deleted - Roberto's role should be placed above other roles in the server's role list)`;
-        }
-        messageText += ".";
-      }
+      messageText = tempMessageText;
 
       if (messageText.split("\n").length === 1) {
         messageText = `No repair was needed.`;
       }
 
-      await interaction.editReply({ content: messageText, ephemeral: true });
+      await interaction.editReply(messageText);
     }
   },
 
