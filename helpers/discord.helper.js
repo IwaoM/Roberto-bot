@@ -99,8 +99,16 @@ module.exports = {
     }
 
     for (let recipient of recipientList) {
-      const recipientDm = await recipient.createDM();
-      recipientDm.send(text);
+      try {
+        const recipientDm = await recipient.createDM();
+        await recipientDm.send(text);
+      } catch (err) {
+        if (err.code === 50007) {
+          throw new Error("Cannot message this user");
+        } else {
+          throw new Error("Unknown error");
+        }
+      }
     }
   },
 
