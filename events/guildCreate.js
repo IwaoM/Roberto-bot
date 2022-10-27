@@ -1,5 +1,6 @@
 const { createRobertoAdminRole, getInviterUser, dmUsers, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { addGuildConfigEntry } = require("../helpers/files.helper.js");
+const { robertoNeededPermissions } = require("../config.json");
 
 module.exports = {
   name: "guildCreate",
@@ -8,8 +9,7 @@ module.exports = {
     console.log(`\nGuild ${guild.name} (ID ${guild.id}) joined`);
 
     // check own permissions
-    const neededPermissions = ["ViewAuditLog", "ViewChannel", "ManageRoles", "SendMessages", "ManageNicknames"];
-    const missingPermissions = await checkOwnMissingPermissions(client, guild, neededPermissions);
+    const missingPermissions = await checkOwnMissingPermissions(guild, robertoNeededPermissions);
 
     console.log(`* Missing permissions : [${missingPermissions.join(", ")}] (${missingPermissions.length})`);
 
@@ -31,7 +31,9 @@ module.exports = {
       name: guild.name,
       greetNewMembers: false,
       colorNewMembers: true,
-      robertoAdminRoleId: robertoRoleIds?.robertoAdminRoleId || "none"
+      dmOnPermissionRemoved: true,
+      robertoAdminRoleId: robertoRoleIds?.robertoAdminRoleId || "none",
+      missingPermissions: missingPermissions
     };
 
     try {
@@ -64,14 +66,14 @@ module.exports = {
       dmText += `\n• A *Roberto Admin* role should have been created but couldn't, as I did not have the ManageRoles permission required to create roles. Please refer to the GitHub link for more details about why this role is needed and how to create it afterwards.`;
     }
 
-    dmText += `\n• Elements of my behavior can be configured using \`/config\` - at the moment, available options are *auto-color* and *auto-greet*.
+    dmText += `\n• Elements of my behavior can be configured using \`/config\` - at the moment, available options are *auto-color*, *auto-greet* and *permission-dm*.
 • Use \`/help\` in a server channel to see all available commands and their usage.
     
 For more info about commands, bot permissions and other things, please visit my GitHub page: https://github.com/IwaoM/Roberto-bot#readme`;
 
     // DM the server owner & inviter
     const owner = (await guild.fetchOwner()).user;
-    let inviter = null;
+    let inviter;
     if (missingPermissions.indexOf("ViewAuditLog") === -1) {
       inviter = await getInviterUser(guild, client);
     }

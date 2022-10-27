@@ -3,6 +3,8 @@ const { checkRoleAssignment, createRobertoAdminRole, checkOwnMissingPermissions 
 const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/files.helper.js");
 const { adminRoleName } = require("../config.json");
 
+const trueFalseOptionChoices = [{ name: "Enable", value: "enable" }, { name: "Disable", value: "disable" }, { name: "Show", value: "show" }];
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("config")
@@ -11,13 +13,19 @@ module.exports = {
       subcommand
         .setName("auto-color")
         .setDescription("Whether to automatically give a color role to new members")
-        .addStringOption(option => option.setName("auto-color").setDescription("True or false").setRequired(true).setChoices({ name: "Enable", value: "enable" }, { name: "Disable", value: "disable" }, { name: "Show", value: "show" }))
+        .addStringOption(option => option.setName("auto-color").setDescription("True or false").setRequired(true).setChoices(...trueFalseOptionChoices))
     )
     .addSubcommand(subcommand =>
       subcommand
         .setName("auto-greet")
         .setDescription("Whether to automatically greet new members")
-        .addStringOption(option => option.setName("auto-greet").setDescription("True or false").setRequired(true).setChoices({ name: "Enable", value: "enable" }, { name: "Disable", value: "disable" }, { name: "Show", value: "show" }))
+        .addStringOption(option => option.setName("auto-greet").setDescription("True or false").setRequired(true).setChoices(...trueFalseOptionChoices))
+    )
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName("permission-dm")
+        .setDescription("Whether to automatically send a DM when needed permissions are removed for Roberto")
+        .addStringOption(option => option.setName("permission-dm").setDescription("True or false").setRequired(true).setChoices(...trueFalseOptionChoices))
     )
     .addSubcommand(subcommand =>
       subcommand
@@ -30,7 +38,7 @@ module.exports = {
         .setDescription("Recreates the admin role if it was deleted")
     ),
 
-  async execute (interaction, client, guild) {
+  async execute (interaction) {
     await interaction.deferReply({ ephemeral: true });
 
     let guildConfig;
@@ -47,7 +55,7 @@ module.exports = {
 
     // check subcommand
     const subcommand = interaction.options.getSubcommand();
-    if (subcommand === "auto-color" || subcommand === "auto-greet") {
+    if (subcommand === "auto-color" || subcommand === "auto-greet" || subcommand === "permission-dm") {
 
       // allow command only if caller has the Roberto admin role
       if (checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
@@ -58,6 +66,8 @@ module.exports = {
           configOption = "colorNewMembers";
         } else if (subcommand === "auto-greet") {
           configOption = "greetNewMembers";
+        } else if (subcommand === "permission-dm") {
+          configOption = "dmOnPermissionRemoved";
         }
 
         if (commandOption === "show") {
@@ -137,10 +147,10 @@ module.exports = {
 
     } else if (subcommand === "roles-repair") {
       // before anything else, check if Roberto has the required permissions
-      const neededPermissions = ["ManageRoles"];
-      const missingPermissions = await checkOwnMissingPermissions(client, guild, neededPermissions);
+      const neededPermissionsForCommand = ["ManageRoles"];
+      const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
       if (missingPermissions.length) {
-        interaction.editReply(`The command could not be executed - missing permissions : [${neededPermissions.join(", ")}]`);
+        interaction.editReply(`The command could not be executed - missing permissions : [${neededPermissionsForCommand.join(", ")}]`);
         return;
       }
 
@@ -201,10 +211,12 @@ module.exports = {
 
   usage: `• \`/config auto-color <enable|disable|show>\`: enables, disables or shows the current value for the option to automatically give a color role to new server members.
     • The applied color will be the new members's profile picture's dominant color.
-• \`/config auto-greet <enable|disable|show>\`: same, but for the option to automatically greet new server members.
+• \`/config auto-greet <enable|disable|show>\`: enables, disables or shows the current value for the option to automatically greet new server members.
     • If enabled, it is recommended to disable the native option from Discord to greet new members to avoid double greetings.
+• \`/config permission-dm <enable|disable|show>\`: enables, disables or shows the current value for the option to automatically send a DM to the person who modified a server role if this modification removed required permissions from Roberto.
+    • If Roberto doesn't have the ViewAuditLog permission (which allows them to fetch the person who edited the role), the DM will automatically be sent to the server owner instead.
 • \`/config roles-show\`: Shows the current Roberto admin role name and ID.
-• \`/config roles-repair\`: Regenerates the Roberto adminrole and deletes unused roles with the same name.
+• \`/config roles-repair\`: Regenerates the Roberto admin role and deletes unused roles with the same name.
 
 Most of those commands are only usable by members with the Roberto admin role, the only exception being \`/config roles-repair\`.`
 };

@@ -15,12 +15,12 @@ module.exports = {
         .setDescription("The nickname to apply (leave empty to remove the current nickname)")
     ),
 
-  async execute (interaction, client, guild) {
+  async execute (interaction) {
     // before anything else, check if Roberto has the required permissions
-    const neededPermissions = ["ManageNicknames"];
-    const missingPermissions = await checkOwnMissingPermissions(client, guild, neededPermissions);
+    const neededPermissionsForCommand = ["ManageNicknames"];
+    const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
     if (missingPermissions.length) {
-      interaction.reply(`The command could not be executed - missing permissions : [${neededPermissions.join(", ")}]`);
+      interaction.reply(`The command could not be executed - missing permissions : [${neededPermissionsForCommand.join(", ")}]`);
       return;
     }
 

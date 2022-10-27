@@ -42,12 +42,12 @@ module.exports = {
         .setDescription("Removes your currently assigned color")
     ),
 
-  async execute (interaction, client, guild) {
+  async execute (interaction) {
     // before anything else, check if Roberto has the required permissions
-    const neededPermissions = ["ManageRoles"];
-    const missingPermissions = await checkOwnMissingPermissions(client, guild, neededPermissions);
+    const neededPermissionsForCommand = ["ManageRoles"];
+    const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
     if (missingPermissions.length) {
-      interaction.reply(`The command could not be executed - missing permissions : [${neededPermissions.join(", ")}]`);
+      interaction.reply(`The command could not be executed - missing permissions : [${neededPermissionsForCommand.join(", ")}]`);
       return;
     }
 

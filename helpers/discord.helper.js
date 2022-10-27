@@ -80,11 +80,11 @@ module.exports = {
       robertoInvite = botInvites.find(entry => entry.target?.id === client.user.id);
     }
 
-    // return the executor of Roberto's invite (ie the inviter) or false if not found
+    // return the executor of Roberto's invite (ie the inviter) or null if not found
     if (robertoInvite) {
       return robertoInvite.executor;
     } else {
-      return false;
+      return null;
     }
 
   },
@@ -128,13 +128,39 @@ module.exports = {
     return channelMemberNames;
   },
 
-  async checkOwnMissingPermissions (client, guild, missingPermissions) {
-    const ownPermissions = (await guild.members.fetch(client.user.id)).permissions.toArray();
+  async checkOwnMissingPermissions (guild, missingPermissions) {
+    missingPermissions = [...missingPermissions]; // copying the array instead of altering the argument
+    const ownPermissions = (await guild.members.me).permissions.toArray();
     for (let permission of ownPermissions) {
       if (missingPermissions.indexOf(permission) >= 0) {
         missingPermissions.splice(missingPermissions.indexOf(permission), 1); // if permission is found, remove from missing permissions
       }
     }
     return missingPermissions;
-  }
+  },
+
+  async getPermissionRemoverUser (role) {
+
+    // get latest logs and look for role updates
+    let logs = await role.guild.fetchAuditLogs();
+    let roleUpdates = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === role.id);
+    let thisRoleUpdate = roleUpdates.find(entry => role.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
+
+    // search through older logs until the wanted log is found or end of logs is reached
+    let oldestLog;
+    while (!thisRoleUpdate && logs.entries.size === 50) {
+      oldestLog = logs.entries.at(49);
+      logs = await role.guild.fetchAuditLogs({ before: oldestLog });
+      roleUpdates = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === role.id);
+      thisRoleUpdate = roleUpdates.find(entry => role.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
+    }
+
+    // return the executor of the role update or null if not found
+    if (thisRoleUpdate) {
+      return thisRoleUpdate.executor;
+    } else {
+      return null;
+    }
+
+  },
 };
