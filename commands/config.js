@@ -203,6 +203,8 @@ module.exports = {
 
       if (messageText.split("\n").length === 1) {
         messageText = `No repair was needed.`;
+      } else {
+        messageText += `\nDone!`;
       }
 
       await interaction.editReply(messageText);

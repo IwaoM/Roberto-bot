@@ -1,10 +1,9 @@
-const roleUpdate = require("./roleUpdate.js");
+const { processPermissionUpdates } = require("../helpers/processes.helper");
 
 module.exports = {
   name: "roleDelete",
 
   async execute (role, client) {
-    // same actions as role update
-    await roleUpdate.execute(null, role, client);
+    await processPermissionUpdates(null, role, client, "roleDelete");
   }
 };

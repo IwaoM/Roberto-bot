@@ -1,4 +1,4 @@
-const { updateColorRole } = require("../helpers/discord.helper.js");
+const { updateColorRole } = require("../helpers/processes.helper.js");
 const { getGuildConfigs, saveUserAvatar } = require("../helpers/files.helper.js");
 const { getDominantColor } = require("../helpers/color.helper.js");
 const fs = require("node:fs");

@@ -69,7 +69,7 @@ module.exports = {
     dmText += `\n• Elements of my behavior can be configured using \`/config\` - at the moment, available options are *auto-color*, *auto-greet* and *permission-dm*.
 • Use \`/help\` in a server channel to see all available commands and their usage.
     
-For more info about commands, bot permissions and other things, please visit my GitHub page: https://github.com/IwaoM/Roberto-bot#readme`;
+For more info about commands, bot permissions, recommended first steps and various other things, please visit my GitHub page: https://github.com/IwaoM/Roberto-bot#readme`;
 
     // DM the server owner & inviter
     const owner = (await guild.fetchOwner()).user;

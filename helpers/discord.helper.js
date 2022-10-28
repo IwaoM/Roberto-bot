@@ -1,4 +1,3 @@
-const { checkHexCode } = require("./color.helper.js");
 const { adminRoleName } = require("../config.json");
 
 module.exports = {
@@ -11,57 +10,6 @@ module.exports = {
     roleIds.robertoAdminRoleId = robertoAdminRole.id;
 
     return roleIds;
-  },
-
-  async updateColorRole (hexCode, userMember) {
-    if (!hexCode || !userMember) { return false; }
-
-    // #000000 disables name color, we don't want that
-    if (hexCode === "#000000") {
-      hexCode = "#000001";
-    }
-
-    // find any color roles already assigned to user
-    const userMemberRoleList = userMember.roles.cache;
-    const userMemberColorRoleList = userMemberRoleList.filter(role => checkHexCode(role.name, true));
-
-    // for each found color role
-    for (let role of userMemberColorRoleList.entries()) {
-      if (role[1].members.size > 1) {
-        // remove the color role from the user
-        await userMember.roles.remove(role[1]);
-      } else {
-        // delete role if no one else used it
-        try {
-          await role[1].delete();
-        } catch (err) {
-          if (err.code === 50013) { // Missing permissions : Roberto role incorrectly placed in role list
-            throw new Error("Missing permissions");
-          } else {
-            throw new Error("Unknown error");
-          }
-        }
-      }
-    }
-
-    if (hexCode !== "none") {
-      // check if a color role for hexCode exists
-      const guildRoles = await userMember.guild.roles.fetch();
-      let wantedColorRole = guildRoles.find(role => role.name === hexCode);
-
-      if (!wantedColorRole) {
-        // if not : create it
-        wantedColorRole = await userMember.guild.roles.create({ name: hexCode, color: hexCode });
-        await wantedColorRole.setPermissions([]);
-        await wantedColorRole.setMentionable(true);
-      }
-
-      // assign the found or created color role to user
-      userMember.roles.add(wantedColorRole);
-      return wantedColorRole.id;
-    }
-
-    return hexCode;
   },
 
   async getInviterUser (guild, client) {
@@ -147,25 +95,41 @@ module.exports = {
     return missingPermissions;
   },
 
-  async getPermissionRemoverUser (role) {
+  async getPermissionUpdaterUser (elemToSearch, eventType) {
+    // elemToSearch can be either a role (for events roleUpdate & roleDelete) or a member (for event guildMemberUpdate)
 
-    // get latest logs and look for role updates
-    let logs = await role.guild.fetchAuditLogs();
-    let roleUpdates = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === role.id);
-    let thisRoleUpdate = roleUpdates.find(entry => role.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
+    // get latest logs and look for role update or delete
+    let logs = await elemToSearch.guild.fetchAuditLogs();
+    let permissionUpdateLogList, thisPermissionUpdate;
+
+    if (eventType === "roleUpdate") {
+      permissionUpdateLogList = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === elemToSearch.id);
+      thisPermissionUpdate = permissionUpdateLogList.find(entry => elemToSearch.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
+    } else if (eventType === "roleDelete") {
+      thisPermissionUpdate = logs.entries.find(entry => entry.action === 32 && entry.target?.id === elemToSearch.id);
+    } else if (eventType === "guildMemberUpdate") {
+      thisPermissionUpdate = logs.entries.find(entry => entry.action === 25 && entry.target?.id === elemToSearch.id);
+    }
 
     // search through older logs until the wanted log is found or end of logs is reached
     let oldestLog;
-    while (!thisRoleUpdate && logs.entries.size === 50) {
+    while (!thisPermissionUpdate && logs.entries.size === 50) {
       oldestLog = logs.entries.at(49);
-      logs = await role.guild.fetchAuditLogs({ before: oldestLog });
-      roleUpdates = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === role.id);
-      thisRoleUpdate = roleUpdates.find(entry => role.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
+      logs = await elemToSearch.guild.fetchAuditLogs({ before: oldestLog });
+
+      if (eventType === "roleUpdate") {
+        permissionUpdateLogList = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === elemToSearch.id);
+        thisPermissionUpdate = permissionUpdateLogList.find(entry => elemToSearch.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
+      } else if (eventType === "roleDelete") {
+        thisPermissionUpdate = logs.entries.find(entry => entry.action === 32 && entry.target?.id === elemToSearch.id);
+      } else if (eventType === "guildMemberUpdate") {
+        thisPermissionUpdate = logs.entries.find(entry => entry.action === 25 && entry.target?.id === elemToSearch.id);
+      }
     }
 
     // return the executor of the role update or null if not found
-    if (thisRoleUpdate) {
-      return thisRoleUpdate.executor;
+    if (thisPermissionUpdate) {
+      return thisPermissionUpdate.executor;
     } else {
       return null;
     }
