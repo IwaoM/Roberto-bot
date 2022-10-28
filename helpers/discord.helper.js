@@ -105,8 +105,6 @@ module.exports = {
     if (eventType === "roleUpdate") {
       permissionUpdateLogList = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === elemToSearch.id);
       thisPermissionUpdate = permissionUpdateLogList.find(entry => elemToSearch.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
-    } else if (eventType === "roleDelete") {
-      thisPermissionUpdate = logs.entries.find(entry => entry.action === 32 && entry.target?.id === elemToSearch.id);
     } else if (eventType === "guildMemberUpdate") {
       thisPermissionUpdate = logs.entries.find(entry => entry.action === 25 && entry.target?.id === elemToSearch.id);
     }
@@ -120,8 +118,6 @@ module.exports = {
       if (eventType === "roleUpdate") {
         permissionUpdateLogList = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === elemToSearch.id);
         thisPermissionUpdate = permissionUpdateLogList.find(entry => elemToSearch.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
-      } else if (eventType === "roleDelete") {
-        thisPermissionUpdate = logs.entries.find(entry => entry.action === 32 && entry.target?.id === elemToSearch.id);
       } else if (eventType === "guildMemberUpdate") {
         thisPermissionUpdate = logs.entries.find(entry => entry.action === 25 && entry.target?.id === elemToSearch.id);
       }

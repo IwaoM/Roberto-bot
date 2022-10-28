@@ -56,7 +56,7 @@ module.exports = {
   },
 
   async processPermissionUpdates (oldElem, newElem, client, eventType) {
-    // oldElem & newElem can be either roles (for events roleUpdate & roleDelete) or members (for event guildMemberUpdate)
+    // oldElem & newElem can be either roles (for event roleUpdate) or members (for event guildMemberUpdate)
 
     // get guild config
     let guildConfig;
@@ -99,8 +99,6 @@ ${missingPermissions.length ? "Someone" : "You"} recently `;
 
       if (eventType === "roleUpdate") {
         dmText += `updated the role **${newElem.name}** in the server **${newElem.guild.name}**, which `;
-      } else if (eventType === "roleDelete") {
-        dmText += `deleted the role **${newElem.name}** in the server **${newElem.guild.name}**, which `;
       } else if (eventType === "guildMemberUpdate") {
         dmText += `updated me as a member of the server **${newElem.guild.name}**, and `;
       }
