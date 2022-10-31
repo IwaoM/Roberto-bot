@@ -8,5 +8,8 @@ avatars
 config.json
 guildConfigs.json
 
+# Ignore log file
+logs.json
+
 # Ignore test file
 test.js

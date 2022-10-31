@@ -114,5 +114,5 @@ module.exports = {
       throw new Error("Config entry not found");
 
     }
-  },
+  }
 };
