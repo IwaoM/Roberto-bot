@@ -58,6 +58,9 @@ module.exports = {
         }
       }
     }
+
+    // if all DMs succeeded, return the number of sent DMs
+    return recipientList.length;
   },
 
   checkRoleAssignment (member, roleId) {
@@ -119,8 +122,6 @@ module.exports = {
         } else if (entry.changes[0].key === "$remove") {
           // check that removed role is in oldElem and not in newElem
           return oldElem.roles.cache.has(entry.changes[0].new[0].id) && !newElem.roles.cache.has(entry.changes[0].new[0].id);
-        } else {
-          console.log(`entry.changes[0].key : ${entry.changes[0].key}`);
         }
         return false;
       });
@@ -130,7 +131,6 @@ module.exports = {
     // search through older logs until the wanted log is found or end of logs is reached
     let oldestLog;
     while (!thisPermissionUpdate && logs.entries.size === 50) {
-      console.log("Searching further...");
       oldestLog = logs.entries.at(49);
       logs = await newElem.guild.fetchAuditLogs({ before: oldestLog });
 

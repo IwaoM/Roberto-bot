@@ -217,6 +217,7 @@ module.exports = {
     • If enabled, it is recommended to disable the native option from Discord to greet new members to avoid double greetings.
 • \`/config permission-dm <enable|disable|show>\`: enables, disables or shows the current value for the option to automatically send a DM to the person who modified a server role if this modification removed required permissions from Roberto.
     • If Roberto doesn't have the ViewAuditLog permission (which allows them to fetch the person who edited the role), the DM will automatically be sent to the server owner instead.
+    • If Roberto's permissions changes occurred while they were offline, the DM will automatically be sent to the server owner on Roberto's startup, regardless of whether Roberto has the ViewAuditLog permission.
 • \`/config roles-show\`: Shows the current Roberto admin role name and ID.
 • \`/config roles-repair\`: Regenerates the Roberto admin role and deletes unused roles with the same name.
 
