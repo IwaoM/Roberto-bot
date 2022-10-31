@@ -95,31 +95,62 @@ module.exports = {
     return missingPermissions;
   },
 
-  async getPermissionUpdaterUser (elemToSearch, eventType) {
-    // elemToSearch can be either a role (for events roleUpdate & roleDelete) or a member (for event guildMemberUpdate)
+  async getPermissionUpdaterUser (oldElem, newElem, eventType) {
+    // newElem & oldElem can be either roles (for events roleUpdate & roleDelete) or members (for event guildMemberUpdate)
 
     // get latest logs and look for role update or delete
-    let logs = await elemToSearch.guild.fetchAuditLogs();
+    let logs = await newElem.guild.fetchAuditLogs();
     let permissionUpdateLogList, thisPermissionUpdate;
 
     if (eventType === "roleUpdate") {
-      permissionUpdateLogList = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === elemToSearch.id);
-      thisPermissionUpdate = permissionUpdateLogList.find(entry => elemToSearch.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
+
+      // find the log of the change that gave the edited role exactly newElem's permissions
+      permissionUpdateLogList = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === newElem.id);
+      thisPermissionUpdate = permissionUpdateLogList.find(entry => newElem.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
+
     } else if (eventType === "guildMemberUpdate") {
-      thisPermissionUpdate = logs.entries.find(entry => entry.action === 25 && entry.target?.id === elemToSearch.id);
+
+      // find the log of the change that added or removed the difference between oldElem's and newElem's roles to Roberto
+      permissionUpdateLogList = logs.entries.filter(entry => entry.action === 25 && entry.target?.id === newElem.id);
+      thisPermissionUpdate = permissionUpdateLogList.find(entry => {
+        if (entry.changes[0].key === "$add") {
+          // check that added role is in newElem and not in oldElem
+          return newElem.roles.cache.has(entry.changes[0].new[0].id) && !oldElem.roles.cache.has(entry.changes[0].new[0].id);
+        } else if (entry.changes[0].key === "$remove") {
+          // check that removed role is in oldElem and not in newElem
+          return oldElem.roles.cache.has(entry.changes[0].new[0].id) && !newElem.roles.cache.has(entry.changes[0].new[0].id);
+        } else {
+          console.log(`entry.changes[0].key : ${entry.changes[0].key}`);
+        }
+        return false;
+      });
+
     }
 
     // search through older logs until the wanted log is found or end of logs is reached
     let oldestLog;
     while (!thisPermissionUpdate && logs.entries.size === 50) {
+      console.log("Searching further...");
       oldestLog = logs.entries.at(49);
-      logs = await elemToSearch.guild.fetchAuditLogs({ before: oldestLog });
+      logs = await newElem.guild.fetchAuditLogs({ before: oldestLog });
 
       if (eventType === "roleUpdate") {
-        permissionUpdateLogList = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === elemToSearch.id);
-        thisPermissionUpdate = permissionUpdateLogList.find(entry => elemToSearch.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
+
+        permissionUpdateLogList = logs.entries.filter(entry => entry.action === 31 && entry.target?.id === newElem.id);
+        thisPermissionUpdate = permissionUpdateLogList.find(entry => newElem.permissions.equals(entry.changes.find(change => change.key === "permissions").new));
+
       } else if (eventType === "guildMemberUpdate") {
-        thisPermissionUpdate = logs.entries.find(entry => entry.action === 25 && entry.target?.id === elemToSearch.id);
+
+        permissionUpdateLogList = logs.entries.filter(entry => entry.action === 25 && entry.target?.id === newElem.id);
+        thisPermissionUpdate = permissionUpdateLogList.find(entry => {
+          if (entry.changes[0].key === "$add") {
+            return newElem.roles.cache.has(entry.changes[0].new[0].id) && !oldElem.roles.cache.has(entry.changes[0].new[0].id);
+          } else if (entry.changes[0].key === "$remove") {
+            return oldElem.roles.cache.has(entry.changes[0].new[0].id) && !newElem.roles.cache.has(entry.changes[0].new[0].id);
+          }
+          return false;
+        });
+
       }
     }
 

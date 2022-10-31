@@ -89,7 +89,7 @@ module.exports = {
       } else {
 
         // check audit logs to get the executor of that revocation
-        dmRecipient = await getPermissionUpdaterUser(newElem, eventType);
+        dmRecipient = await getPermissionUpdaterUser(oldElem, newElem, eventType);
 
       }
 
@@ -98,12 +98,12 @@ module.exports = {
 ${missingPermissions.length ? "Someone" : "You"} recently `;
 
       if (eventType === "roleUpdate") {
-        dmText += `updated the role **${newElem.name}** in the server **${newElem.guild.name}**, which `;
+        dmText += `updated the role **${newElem.name}** in the server **${newElem.guild.name}**, `;
       } else if (eventType === "guildMemberUpdate") {
-        dmText += `updated me as a member of the server **${newElem.guild.name}**, and `;
+        dmText += `updated my role list in the server **${newElem.guild.name}**, `;
       }
 
-      dmText += `removed the following permission${newlyBotMissingPermissions.length === 1 ? "" : "s"} from me: [${newlyBotMissingPermissions.join(", ")}].
+      dmText += `which removed the following permission${newlyBotMissingPermissions.length === 1 ? "" : "s"} from me: [${newlyBotMissingPermissions.join(", ")}].
 I need th${newlyBotMissingPermissions.length === 1 ? "is permission" : "ese permissions"} to function properly (more details on why exactly here: https://github.com/IwaoM/Roberto-bot#readme). Please consider restoring ${newlyBotMissingPermissions.length === 1 ? "it" : "them"} :)
 Thanks!
 
