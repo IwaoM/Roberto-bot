@@ -1,89 +1,146 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const https = require("https");
+const { logError } = require("../helpers/logs.helper.js");
 
 module.exports = {
   async saveUserAvatar (member) {
-    const imgFolder = path.join(path.dirname(__dirname), "avatars");
+    try {
+      const imgFolder = path.join(path.dirname(__dirname), "avatars");
 
-    let imgUrl = member.user.displayAvatarURL().replace(".webp", ".jpg");
+      let imgUrl = member.user.displayAvatarURL().replace(".webp", ".jpg");
 
-    const imgDir = path.join(imgFolder, member.user.id + ".jpg");
-    const file = fs.createWriteStream(imgDir);
+      const imgDir = path.join(imgFolder, member.user.id + ".jpg");
+      const file = fs.createWriteStream(imgDir);
 
-    await new Promise((resolve) => {
-      https.get(imgUrl, response => {
-        response.pipe(file);
-        resolve();
+      await new Promise((resolve) => {
+        https.get(imgUrl, response => {
+          response.pipe(file);
+          resolve();
+        });
       });
-    });
 
-    return imgDir;
+      return imgDir;
+    } catch (err) {
+      logError({
+        name: `avatar save error`,
+        description: `Failed to save the user's avatar`,
+        function: { name: "saveUserAvatar", arguments: [...arguments] },
+        errorObject: err
+      });
+      throw err;
+    }
+  },
+
+  async unlinkFile (fileDir) {
+    try {
+      await fs.unlink(fileDir, err => {
+        if (err) { throw err; }
+      });
+    } catch (err) {
+      logError({
+        name: `file unlink error`,
+        description: `Failed to unlink the file`,
+        function: { name: "unlinkFile", arguments: [...arguments] },
+        errorObject: err
+      });
+      throw err;
+    }
   },
 
   // Return the entire config list or a single entry if a guild id is provided
   async getGuildConfigs (guildId = "") {
-    const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
-    let data = await fs.promises.readFile(guildConfigsDir);
-    const guildConfigs = JSON.parse(data);
+    try {
+      const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
+      let data = await fs.promises.readFile(guildConfigsDir);
+      const guildConfigs = JSON.parse(data);
 
-    if (guildId) { // return the config for a single guild
+      if (guildId) { // return the config for a single guild
 
-      const guildConfig = guildConfigs.find(config => config.id === guildId);
-      if (guildConfig) {
-        return guildConfig;
-      } else {
-        throw new Error("Config entry not found");
+        const guildConfig = guildConfigs.find(config => config.id === guildId);
+        if (guildConfig) {
+          return guildConfig;
+        } else {
+          throw new Error("Config entry not found");
+        }
+
+      } else { // return all configs
+
+        return guildConfigs;
+
       }
-
-    } else { // return all configs
-
-      return guildConfigs;
-
+    } catch (err) {
+      logError({
+        name: `guild config${guildId ? "" : "s"} read error`,
+        description: `Failed to read the guild config${guildId ? "" : " list"}`,
+        function: { name: "getGuildConfigs", arguments: [...arguments] },
+        errorObject: err
+      });
+      throw err;
     }
   },
 
   // add the input object to the guild configs array if it does not already exist
   // returns the added entry or false if invalid argument
   async addGuildConfigEntry (entry) {
-    const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
-    let data = await fs.promises.readFile(guildConfigsDir);
-    const guildConfigs = JSON.parse(data);
+    try {
+      const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
+      let data = await fs.promises.readFile(guildConfigsDir);
+      const guildConfigs = JSON.parse(data);
 
-    let configIndex = guildConfigs.findIndex(conf => conf.id = entry.id);
-    if (configIndex >= 0) {
+      let configIndex = guildConfigs.findIndex(conf => conf.id = entry.id);
+      if (configIndex >= 0) {
 
-      throw new Error("Config entry already exists");
+        throw new Error("Config entry already exists");
 
-    } else {
+      } else {
 
-      guildConfigs.push(entry);
-      data = JSON.stringify(guildConfigs, null, 2);
-      await fs.promises.writeFile(guildConfigsDir, data);
-      return entry;
+        guildConfigs.push(entry);
+        data = JSON.stringify(guildConfigs, null, 2);
+        await fs.promises.writeFile(guildConfigsDir, data);
+        return entry;
 
+      }
+    } catch (err) {
+      logError({
+        name: `guild config create error`,
+        description: `Failed to create an entry in the guild configs list`,
+        function: { name: "addGuildConfigEntry", arguments: [...arguments] },
+        errorObject: err
+      });
+      throw err;
     }
   },
 
   // remove an entry in the guild configs array by guild id
   // returns the updated array or false if invalid argument
   async removeGuildConfigEntry (id) {
-    const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
-    let data = await fs.promises.readFile(guildConfigsDir);
-    const guildConfigs = JSON.parse(data);
+    try {
+      const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
+      let data = await fs.promises.readFile(guildConfigsDir);
+      const guildConfigs = JSON.parse(data);
 
-    let configIndex = guildConfigs.findIndex(config => config.id = id);
-    if (configIndex >= 0) {
+      let configIndex = guildConfigs.findIndex(config => config.id = id);
+      if (configIndex >= 0) {
 
-      guildConfigs.splice(configIndex, 1);
-      data = JSON.stringify(guildConfigs, null, 2);
-      await fs.promises.writeFile(guildConfigsDir, data);
-      return guildConfigs;
+        guildConfigs.splice(configIndex, 1);
+        data = JSON.stringify(guildConfigs, null, 2);
+        await fs.promises.writeFile(guildConfigsDir, data);
+        return guildConfigs;
 
-    } else {
+      } else {
 
-      throw new Error("Config entry not found");
+        throw new Error("Config entry not found");
 
+      }
+    } catch (err) {
+      logError({
+        name: `guild config delete error`,
+        description: `Failed to delete an entry from the guild configs list`,
+        function: { name: "removeGuildConfigEntry", arguments: [...arguments] },
+        errorObject: err
+      });
+      throw err;
     }
   },
 
@@ -91,28 +148,38 @@ module.exports = {
   // the pair can set a new attribute for the entry or update an existing one
   // returns the updated entry or false if invalid argument
   async updateGuildConfigEntry (id, configItem) {
-    if (!configItem) {
-      throw new Error("Invalid argument");
-    }
+    try {
+      if (!configItem) {
+        throw new Error("Invalid argument");
+      }
 
-    const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
-    let data = await fs.promises.readFile(guildConfigsDir);
-    const guildConfigs = JSON.parse(data);
+      const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
+      let data = await fs.promises.readFile(guildConfigsDir);
+      const guildConfigs = JSON.parse(data);
 
-    let configIndex = guildConfigs.findIndex(config => config.id = id);
-    if (configIndex >= 0) {
+      let configIndex = guildConfigs.findIndex(config => config.id = id);
+      if (configIndex >= 0) {
 
-      let config = guildConfigs.find(config => config.id = id);
-      config = { ...config, ...configItem };
-      guildConfigs.splice(configIndex, 1, config);
-      data = JSON.stringify(guildConfigs, null, 2);
-      await fs.promises.writeFile(guildConfigsDir, data);
-      return config;
+        let config = guildConfigs.find(config => config.id = id);
+        config = { ...config, ...configItem };
+        guildConfigs.splice(configIndex, 1, config);
+        data = JSON.stringify(guildConfigs, null, 2);
+        await fs.promises.writeFile(guildConfigsDir, data);
+        return config;
 
-    } else {
+      } else {
 
-      throw new Error("Config entry not found");
+        throw new Error("Config entry not found");
 
+      }
+    } catch (err) {
+      logError({
+        name: `guild config update error`,
+        description: `Failed to update an entry in the guild configs list`,
+        function: { name: "updateGuildConfigEntry", arguments: [...arguments] },
+        errorObject: err
+      });
+      throw err;
     }
   }
 };

@@ -1,7 +1,6 @@
 const { updateColorRole } = require("../helpers/processes.helper.js");
-const { getGuildConfigs, saveUserAvatar } = require("../helpers/files.helper.js");
+const { getGuildConfigs, saveUserAvatar, unlinkFile } = require("../helpers/files.helper.js");
 const { getDominantColor } = require("../helpers/color.helper.js");
-const fs = require("node:fs");
 
 const welcomeMessages = [
   "<@NEW_MEMBER> joined the party.",
@@ -76,17 +75,14 @@ module.exports = {
 
     // auto color new members
     if (currentGuildConfig.colorNewMembers) {
-      const avatarDir = await saveUserAvatar(member);
-
-      const hexCode = await getDominantColor("Vibrant", avatarDir);
-      if (hexCode) {
+      try {
+        const avatarDir = await saveUserAvatar(member);
+        const hexCode = await getDominantColor("Vibrant", avatarDir);
         await updateColorRole(hexCode, member);
+        await unlinkFile (avatarDir);
+      } catch (err) {
+        // continue
       }
-
-      await fs.unlink(avatarDir, err => {
-        if (err) { throw err; }
-      });
-
     }
 
     // auto greet new members

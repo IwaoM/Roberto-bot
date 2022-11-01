@@ -2,30 +2,33 @@ const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/files.he
 const { checkOwnMissingPermissions, dmUsers } = require("../helpers/discord.helper.js");
 const { processGuildCreate, processGuildDelete } = require("../helpers/processes.helper.js");
 const { robertoNeededPermissions } = require("../config.json");
+const { logEvent, logAction } = require("../helpers/logs.helper.js");
 
 module.exports = {
   name: "ready",
   once: true,
 
   async execute (client) {
+    logEvent({ name: "ready", description: "The discord.js client is ready to start working" });
     console.log(`Initializing ${client.user.username}`);
 
     // * 1. Syncing & display of the joined guild list
 
     // Get the current list of guilds and display it
-    console.log(`\nJoined guild(s) : ${(await client.guilds.fetch()).size}`);
+    let descText = `Joined guild(s) : ${(await client.guilds.fetch()).size}`;
     let guildList = [...client.guilds.cache.values()].sort((a, b) => a.name.localeCompare(b.name));
 
     for (let guild of guildList) {
       await guild.members.fetch();
-      console.log(`* ${guild.name} (ID ${guild.id}) - ${guild.members.cache.size} members`);
+      descText += `\n* ${guild.name} (ID ${guild.id}) - ${guild.members.cache.size} members`;
     }
+    logAction({ name: "list joined guilds", description: descText });
+    console.log(`\n${descText}`);
 
     let guildConfigs;
     try {
       guildConfigs = await getGuildConfigs();
     } catch (err) {
-      console.log("Failed to retrieve the guild config list");
       return;
     }
 

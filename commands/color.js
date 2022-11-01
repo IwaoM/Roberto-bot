@@ -2,8 +2,7 @@ const { SlashCommandBuilder } = require("discord.js");
 const { randomColor, checkHexCode, getDominantColor } = require("../helpers/color.helper.js");
 const { checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { updateColorRole } = require("../helpers/processes.helper.js");
-const { saveUserAvatar } = require("../helpers/files.helper.js");
-const fs = require("node:fs");
+const { saveUserAvatar, unlinkFile } = require("../helpers/files.helper.js");
 
 const dominantChoices = [
   { name: "main", value: "Vibrant" },
@@ -78,18 +77,16 @@ module.exports = {
     } else if (subcommand === "dominant") {
 
       const commandOption = interaction.options.getString("type");
-      const avatarDir = await saveUserAvatar(interaction.member);
 
-      hexCode = await getDominantColor(commandOption, avatarDir);
-      // sometimes the dominant color sampler fails
-      if (!hexCode) {
+      try {
+        const avatarDir = await saveUserAvatar(interaction.member);
+        hexCode = await getDominantColor(commandOption, avatarDir);
+        await unlinkFile (avatarDir);
+      } catch (err) {
+        // sometimes the dominant color sampler fails
         await interaction.editReply({ content: "The command could not be executed - dominant color processing failed, please retry later.", ephemeral: true });
         return;
       }
-
-      await fs.unlink(avatarDir, err => {
-        if (err) { throw err; }
-      });
 
     } else if (subcommand === "remove") {
 

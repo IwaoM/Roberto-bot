@@ -1,10 +1,13 @@
+const fs = require("node:fs");
+const path = require("node:path");
+
 module.exports = {
   async logEvent (eventInput) {
     const logEntry = {};
 
     // log entry timestamp & type
-    logEntry.timestamp = { date: new Date().toISOString() };
-    logEntry.timestamp.time = logEntry.timestamp.date.getTime();
+    const entryTimestamp = new Date();
+    logEntry.timestamp = { date: entryTimestamp.toISOString(), time: entryTimestamp.getTime() };
     logEntry.type = "event";
 
     // event info
@@ -31,15 +34,16 @@ module.exports = {
       logEntry.event.initiator = null;
     }
 
-    console.log(logEntry);
+    // write in the logs file
+    await writeLogEntry(logEntry);
   },
 
   async logAction (actionInput) {
     const logEntry = {};
 
     // log entry timestamp & type
-    logEntry.timestamp = { date: new Date().toISOString() };
-    logEntry.timestamp.time = logEntry.timestamp.date.getTime();
+    const entryTimestamp = new Date();
+    logEntry.timestamp = { date: entryTimestamp.toISOString(), time: entryTimestamp.getTime() };
     logEntry.type = "action";
 
     // action info
@@ -69,7 +73,7 @@ module.exports = {
     if (actionInput.message) {
       logEntry.action.message = {
         id: actionInput.message.id,
-        name: actionInput.message.name
+        content: actionInput.message.content
       };
     } else {
       logEntry.action.message = null;
@@ -93,15 +97,16 @@ module.exports = {
       logEntry.action.user = null;
     }
 
-    console.log(logEntry);
+    // write in the logs file
+    await writeLogEntry(logEntry);
   },
 
   async logError (errorInput) {
     const logEntry = {};
 
     // log entry timestamp & type
-    logEntry.timestamp = { date: new Date().toISOString() };
-    logEntry.timestamp.time = logEntry.timestamp.date.getTime();
+    const entryTimestamp = new Date();
+    logEntry.timestamp = { date: entryTimestamp.toISOString(), time: entryTimestamp.getTime() };
     logEntry.type = "error";
 
     // error info
@@ -110,7 +115,7 @@ module.exports = {
       description: errorInput.description
     };
 
-    if (errorInput.user) {
+    if (errorInput.function) {
       logEntry.error.function = {
         name: errorInput.function.name,
         arguments: errorInput.function.arguments
@@ -125,6 +130,22 @@ module.exports = {
       logEntry.error.errorObject = null;
     }
 
+    // write in the logs file
+    await writeLogEntry(logEntry);
+  },
+};
+
+async function writeLogEntry (logEntry) {
+  try {
+    // open the file, read its content, append a new list element, then overwrite the file
+    const logsDir = path.join(path.dirname(__dirname), "logs.json");
+    let data = await fs.promises.readFile(logsDir);
+    const logs = JSON.parse(data);
+    logs.push(logEntry);
+    data = JSON.stringify(logs, null, 2);
+    await fs.promises.writeFile(logsDir, data);
+  } catch (err) {
+    // if this fails, just log the entry
     console.log(logEntry);
   }
-};
+}
