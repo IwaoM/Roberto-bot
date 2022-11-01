@@ -58,7 +58,7 @@ module.exports = {
     if (subcommand === "auto-color" || subcommand === "auto-greet" || subcommand === "permission-dm") {
 
       // allow command only if caller has the Roberto admin role
-      if (checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
+      if (await checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
         const commandOption = interaction.options.getString(subcommand);
 
         let configOption;
@@ -126,7 +126,7 @@ module.exports = {
     } else if (subcommand === "roles-show") {
 
       // allow command only if caller has the Roberto admin role
-      if (checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
+      if (await checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
 
         // admin role always exists or the command couldn't be called in the first place
         const adminRole = await interaction.guild.roles.fetch(guildConfig.robertoAdminRoleId);

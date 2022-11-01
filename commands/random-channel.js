@@ -23,7 +23,7 @@ module.exports = {
     // No specific permission needed
 
     // return if the caller is not in a voice channel or the channel doesn't have enough members
-    const channelMemberNames = getVoiceChannelMembers(interaction.member.voice.channel);
+    const channelMemberNames = await getVoiceChannelMembers(interaction.member.voice.channel);
     // channelMemberNames.push("Bob", "Mauricette", "Ricardo", "Bobine"); // used for testing
 
     if (!channelMemberNames.length) {
@@ -106,7 +106,7 @@ module.exports = {
     }
 
     // return if the caller is not in a voice channel or the channel doesn't have enough members
-    const channelMemberNames = getVoiceChannelMembers(interaction.member.voice.channel);
+    const channelMemberNames = await getVoiceChannelMembers(interaction.member.voice.channel);
     // channelMemberNames.push("Bob", "Mauricette", "Ricardo", "Bobine"); // used for testing
 
     if (!channelMemberNames.length) {

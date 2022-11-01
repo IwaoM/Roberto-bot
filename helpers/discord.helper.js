@@ -6,14 +6,17 @@ module.exports = {
     try {
       const roleIds = {};
 
-      const robertoAdminRole = await guild.roles.create({ name: adminRoleName });
-      await robertoAdminRole.setPermissions([]);
-      await robertoAdminRole.setMentionable(true);
+      let robertoAdminRole = await guild.roles.create({ name: adminRoleName });
+      await logAction({ name: "create role", guild: guild, role: robertoAdminRole });
+      robertoAdminRole = await robertoAdminRole.setPermissions([]);
+      await logAction({ name: "update role", guild: guild, role: robertoAdminRole });
+      robertoAdminRole = await robertoAdminRole.setMentionable(true);
+      await logAction({ name: "update role", guild: guild, role: robertoAdminRole });
       roleIds.robertoAdminRoleId = robertoAdminRole.id;
 
       return roleIds;
     } catch (err) {
-      logError({
+      await logError({
         name: `roberto roles create error`,
         description: `Failed to create roberto roles`,
         function: { name: "createRobertoAdminRole", arguments: [...arguments] },
@@ -46,7 +49,7 @@ module.exports = {
         return null;
       }
     } catch (err) {
-      logError({
+      await logError({
         name: `inviter fetch error`,
         description: `Failed to retrieve the user who invited Roberto`,
         function: { name: "getInviterUser", arguments: [...arguments] },
@@ -61,7 +64,7 @@ module.exports = {
       const recipientList = [];
 
       for (let user of users) {
-        if (recipientList.findIndex(elem => elem.id === user.id) === -1) {
+        if (user && recipientList.findIndex(elem => elem.id === user.id) === -1) {
           recipientList.push(user);
         }
       }
@@ -70,7 +73,7 @@ module.exports = {
         try {
           const recipientDm = await recipient.createDM();
           const sentDm = await recipientDm.send(text);
-          logAction({
+          await logAction({
             name: `dm send`,
             description: `Send a DM to a user`,
             message: { id: sentDm.id, content: sentDm.content },
@@ -79,7 +82,7 @@ module.exports = {
         } catch (err) {
           if (err.code === 50007) {
             // log the failure of this particular dm but continue iterating
-            logError({
+            await logError({
               name: `dm send error`,
               description: `Cannot message this user`,
               function: { name: "dmUsers", arguments: [...arguments] },
@@ -94,7 +97,7 @@ module.exports = {
       // if all DMs succeeded, return the number of sent DMs
       return recipientList.length;
     } catch (err) {
-      logError({
+      await logError({
         name: `dm dispatch error`,
         description: `Failed to dispatch DMs`,
         function: { name: "dmUsers", arguments: [...arguments] },
@@ -104,7 +107,7 @@ module.exports = {
     }
   },
 
-  checkRoleAssignment (member, roleId) {
+  async checkRoleAssignment (member, roleId) {
     try {
       if (!member || !roleId) {
         return false;
@@ -113,7 +116,7 @@ module.exports = {
       const userRoles = member.roles.cache;
       return userRoles.get(roleId);
     } catch (err) {
-      logError({
+      await logError({
         name: `role assignment check error`,
         description: `Failed to check if user has the role`,
         function: { name: "checkRoleAssignment", arguments: [...arguments] },
@@ -123,7 +126,7 @@ module.exports = {
     }
   },
 
-  getVoiceChannelMembers (channel) {
+  async getVoiceChannelMembers (channel) {
     try {
       // if argument is null, return
       if (!channel) {
@@ -138,7 +141,7 @@ module.exports = {
 
       return channelMemberNames;
     } catch (err) {
-      logError({
+      await logError({
         name: `channel members get error`,
         description: `Failed to get the current members of the voice channel`,
         function: { name: "getVoiceChannelMembers", arguments: [...arguments] },
@@ -159,7 +162,7 @@ module.exports = {
       }
       return missingPermissions;
     } catch (err) {
-      logError({
+      await logError({
         name: `missing permissions check error`,
         description: `Failed to check which permissions are missing`,
         function: { name: "checkOwnMissingPermissions", arguments: [...arguments] },
@@ -233,7 +236,7 @@ module.exports = {
         return null;
       }
     } catch (err) {
-      logError({
+      await logError({
         name: `permission updater fetch error`,
         description: `Failed to retrieve the user who updated Roberto's permissions`,
         function: { name: "getPermissionUpdaterUser", arguments: [...arguments] },

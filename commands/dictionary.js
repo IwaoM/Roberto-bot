@@ -75,10 +75,10 @@ module.exports = {
     // Parse the HTML body to get relevant info
     if (subcommand === "en") {
       dictionaryResult.language = "en";
-      dictionaryResult.resultData = bodyToListEnglish(body);
+      dictionaryResult.resultData = await bodyToListEnglish(body);
     } else if (subcommand === "fr") {
       dictionaryResult.language = "fr";
-      dictionaryResult.resultData = bodyToListFrench(body);
+      dictionaryResult.resultData = await bodyToListFrench(body);
     }
 
     // construct embed

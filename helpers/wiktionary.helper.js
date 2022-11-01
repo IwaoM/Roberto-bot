@@ -2,7 +2,7 @@ const { htmlToPlainText, trimAll } = require("./misc.helper.js");
 const { logError } = require("../helpers/logs.helper.js");
 
 module.exports = {
-  bodyToListFrench (body) {
+  async bodyToListFrench (body) {
     try {
       const result = [];
 
@@ -48,7 +48,7 @@ module.exports = {
 
       return result;
     } catch (err) {
-      logError({
+      await logError({
         name: `fr wiktionary parsing error`,
         description: `Failed to parse the html file of the fetched french wiktionary page`,
         function: { name: "bodyToListFrench", arguments: [...arguments] },
@@ -58,7 +58,7 @@ module.exports = {
     }
   },
 
-  bodyToListEnglish (body) {
+  async bodyToListEnglish (body) {
     try {
       const result = [];
       const grammarClassNames = ["Noun", "Verb", "Adjective", "Adverb", "Preposition", "Conjunction", "Pronoun", "Determiner", "Interjection"];
@@ -148,7 +148,7 @@ module.exports = {
 
       return result;
     } catch (err) {
-      logError({
+      await logError({
         name: `en wiktionary parsing error`,
         description: `Failed to parse the html file of the fetched english wiktionary page`,
         function: { name: "bodyToListEnglish", arguments: [...arguments] },

@@ -22,7 +22,7 @@ module.exports = {
       await guild.members.fetch();
       descText += `\n* ${guild.name} (ID ${guild.id}) - ${guild.members.cache.size} members`;
     }
-    logAction({ name: "list joined guilds", description: descText });
+    await logAction({ name: "list joined guilds", description: descText });
     console.log(`\n${descText}`);
 
     let guildConfigs;

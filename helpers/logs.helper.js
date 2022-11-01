@@ -52,6 +52,12 @@ module.exports = {
       description: actionInput.description
     };
 
+    if (actionInput.config) {
+      logEntry.action.config = actionInput.config;
+    } else {
+      logEntry.action.config = null;
+    }
+
     if (actionInput.guild) {
       logEntry.action.guild = {
         id: actionInput.guild.id,
@@ -64,7 +70,7 @@ module.exports = {
     if (actionInput.member) {
       logEntry.action.member = {
         id: actionInput.member.id,
-        name: actionInput.member.name
+        tag: actionInput.member.user.tag
       };
     } else {
       logEntry.action.member = null;
@@ -91,7 +97,7 @@ module.exports = {
     if (actionInput.user) {
       logEntry.action.user = {
         id: actionInput.user.id,
-        name: actionInput.user.name
+        tag: actionInput.user.tag
       };
     } else {
       logEntry.action.user = null;
