@@ -16,6 +16,15 @@ module.exports = {
       description: eventInput.description
     };
 
+    if (eventInput.command) {
+      logEntry.event.command = {
+        id: eventInput.command.id,
+        name: eventInput.command.name
+      };
+    } else {
+      logEntry.event.command = null;
+    }
+
     if (eventInput.guild) {
       logEntry.event.guild = {
         id: eventInput.guild.id,
@@ -25,13 +34,31 @@ module.exports = {
       logEntry.event.guild = null;
     }
 
-    if (eventInput.initiator) {
-      logEntry.event.initiator = {
-        id: eventInput.initiator.id,
-        name: eventInput.initiator.name
+    if (eventInput.interaction) {
+      logEntry.event.interaction = {
+        id: eventInput.interaction.id,
+        type: eventInput.interaction.isChatInputCommand() ? "chatInputCommand" : eventInput.interaction.isButton() ? "button" : null
       };
     } else {
-      logEntry.event.initiator = null;
+      logEntry.event.interaction = null;
+    }
+
+    if (eventInput.member) {
+      logEntry.event.member = {
+        id: eventInput.member.id,
+        name: eventInput.member.name
+      };
+    } else {
+      logEntry.event.member = null;
+    }
+
+    if (eventInput.role) {
+      logEntry.event.role = {
+        id: eventInput.role.id,
+        name: eventInput.role.name
+      };
+    } else {
+      logEntry.event.role = null;
     }
 
     // write in the logs file

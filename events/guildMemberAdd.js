@@ -1,6 +1,7 @@
 const { updateColorRole } = require("../helpers/processes.helper.js");
 const { getGuildConfigs, saveUserAvatar, unlinkFile } = require("../helpers/files.helper.js");
 const { getDominantColor } = require("../helpers/color.helper.js");
+const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
 
 const welcomeMessages = [
   "<@NEW_MEMBER> joined the party.",
@@ -61,36 +62,45 @@ module.exports = {
   name: "guildMemberAdd",
 
   async execute (member) {
-    let currentGuildConfig;
     try {
-      currentGuildConfig = await getGuildConfigs(member.guild.id);
+      await logEvent({ name: this.name, description: "A user joined the guild", guild: member.guild, member: member });
+      const currentGuildConfig = await getGuildConfigs(member.guild.id);
+
+      // auto color new members
+      if (currentGuildConfig.colorNewMembers) {
+        try {
+          const avatarDir = await saveUserAvatar(member);
+          const hexCode = await getDominantColor("Vibrant", avatarDir);
+          await updateColorRole(hexCode, member);
+          await unlinkFile (avatarDir);
+        } catch (err) {
+          await logError({
+            name: `auto color error`,
+            description: `Failed to auto color a new guild member`,
+            function: { name: `${this.name}.execute`, arguments: [...arguments] },
+            errorObject: err
+          });
+          // continue
+        }
+      }
+
+      // auto greet new members
+      if (currentGuildConfig.greetNewMembers) {
+        const messageIndex = Math.floor(Math.random(welcomeMessages.length) * welcomeMessages.length);
+        const welcomeMessage = welcomeMessages[messageIndex].replace("NEW_MEMBER", member.id);
+
+        const sentMessage = await member.guild.systemChannel.send(welcomeMessage);
+        await logAction({ name: `send welcome message`, guild: member.guild, message: sentMessage, member: member });
+      }
+
+      await logAction({ name: `handle ${this.name} event`, member: member });
     } catch (err) {
-      if (err.message === "Config entry not found") {
-        console.log(`Failed to handle new guild member - guild config was not found`);
-        return;
-      } else {
-        throw err;
-      }
-    }
-
-    // auto color new members
-    if (currentGuildConfig.colorNewMembers) {
-      try {
-        const avatarDir = await saveUserAvatar(member);
-        const hexCode = await getDominantColor("Vibrant", avatarDir);
-        await updateColorRole(hexCode, member);
-        await unlinkFile (avatarDir);
-      } catch (err) {
-        // continue
-      }
-    }
-
-    // auto greet new members
-    if (currentGuildConfig.greetNewMembers) {
-      const messageIndex = Math.floor(Math.random(welcomeMessages.length) * welcomeMessages.length);
-      const welcomeMessage = welcomeMessages[messageIndex].replace("NEW_MEMBER", member.id);
-
-      member.guild.systemChannel.send(welcomeMessage);
+      await logError({
+        name: `${this.name} event handler error`,
+        description: `Failed to handle the ${this.name} event`,
+        function: { name: `${this.name}.execute`, arguments: [...arguments] },
+        errorObject: err
+      });
     }
   },
 };

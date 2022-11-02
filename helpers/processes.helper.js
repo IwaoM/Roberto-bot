@@ -122,10 +122,9 @@ module.exports = {
           try {
             await dmUsers(dmText, [dmRecipient]);
           } catch (err) {
-            // continue event if the DM couldn't be sent
+            // continue even if the DM couldn't be sent
           }
         }
-
       }
 
       // in any case, if permissions were changed for Roberto, replace the missing permission value in the guild config
@@ -140,6 +139,7 @@ module.exports = {
         function: { name: "processPermissionUpdates", arguments: [...arguments] },
         errorObject: err
       });
+      throw err;
     }
   },
 
@@ -223,6 +223,7 @@ module.exports = {
         function: { name: "processGuildCreate", arguments: [...arguments] },
         errorObject: err
       });
+      throw err;
     }
   },
 
@@ -240,6 +241,7 @@ module.exports = {
         function: { name: "processGuildDelete", arguments: [...arguments] },
         errorObject: err
       });
+      throw err;
     }
   }
 };

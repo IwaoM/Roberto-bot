@@ -1,28 +1,36 @@
 const { checkHexCode } = require("../helpers/color.helper.js");
+const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
 
 module.exports = {
   name: "guildMemberRemove",
 
   async execute (member, client) {
-    // return if the removed member was Roberto themself
-    if (member.id === client.user.id) {
-      return;
-    }
+    try {
+      await logEvent({ name: this.name, description: "A user left the guild", guild: member.guild, member: member });
 
-    // prune unused color roles
-    const allRoles = await member.guild.roles.fetch();
-    const unusedColorRoles = allRoles.filter(role => checkHexCode(role.name, true) && !role.members.size);
-
-    for (let i = 0; i < unusedColorRoles.size; i++) {
-      try {
-        await unusedColorRoles.at(i).delete();
-      } catch (err) {
-        if (err.code === 50013) { // Missing permissions : Roberto role incorrectly placed in role list
-          console.log(`Failed to delete unused color role [${unusedColorRoles.at(i).name}] - the Roberto role is incorrectly placed in the role list`);
-        } else {
-          console.log(`Failed to delete unused color role [${unusedColorRoles.at(i).name}] - Unknown error`);
-        }
+      // return if the removed member was Roberto themself
+      if (member.id === client.user.id) {
+        await logAction({ name: `leave guild`, guild: member.guild });
+        return;
       }
+
+      // prune unused color roles
+      const allRoles = await member.guild.roles.fetch();
+      const unusedColorRoles = allRoles.filter(role => checkHexCode(role.name, true) && !role.members.size);
+
+      for (let i = 0; i < unusedColorRoles.size; i++) {
+        await unusedColorRoles.at(i).delete();
+        await logAction({ name: `delete role`, role: unusedColorRoles.at(i) });
+      }
+
+      await logAction({ name: `handle ${this.name} event`, member: member });
+    } catch (err) {
+      await logError({
+        name: `${this.name} event handler error`,
+        description: `Failed to handle the ${this.name} event`,
+        function: { name: `${this.name}.execute`, arguments: [...arguments] },
+        errorObject: err
+      });
     }
   },
 };
