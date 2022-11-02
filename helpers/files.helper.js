@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const https = require("https");
-const { logError } = require("../helpers/logs.helper.js");
+const { logError, logAction } = require("../helpers/logs.helper.js");
 
 module.exports = {
   async saveUserAvatar (member) {
@@ -98,6 +98,7 @@ module.exports = {
         guildConfigs.push(entry);
         data = JSON.stringify(guildConfigs, null, 2);
         await fs.promises.writeFile(guildConfigsDir, data);
+        await logAction({ name: "create guild config", config: entry });
         return entry;
 
       }
@@ -126,6 +127,7 @@ module.exports = {
         const deletedConfig = guildConfigs.splice(configIndex, 1);
         data = JSON.stringify(guildConfigs, null, 2);
         await fs.promises.writeFile(guildConfigsDir, data);
+        await logAction({ name: "delete guild config", config: deletedConfig[0] });
         return deletedConfig[0];
 
       } else {
@@ -165,6 +167,7 @@ module.exports = {
         guildConfigs.splice(configIndex, 1, config);
         data = JSON.stringify(guildConfigs, null, 2);
         await fs.promises.writeFile(guildConfigsDir, data);
+        await logAction({ name: "update guild config", config: config });
         return config;
 
       } else {

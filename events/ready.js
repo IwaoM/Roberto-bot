@@ -94,8 +94,7 @@ module.exports = {
             console.log("* DM sent to the guild owner");
           }
 
-          const updatedConfig = await updateGuildConfigEntry(guild.id, { missingPermissions: newBotMissingPermissions });
-          await logAction({ name: "update guild config", config: updatedConfig });
+          await updateGuildConfigEntry(guild.id, { missingPermissions: newBotMissingPermissions });
         }
       }
       if (guildUpdateCount) { console.log(""); }

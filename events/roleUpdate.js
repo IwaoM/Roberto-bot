@@ -8,7 +8,7 @@ module.exports = {
     try {
       await logEvent({ name: this.name, description: "A guild role was updated", guild: newRole.guild, role: newRole });
       await processPermissionUpdates(oldRole, newRole, client, "roleUpdate");
-      await logAction({ name: `handle ${this.name} event`, role: newRole });
+      await logAction({ name: `handle ${this.name} event`, guild: newRole.guild, role: newRole });
     } catch (err) {
       await logError({
         name: `${this.name} event handler error`,

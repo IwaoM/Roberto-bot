@@ -93,7 +93,7 @@ module.exports = {
         await logAction({ name: `send welcome message`, guild: member.guild, message: sentMessage, member: member });
       }
 
-      await logAction({ name: `handle ${this.name} event`, member: member });
+      await logAction({ name: `handle ${this.name} event`, guild: member.guild, member: member });
     } catch (err) {
       await logError({
         name: `${this.name} event handler error`,

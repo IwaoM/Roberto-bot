@@ -10,21 +10,11 @@ module.exports = {
       if (interaction.isChatInputCommand()) {
 
         const command = client.commands.get(interaction.commandName);
-        if (!command) { return; }
-
-        try {
-          await command.execute(interaction);
-        } catch (error) {
-          try {
-            await interaction.reply({ content: "The command could not be executed - unknown error.", ephemeral: true });
-          } catch (err) {
-            if (err.code === "InteractionAlreadyReplied") {
-              await interaction.editReply({ content: "The command could not be executed - unknown error.", ephemeral: true });
-            }
-          }
+        if (!command) {
+          return;
         }
-
-        await logAction({ name: `handle ${this.name} event`, interaction: interaction });
+        await command.execute(interaction);
+        await logAction({ name: `handle ${this.name} event`, guild: interaction.guild, interaction: interaction, member: interaction.member });
       } else if (interaction.isButton()) {
 
         const relatedCommandName = interaction.message.interaction.commandName.split(" ")[0]; // for commands with subcommands
@@ -43,7 +33,7 @@ module.exports = {
           }
         }
 
-        await logAction({ name: `handle ${this.name} event`, interaction: interaction });
+        await logAction({ name: `handle ${this.name} event`, guild: interaction.guild, interaction: interaction, member: interaction.member });
       } else {
         return;
       }

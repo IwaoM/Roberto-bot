@@ -63,7 +63,7 @@ module.exports = {
         errorObject: err
       });
       if (err.code === 50013) { // Missing permissions : Roberto role incorrectly placed in role list
-        throw new Error("Missing permissions");
+        throw new Error("Role too low");
       } else {
         throw err;
       }
@@ -129,8 +129,7 @@ module.exports = {
 
       // in any case, if permissions were changed for Roberto, replace the missing permission value in the guild config
       if (client.guilds.cache.find(guild => guild.id === newElem.guild.id) && newBotMissingPermissions.toString() !== oldBotMissingPermissions.toString()) {
-        const updatedConfig = await updateGuildConfigEntry(newElem.guild.id, { missingPermissions: newBotMissingPermissions });
-        await logAction({ name: "update guild config", config: updatedConfig });
+        await updateGuildConfigEntry(newElem.guild.id, { missingPermissions: newBotMissingPermissions });
       }
     } catch (err) {
       await logError({
@@ -162,7 +161,7 @@ module.exports = {
         console.log(`* Roberto admin [${robertoRoleIds.robertoAdminRoleId}] role created`);
       } else {
         await logError({
-          name: `Roberto roles creation error`,
+          name: `missing permissions for Roberto roles creation`,
           description: `Roberto admin role could not be created - missing permission ManageRoles`,
           function: { name: "processGuildCreate", arguments: [...arguments] },
           errorObject: new Error("Missing permissions")
@@ -182,7 +181,6 @@ module.exports = {
       };
 
       await addGuildConfigEntry(newEntry);
-      await logAction({ name: "create guild config", config: newEntry });
       console.log(`* New entry [${guild.name} - ${guild.id}] added in guildConfigs.json`);
 
       // construct DM text
@@ -232,8 +230,7 @@ module.exports = {
       console.log(`\nGuild ${guild.name} (ID ${guild.id}) left`);
 
       // delete entry from guildConfigs.json
-      const deletedConfig = await removeGuildConfigEntry(guild.id);
-      await logAction({ name: "delete guild config", config: deletedConfig });
+      await removeGuildConfigEntry(guild.id);
     } catch (err) {
       await logError({
         name: `guild leave processing error`,

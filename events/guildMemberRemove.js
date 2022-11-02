@@ -23,7 +23,7 @@ module.exports = {
         await logAction({ name: `delete role`, role: unusedColorRoles.at(i) });
       }
 
-      await logAction({ name: `handle ${this.name} event`, member: member });
+      await logAction({ name: `handle ${this.name} event`, guild: member.guild, member: member });
     } catch (err) {
       await logError({
         name: `${this.name} event handler error`,

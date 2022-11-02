@@ -19,7 +19,9 @@ module.exports = {
     if (eventInput.command) {
       logEntry.event.command = {
         id: eventInput.command.id,
-        name: eventInput.command.name
+        name: eventInput.command.name,
+        subcommand: eventInput.command.subcommand,
+        arguments: eventInput.command.arguments
       };
     } else {
       logEntry.event.command = null;
@@ -46,7 +48,7 @@ module.exports = {
     if (eventInput.member) {
       logEntry.event.member = {
         id: eventInput.member.id,
-        name: eventInput.member.name
+        tag: eventInput.member.user.tag
       };
     } else {
       logEntry.event.member = null;
@@ -62,6 +64,7 @@ module.exports = {
     }
 
     // write in the logs file
+    console.log(logEntry);
     await writeLogEntry(logEntry);
   },
 
@@ -79,6 +82,17 @@ module.exports = {
       description: actionInput.description
     };
 
+    if (actionInput.command) {
+      logEntry.action.command = {
+        id: actionInput.command.id,
+        name: actionInput.command.name,
+        subcommand: actionInput.command.subcommand,
+        arguments: actionInput.command.arguments
+      };
+    } else {
+      logEntry.action.command = null;
+    }
+
     if (actionInput.config) {
       logEntry.action.config = actionInput.config;
     } else {
@@ -92,6 +106,15 @@ module.exports = {
       };
     } else {
       logEntry.action.guild = null;
+    }
+
+    if (actionInput.interaction) {
+      logEntry.action.interaction = {
+        id: actionInput.interaction.id,
+        type: actionInput.interaction.isChatInputCommand() ? "chatInputCommand" : actionInput.interaction.isButton() ? "button" : null
+      };
+    } else {
+      logEntry.action.interaction = null;
     }
 
     if (actionInput.member) {
@@ -131,6 +154,7 @@ module.exports = {
     }
 
     // write in the logs file
+    console.log(logEntry);
     await writeLogEntry(logEntry);
   },
 
@@ -164,6 +188,7 @@ module.exports = {
     }
 
     // write in the logs file
+    console.log(logEntry);
     await writeLogEntry(logEntry);
   },
 };

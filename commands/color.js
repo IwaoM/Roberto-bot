@@ -3,6 +3,7 @@ const { randomColor, checkHexCode, getDominantColor } = require("../helpers/colo
 const { checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { updateColorRole } = require("../helpers/processes.helper.js");
 const { saveUserAvatar, unlinkFile } = require("../helpers/files.helper.js");
+const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
 
 const dominantChoices = [
   { name: "main", value: "Vibrant" },
@@ -43,77 +44,100 @@ module.exports = {
     ),
 
   async execute (interaction) {
-    // before anything else, check if Roberto has the required permissions
-    const neededPermissionsForCommand = ["ManageRoles"];
-    const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
-    if (missingPermissions.length) {
-      interaction.reply(`The command could not be executed - missing permissions : [${neededPermissionsForCommand.join(", ")}]`);
-      return;
-    }
-
-    await interaction.deferReply();
-
-    const subcommand = interaction.options.getSubcommand();
-    let hexCode;
-
-    // get a hex color to apply depending on the subcommand & arguments if any
-    if (subcommand === "hex") {
-
-      const commandOption = interaction.options.getString("hex-code");
-      hexCode = checkHexCode(commandOption);
-      if (!hexCode) {
-        await interaction.editReply(`The command could not be executed - "${commandOption}" is not a valid hex color code.`);
-        return;
+    try {
+      const subcommand = interaction.options.getSubcommand();
+      let commandOption;
+      if (subcommand === "hex") {
+        commandOption = interaction.options.getString("hex-code");
+      } else if (subcommand === "dominant") {
+        commandOption = interaction.options.getString("type");
       }
 
-    } else if (subcommand === "random") {
+      await logEvent({
+        name: "color",
+        description: "The color command was called",
+        command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: [commandOption] },
+        guild: interaction.guild,
+        member: interaction.member
+      });
 
-      hexCode = randomColor();
+      // before anything else, check if Roberto has the required permissions
+      const neededPermissionsForCommand = ["ManageRoles"];
+      const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
+      if (missingPermissions.length) {
+        throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
+      }
 
-    } else if (subcommand === "random-vibrant") {
+      await interaction.deferReply();
 
-      hexCode = randomColor(true);
+      // get a hex color to apply depending on the subcommand & arguments if any
+      let hexCode;
+      if (subcommand === "hex") {
 
-    } else if (subcommand === "dominant") {
+        hexCode = checkHexCode(commandOption);
+        if (!hexCode) {
+          throw new Error(`Invalid hex code - "${commandOption}"`);
+        }
 
-      const commandOption = interaction.options.getString("type");
+      } else if (subcommand === "random") {
 
-      try {
+        hexCode = randomColor();
+
+      } else if (subcommand === "random-vibrant") {
+
+        hexCode = randomColor(true);
+
+      } else if (subcommand === "dominant") {
+
         const avatarDir = await saveUserAvatar(interaction.member);
         hexCode = await getDominantColor(commandOption, avatarDir);
         await unlinkFile (avatarDir);
-      } catch (err) {
-        // sometimes the dominant color sampler fails
-        await interaction.editReply({ content: "The command could not be executed - dominant color processing failed, please retry later.", ephemeral: true });
-        return;
+
+      } else if (subcommand === "remove") {
+
+        hexCode = "none";
+
       }
-
-    } else if (subcommand === "remove") {
-
-      hexCode = "none";
-
-    }
-
-    try {
 
       // unassign any previous color, delete the role if not needed anymore
       // assign the new color - use the existing color role if it exists, create a new one otherwise
       const resultRoleId = await updateColorRole(hexCode, interaction.member);
 
+      let sentReply;
       if (resultRoleId === "none") {
-        await interaction.editReply(`Color was reset for <@${interaction.user.id}>.`);
+        sentReply = await interaction.editReply(`Color was reset for <@${interaction.user.id}>.`);
       } else {
-        await interaction.editReply(`Color <@&${resultRoleId}> was given to <@${interaction.user.id}>.`);
+        sentReply = await interaction.editReply(`Color <@&${resultRoleId}> was given to <@${interaction.user.id}>.`);
       }
 
+      await logAction({ name: `handle color command`, command: interaction.command, message: sentReply });
     } catch (err) {
+      await logError({
+        name: `config command handler error`,
+        description: `Failed to handle the config command`,
+        function: { name: `config.execute`, arguments: [...arguments] },
+        errorObject: err
+      });
 
-      if (err.message === "Missing permissions") {
+      if (err.message.startsWith("Missing permissions")) {
+        interaction.reply(`The command could not be executed - missing permissions : ${err.message.split(" - ")[1]}`);
+      } else if (err.message.startsWith("Invalid hex code")) {
+        await interaction.editReply(`The command could not be executed - ${err.message.split(" - ")[1]} is not a valid hex color code.`);
+      } else if (err.message === "Role too low") {
         await interaction.editReply("The command could not be executed - the Roberto managed role should be placed above color roles in the server's role list.");
+      } else if (err.message === "Dominant color processing failed") {
+        await interaction.editReply("The command could not be executed - dominant color processing failed, please retry later.");
       } else {
-        throw err;
+        try {
+          await interaction.reply("The command could not be executed - unknown error.");
+        } catch (e) {
+          if (e.code === "InteractionAlreadyReplied") {
+            await interaction.editReply("The command could not be executed - unknown error.");
+          }
+        }
       }
 
+      throw err;
     }
   },
 
