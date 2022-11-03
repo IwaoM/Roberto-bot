@@ -38,6 +38,7 @@ module.exports = {
         function: { name: `changelog.execute`, arguments: [...arguments] },
         errorObject: err
       });
+
       try {
         await interaction.reply("The command could not be executed - unknown error.");
       } catch (e) {
@@ -45,6 +46,7 @@ module.exports = {
           await interaction.editReply("The command could not be executed - unknown error.");
         }
       }
+
       throw err;
     }
   },

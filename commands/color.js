@@ -46,17 +46,21 @@ module.exports = {
   async execute (interaction) {
     try {
       const subcommand = interaction.options.getSubcommand();
-      let commandOption;
+      let commandOption, commandArgs;
       if (subcommand === "hex") {
         commandOption = interaction.options.getString("hex-code");
+        commandArgs = { hexCode: commandOption };
       } else if (subcommand === "dominant") {
         commandOption = interaction.options.getString("type");
+        commandArgs = { type: commandOption };
       }
 
       await logEvent({
         name: "color",
         description: "The color command was called",
-        command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: [commandOption] },
+        command: commandArgs ?
+          { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
+          { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
         guild: interaction.guild,
         member: interaction.member
       });
@@ -110,7 +114,13 @@ module.exports = {
         sentReply = await interaction.editReply(`Color <@&${resultRoleId}> was given to <@${interaction.user.id}>.`);
       }
 
-      await logAction({ name: `handle color command`, command: interaction.command, message: sentReply });
+      await logAction({
+        name: `handle color command`,
+        command: commandArgs ?
+          { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
+          { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
+        message: sentReply
+      });
     } catch (err) {
       await logError({
         name: `config command handler error`,

@@ -23,8 +23,6 @@ module.exports = {
         subcommand: eventInput.command.subcommand,
         arguments: eventInput.command.arguments
       };
-    } else {
-      logEntry.event.command = null;
     }
 
     if (eventInput.guild) {
@@ -32,8 +30,6 @@ module.exports = {
         id: eventInput.guild.id,
         name: eventInput.guild.name
       };
-    } else {
-      logEntry.event.guild = null;
     }
 
     if (eventInput.interaction) {
@@ -41,26 +37,23 @@ module.exports = {
         id: eventInput.interaction.id,
         type: eventInput.interaction.isChatInputCommand() ? "chatInputCommand" : eventInput.interaction.isButton() ? "button" : null
       };
-    } else {
-      logEntry.event.interaction = null;
     }
 
     if (eventInput.member) {
       logEntry.event.member = {
         id: eventInput.member.id,
-        tag: eventInput.member.user.tag
+        tag: eventInput.member.user.tag,
+        nickname: eventInput.member.nickname
       };
-    } else {
-      logEntry.event.member = null;
     }
 
     if (eventInput.role) {
       logEntry.event.role = {
         id: eventInput.role.id,
-        name: eventInput.role.name
+        name: eventInput.role.name,
+        permissions: eventInput.role.permissions.bitfield,
+        mentionable: eventInput.role.mentionable
       };
-    } else {
-      logEntry.event.role = null;
     }
 
     // write in the logs file
@@ -89,14 +82,10 @@ module.exports = {
         subcommand: actionInput.command.subcommand,
         arguments: actionInput.command.arguments
       };
-    } else {
-      logEntry.action.command = null;
     }
 
     if (actionInput.config) {
       logEntry.action.config = actionInput.config;
-    } else {
-      logEntry.action.config = null;
     }
 
     if (actionInput.guild) {
@@ -104,8 +93,6 @@ module.exports = {
         id: actionInput.guild.id,
         name: actionInput.guild.name
       };
-    } else {
-      logEntry.action.guild = null;
     }
 
     if (actionInput.interaction) {
@@ -113,17 +100,14 @@ module.exports = {
         id: actionInput.interaction.id,
         type: actionInput.interaction.isChatInputCommand() ? "chatInputCommand" : actionInput.interaction.isButton() ? "button" : null
       };
-    } else {
-      logEntry.action.interaction = null;
     }
 
     if (actionInput.member) {
       logEntry.action.member = {
         id: actionInput.member.id,
-        tag: actionInput.member.user.tag
+        tag: actionInput.member.user.tag,
+        nickname: actionInput.member.nickname
       };
-    } else {
-      logEntry.action.member = null;
     }
 
     if (actionInput.message) {
@@ -131,17 +115,15 @@ module.exports = {
         id: actionInput.message.id,
         content: actionInput.message.content
       };
-    } else {
-      logEntry.action.message = null;
     }
 
     if (actionInput.role) {
       logEntry.action.role = {
         id: actionInput.role.id,
-        name: actionInput.role.name
+        name: actionInput.role.name,
+        permissions: actionInput.role.permissions.bitfield,
+        mentionable: actionInput.role.mentionable
       };
-    } else {
-      logEntry.action.role = null;
     }
 
     if (actionInput.user) {
@@ -149,8 +131,6 @@ module.exports = {
         id: actionInput.user.id,
         tag: actionInput.user.tag
       };
-    } else {
-      logEntry.action.user = null;
     }
 
     // write in the logs file
@@ -177,14 +157,10 @@ module.exports = {
         name: errorInput.function.name,
         arguments: errorInput.function.arguments
       };
-    } else {
-      logEntry.error.function = null;
     }
 
     if (errorInput.errorObject) {
       logEntry.error.errorObject = errorInput.errorObject;
-    } else {
-      logEntry.error.errorObject = null;
     }
 
     // write in the logs file

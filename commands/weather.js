@@ -1,10 +1,12 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { openWeatherToken } = require("../config.json");
 const { capitalizeFirstLetter } = require("../helpers/misc.helper.js");
+const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
 
+// Beaufort scale of wind speeds (converted to m/s)
 const windTypes = [
-  { speed: 32.7, description: "Hurricane force" },
-  { speed: 28.5, description: "Storm force" },
+  { speed: 32.7, description: "Hurricane" },
+  { speed: 28.5, description: "Storm" },
   { speed: 24.5, description: "Whole gale" },
   { speed: 20.8, description: "Strong gale" },
   { speed: 17.2, description: "Gale" },
@@ -29,53 +31,95 @@ module.exports = {
     ),
 
   async execute (interaction) {
-    // No specific permission needed
-
-    await interaction.deferReply();
-
-    const locationOption = interaction.options.getString("location");
-    let location;
     try {
-      const locationResp = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${locationOption}&appid=${openWeatherToken}&limit=5`);
-      location = await locationResp.json();
-    } catch (err) {
-      await interaction.editReply(`The command could not be executed - the OpenWeather geocoding API returned an error.`);
-      return;
-    }
+      const locationOption = interaction.options.getString("location");
 
-    if (!location.length) {
+      await logEvent({
+        name: "weather",
+        description: "The weather command was called",
+        command: { id: interaction.commandId, name: interaction.commandName, arguments: { location: locationOption } },
+        guild: interaction.guild,
+        member: interaction.member
+      });
 
-      await interaction.editReply(`No results have been found for "${locationOption}".`);
-      return;
+      // No specific permission needed
 
-    } else {
+      await interaction.deferReply();
 
-      let weather;
+      let location;
       try {
-        const weatherResp = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${location[0].lat}&lon=${location[0].lon}&appid=${openWeatherToken}&units=metric`);
-        weather = await weatherResp.json();
+        const locationResp = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${locationOption}&appid=${openWeatherToken}&limit=5`);
+        location = await locationResp.json();
       } catch (err) {
-        await interaction.editReply(`The command could not be executed - the OpenWeather current weather API returned an error.`);
-        return;
+        throw new Error("Geocoding API error");
       }
 
-      const currentWindType = windTypes.find(type => type.speed < weather.wind.speed);
-      const weatherEmbed = new EmbedBuilder()
-        .setColor(0xe96d4a)
-        .setTitle(`${location[0].name}, ${location[0].state ? `${location[0].state}, ` : ""}${location[0].country}`)
-        .setAuthor({ name: "OpenWeather", iconURL: "https://pbs.twimg.com/profile_images/1173919481082580992/f95OeyEW_400x400.jpg" })
-        .setDescription(`**${Math.round(weather.main.temp)}°C -** ${capitalizeFirstLetter(weather.weather[0].description)}
+      if (!location.length) {
+
+        const sentReply = await interaction.editReply(`No results have been found for "${locationOption}".`);
+        await logAction({
+          name: `handle weather command`,
+          command: { id: interaction.commandId, name: interaction.commandName, arguments: { location: locationOption } },
+          message: sentReply
+        });
+        return;
+
+      } else {
+
+        let weather;
+        try {
+          const weatherResp = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${location[0].lat}&lon=${location[0].lon}&appid=${openWeatherToken}&units=metric`);
+          weather = await weatherResp.json();
+        } catch (err) {
+          throw new Error("Weather API error");
+        }
+
+        const currentWindType = windTypes.find(type => type.speed < weather.wind.speed);
+        const weatherEmbed = new EmbedBuilder()
+          .setColor(0xe96d4a)
+          .setTitle(`${location[0].name}, ${location[0].state ? `${location[0].state}, ` : ""}${location[0].country}`)
+          .setAuthor({ name: "OpenWeather", iconURL: "https://pbs.twimg.com/profile_images/1173919481082580992/f95OeyEW_400x400.jpg" })
+          .setDescription(`**${Math.round(weather.main.temp)}°C -** ${capitalizeFirstLetter(weather.weather[0].description)}
 Feels like ${Math.round(weather.main.feels_like)}°C`)
-        .setThumbnail(`http://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`)
-        .addFields(
-          { name: "Humidity", value: `${weather.main.humidity}%`, inline: true },
-          { name: "Pressure", value: `${weather.main.pressure}hPa`, inline: true },
-          { name: "Wind", value: `${weather.wind.speed}m/s - ${currentWindType.description}` }
-        )
-        .setTimestamp(new Date());
+          .setThumbnail(`http://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`)
+          .addFields(
+            { name: "Humidity", value: `${weather.main.humidity}%`, inline: true },
+            { name: "Pressure", value: `${weather.main.pressure}hPa`, inline: true },
+            { name: "Wind", value: `${weather.wind.speed}m/s - ${currentWindType.description}` }
+          )
+          .setTimestamp(new Date());
 
-      interaction.editReply({ embeds: [weatherEmbed] });
+        const sentReply = interaction.editReply({ embeds: [weatherEmbed] });
+        await logAction({
+          name: `handle weather command`,
+          command: { id: interaction.commandId, name: interaction.commandName, arguments: { location: locationOption } },
+          message: sentReply
+        });
 
+      }
+    } catch (err) {
+      await logError({
+        name: `weather command handler error`,
+        description: `Failed to handle the weather command`,
+        function: { name: `weather.execute`, arguments: [...arguments] },
+        errorObject: err
+      });
+
+      if (err.message === "Geocoding API error") {
+        await interaction.editReply(`The command could not be executed - the OpenWeather geocoding API returned an error.`);
+      } else if (err.message === "Weather API error") {
+        await interaction.editReply(`The command could not be executed - the OpenWeather current weather API returned an error.`);
+      } else {
+        try {
+          await interaction.reply("The command could not be executed - unknown error.");
+        } catch (e) {
+          if (e.code === "InteractionAlreadyReplied") {
+            await interaction.editReply("The command could not be executed - unknown error.");
+          }
+        }
+      }
+
+      throw err;
     }
   },
 

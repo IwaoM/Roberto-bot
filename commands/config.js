@@ -42,15 +42,24 @@ module.exports = {
   async execute (interaction) {
     try {
       const subcommand = interaction.options.getSubcommand();
-      let commandOption;
+      let commandOption, commandArgs;
       if (subcommand === "auto-color" || subcommand === "auto-greet" || subcommand === "permission-dm") {
         commandOption = interaction.options.getString(subcommand);
+      }
+      if (subcommand === "auto-color") {
+        commandArgs = { autoColor: commandOption };
+      } else if (subcommand === "auto-greet") {
+        commandArgs = { autoGreet: commandOption };
+      } else if (subcommand === "permission-dm") {
+        commandArgs = { permissionDm: commandOption };
       }
 
       await logEvent({
         name: "config",
         description: "The config command was called",
-        command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: [commandOption] },
+        command: commandArgs ?
+          { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
+          { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
         guild: interaction.guild,
         member: interaction.member
       });
@@ -97,7 +106,13 @@ module.exports = {
             sentReply = await interaction.editReply(`The ${subcommand} option has been disabled.`);
 
           }
-          await logAction({ name: `handle config command`, command: interaction.command, message: sentReply });
+          await logAction({
+            name: `handle config command`,
+            command: commandArgs ?
+              { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
+              { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
+            message: sentReply
+          });
 
         } else {
 
@@ -120,7 +135,13 @@ module.exports = {
           const messageText = `Roberto Administrator role : "${adminRole.name}" - ID ${guildConfig.robertoAdminRoleId}`;
 
           const sentReply = await interaction.editReply(messageText);
-          await logAction({ name: `handle config command`, command: interaction.command, message: sentReply });
+          await logAction({
+            name: `handle config command`,
+            command: commandArgs ?
+              { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
+              { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
+            message: sentReply
+          });
 
         } else {
 
@@ -188,7 +209,13 @@ module.exports = {
         }
 
         const sentReply = await interaction.editReply(messageText);
-        await logAction({ name: `handle config command`, command: interaction.command, message: sentReply });
+        await logAction({
+          name: `handle config command`,
+          command: commandArgs ?
+            { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
+            { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
+          message: sentReply
+        });
       }
     } catch (err) {
       await logError({
@@ -205,7 +232,15 @@ module.exports = {
         missingRoleMessage += "\nCurrently, the role does not exist. This can be fixed with the `/config roles-repair` command.";
         await interaction.editReply(missingRoleMessage);
       } else if (err.message.startsWith("Missing permissions")) {
-        interaction.reply(`The command could not be executed - missing permissions : ${err.message.split(" - ")[1]}`);
+        await interaction.reply(`The command could not be executed - missing permissions : ${err.message.split(" - ")[1]}`);
+      } else {
+        try {
+          await interaction.reply("The command could not be executed - unknown error.");
+        } catch (e) {
+          if (e.code === "InteractionAlreadyReplied") {
+            await interaction.editReply("The command could not be executed - unknown error.");
+          }
+        }
       }
 
       throw err;

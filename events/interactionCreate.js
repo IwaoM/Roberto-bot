@@ -15,27 +15,17 @@ module.exports = {
         }
         await command.execute(interaction);
         await logAction({ name: `handle ${this.name} event`, guild: interaction.guild, interaction: interaction, member: interaction.member });
+
       } else if (interaction.isButton()) {
 
         const relatedCommandName = interaction.message.interaction.commandName.split(" ")[0]; // for commands with subcommands
         const relatedCommand = client.commands.get(relatedCommandName);
-        if (!relatedCommand) { return; }
-
-        try {
-          await relatedCommand.executeButton(interaction);
-        } catch (error) {
-          try {
-            await interaction.reply({ content: "The button interaction could not be executed - unknown error.", ephemeral: true });
-          } catch (err) {
-            if (err.code === "InteractionAlreadyReplied") {
-              await interaction.editReply({ content: "The button interaction could not be executed - unknown error.", ephemeral: true });
-            }
-          }
+        if (!relatedCommand) {
+          return;
         }
-
+        await relatedCommand.executeButton(interaction);
         await logAction({ name: `handle ${this.name} event`, guild: interaction.guild, interaction: interaction, member: interaction.member });
-      } else {
-        return;
+
       }
     } catch (err) {
       await logError({

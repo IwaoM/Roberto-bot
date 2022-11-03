@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
 const fs = require("node:fs");
 const path = require("node:path");
+const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
 
 // Construct list of choices for command argument
 const optionChoices = [];
@@ -23,32 +24,67 @@ module.exports = {
     ),
 
   async execute (interaction) {
-    // No specific permission needed
+    try {
+      const commandOption = interaction.options.getString("command");
+      await logEvent({
+        name: "help",
+        description: "The help command was called",
+        command: commandOption ?
+          { id: interaction.commandId, name: interaction.commandName, arguments: { command: commandOption } } :
+          { id: interaction.commandId, name: interaction.commandName },
+        guild: interaction.guild,
+        member: interaction.member
+      });
 
-    let answer;
-    const commandOption = interaction.options.getString("command");
+      // No specific permission needed
 
-    if (commandOption) { // If an argument was provided
+      let answer;
+      if (commandOption) { // If an argument was provided
 
-      // Send the command name, description & usage
-      const command = interaction.client.commands.get(commandOption);
-      answer = `- **${commandOption}** -`;
-      if (command.data.description) {
-        answer += `\n\n${command.data.description}`;
+        // Send the command name, description & usage
+        const command = interaction.client.commands.get(commandOption);
+        answer = `- **${commandOption}** -`;
+        if (command.data.description) {
+          answer += `\n\n${command.data.description}`;
+        }
+        if (command.usage) {
+          answer += `\n\n${command.usage}`;
+        }
+
+      } else { // If no argument was provided
+
+        // List all available commands
+        const commandNames = optionChoices.map(command => command.name);
+        answer = `List of available commands : \n• \`/${commandNames.join("`\n• `/")}\``;
+
       }
-      if (command.usage) {
-        answer += `\n\n${command.usage}`;
+
+      const sentReply = await interaction.reply(answer);
+      await logAction({
+        name: `handle help command`,
+        command: commandOption ?
+          { id: interaction.commandId, name: interaction.commandName, arguments: { command: commandOption } } :
+          { id: interaction.commandId, name: interaction.commandName },
+        message: sentReply
+      });
+    } catch (err) {
+      await logError({
+        name: `help command handler error`,
+        description: `Failed to handle the help command`,
+        function: { name: `help.execute`, arguments: [...arguments] },
+        errorObject: err
+      });
+
+      try {
+        await interaction.reply("The command could not be executed - unknown error.");
+      } catch (e) {
+        if (e.code === "InteractionAlreadyReplied") {
+          await interaction.editReply("The command could not be executed - unknown error.");
+        }
       }
 
-    } else { // If no argument was provided
-
-      // List all available commands
-      const commandNames = optionChoices.map(command => command.name);
-      answer = `List of available commands : \n• \`/${commandNames.join("`\n• `/")}\``;
-
+      throw err;
     }
-
-    await interaction.reply(answer);
   },
 };
 

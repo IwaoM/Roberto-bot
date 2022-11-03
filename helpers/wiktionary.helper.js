@@ -1,5 +1,5 @@
 const { htmlToPlainText, trimAll } = require("./misc.helper.js");
-const { logError } = require("../helpers/logs.helper.js");
+const { logError, logAction } = require("../helpers/logs.helper.js");
 
 module.exports = {
   async bodyToListFrench (body) {
@@ -46,6 +46,7 @@ module.exports = {
         result.push(resultEntry);
       }
 
+      await logAction({ name: "parse FR wiktionary page" });
       return result;
     } catch (err) {
       await logError({
@@ -146,6 +147,7 @@ module.exports = {
         result.push(resultEntry);
       }
 
+      await logAction({ name: "parse EN wiktionary page" });
       return result;
     } catch (err) {
       await logError({
