@@ -46,7 +46,7 @@ module.exports = {
         result.push(resultEntry);
       }
 
-      await logAction({ name: "parse FR wiktionary page" });
+      await logAction({ name: "FR wiktionary page parsing" });
       return result;
     } catch (err) {
       await logError({
@@ -147,7 +147,7 @@ module.exports = {
         result.push(resultEntry);
       }
 
-      await logAction({ name: "parse EN wiktionary page" });
+      await logAction({ name: "EN wiktionary page parsing" });
       return result;
     } catch (err) {
       await logError({

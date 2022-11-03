@@ -24,7 +24,7 @@ module.exports = {
       let name = generatePhoenix();
       const sentReply = await interaction.reply({ content: name, components: [buttonRow] });
       await logAction({
-        name: `handle px command`,
+        name: `px command handling`,
         command: { id: interaction.commandId, name: interaction.commandName },
         message: sentReply
       });
@@ -62,13 +62,13 @@ module.exports = {
       // return if the user who pressed the button is not the user who called the original command
       if (interaction.user.id !== interaction.message.interaction.user.id) {
         const sentReply = await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });
-        await logAction({ name: `handle px_again button`, message: sentReply });
+        await logAction({ name: `px_again button handling`, message: sentReply });
         return;
       }
 
       const name = generatePhoenix();
       const sentReply = await interaction.update(name);
-      await logAction({ name: `handle px_again button`, message: sentReply });
+      await logAction({ name: `px_again button handling`, message: sentReply });
     } catch (err) {
       await logError({
         name: `px_again button handler error`,

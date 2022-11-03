@@ -104,7 +104,7 @@ module.exports = {
       if (guildUpdateCount) { console.log(""); }
       console.log(`Needed permissions were updated in ${guildUpdateCount} guild(s)`);
 
-      await logAction({ name: `handle ${this.name} event` });
+      await logAction({ name: `${this.name} event handling` });
       console.log(`\n${client.user.username} ready!\n`);
     } catch (err) {
       await logError({

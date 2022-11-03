@@ -25,11 +25,11 @@ module.exports = {
       for (let role of userMemberColorRoleList.entries()) {
         // remove the color role from the user
         await userMember.roles.remove(role[1]);
-        await logAction({ name: "remove member role", guild: userMember.guild, member: userMember, role: role[1] });
+        await logAction({ name: "member role removal", guild: userMember.guild, member: userMember, role: role[1] });
         if (role[1].members.size <= 1) {
           // delete role if no one else used it
           await role[1].delete();
-          await logAction({ name: "delete role", guild: userMember.guild, role: role[1] });
+          await logAction({ name: "role deletion", guild: userMember.guild, role: role[1] });
         }
       }
 
@@ -41,16 +41,16 @@ module.exports = {
         if (!wantedColorRole) {
           // if not : create it
           wantedColorRole = await userMember.guild.roles.create({ name: hexCode, color: hexCode });
-          await logAction({ name: "create role", guild: userMember.guild, role: wantedColorRole });
+          await logAction({ name: "role creation", guild: userMember.guild, role: wantedColorRole });
           wantedColorRole = await wantedColorRole.setPermissions([]);
-          await logAction({ name: "update role", guild: userMember.guild, role: wantedColorRole });
+          await logAction({ name: "role update", guild: userMember.guild, role: wantedColorRole });
           wantedColorRole = await wantedColorRole.setMentionable(true);
-          await logAction({ name: "update role", guild: userMember.guild, role: wantedColorRole });
+          await logAction({ name: "role update", guild: userMember.guild, role: wantedColorRole });
         }
 
         // assign the found or created color role to user
         userMember.roles.add(wantedColorRole);
-        await logAction({ name: "add member role", guild: userMember.guild, member: userMember, role: wantedColorRole });
+        await logAction({ name: "member role addition", guild: userMember.guild, member: userMember, role: wantedColorRole });
         return wantedColorRole.id;
       }
 

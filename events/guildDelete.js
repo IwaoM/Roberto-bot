@@ -8,7 +8,7 @@ module.exports = {
     try {
       await logEvent({ name: this.name, description: "Roberto has left a guild", guild: guild });
       await processGuildDelete(guild);
-      await logAction({ name: `handle ${this.name} event`, guild: guild });
+      await logAction({ name: `${this.name} event handling`, guild: guild });
     } catch (err) {
       await logError({
         name: `${this.name} event handler error`,

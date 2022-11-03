@@ -75,7 +75,7 @@ module.exports = {
       const buttonRow = new ActionRowBuilder().addComponents(againButton);
       const sentReply = await interaction.reply({ content: text, components: [buttonRow] });
       await logAction({
-        name: `handle random command`,
+        name: `random command handling`,
         command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs },
         message: sentReply
       });
@@ -117,7 +117,7 @@ module.exports = {
       // return if the user who pressed the button is not the user who called the original command
       if (interaction.user.id !== interaction.message.interaction.user.id) {
         const sentReply = await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });
-        await logAction({ name: `handle ${interaction.customId} button`, message: sentReply });
+        await logAction({ name: `${interaction.customId} button handling`, message: sentReply });
         return;
       }
 
@@ -149,7 +149,7 @@ module.exports = {
       const newText = replyLines.join("\n");
 
       const sentReply = await interaction.update(newText);
-      await logAction({ name: `handle ${interaction.customId} button`, message: sentReply });
+      await logAction({ name: `${interaction.customId} button handling`, message: sentReply });
     } catch (err) {
       await logError({
         name: `${interaction.customId} button handler error`,

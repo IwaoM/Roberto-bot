@@ -90,10 +90,10 @@ module.exports = {
         const welcomeMessage = welcomeMessages[messageIndex].replace("NEW_MEMBER", member.id);
 
         const sentMessage = await member.guild.systemChannel.send(welcomeMessage);
-        await logAction({ name: `send welcome message`, guild: member.guild, message: sentMessage, member: member });
+        await logAction({ name: `welcome message sending`, guild: member.guild, message: sentMessage, member: member });
       }
 
-      await logAction({ name: `handle ${this.name} event`, guild: member.guild, member: member });
+      await logAction({ name: `${this.name} event handling`, guild: member.guild, member: member });
     } catch (err) {
       await logError({
         name: `${this.name} event handler error`,

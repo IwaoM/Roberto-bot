@@ -13,7 +13,7 @@ module.exports = {
         await processPermissionUpdates(oldMember, newMember, client, "guildMemberUpdate");
       }
 
-      await logAction({ name: `handle ${this.name} event`, guild: newMember.guild, member: newMember });
+      await logAction({ name: `${this.name} event handling`, guild: newMember.guild, member: newMember });
     } catch (err) {
       await logError({
         name: `${this.name} event handler error`,

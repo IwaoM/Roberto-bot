@@ -14,7 +14,7 @@ module.exports = {
           return;
         }
         await command.execute(interaction);
-        await logAction({ name: `handle ${this.name} event`, guild: interaction.guild, interaction: interaction, member: interaction.member });
+        await logAction({ name: `${this.name} event handling`, guild: interaction.guild, interaction: interaction, member: interaction.member });
 
       } else if (interaction.isButton()) {
 
@@ -24,7 +24,7 @@ module.exports = {
           return;
         }
         await relatedCommand.executeButton(interaction);
-        await logAction({ name: `handle ${this.name} event`, guild: interaction.guild, interaction: interaction, member: interaction.member });
+        await logAction({ name: `${this.name} event handling`, guild: interaction.guild, interaction: interaction, member: interaction.member });
 
       }
     } catch (err) {

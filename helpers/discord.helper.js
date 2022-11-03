@@ -7,11 +7,11 @@ module.exports = {
       const roleIds = {};
 
       let robertoAdminRole = await guild.roles.create({ name: adminRoleName });
-      await logAction({ name: "create role", guild: guild, role: robertoAdminRole });
+      await logAction({ name: "role creation", guild: guild, role: robertoAdminRole });
       robertoAdminRole = await robertoAdminRole.setPermissions([]);
-      await logAction({ name: "update role", guild: guild, role: robertoAdminRole });
+      await logAction({ name: "role update", guild: guild, role: robertoAdminRole });
       robertoAdminRole = await robertoAdminRole.setMentionable(true);
-      await logAction({ name: "update role", guild: guild, role: robertoAdminRole });
+      await logAction({ name: "role update", guild: guild, role: robertoAdminRole });
       roleIds.robertoAdminRoleId = robertoAdminRole.id;
 
       return roleIds;
@@ -74,7 +74,7 @@ module.exports = {
           const recipientDm = await recipient.createDM();
           const sentDm = await recipientDm.send(text);
           await logAction({
-            name: `dm send`,
+            name: `dm sending`,
             description: `Send a DM to a user`,
             message: { id: sentDm.id, content: sentDm.content },
             user: { id: recipient.id, name: recipient.username }

@@ -10,7 +10,7 @@ module.exports = {
 
       // return if the removed member was Roberto themself
       if (member.id === client.user.id) {
-        await logAction({ name: `leave guild`, guild: member.guild });
+        await logAction({ name: `guild leaving`, guild: member.guild });
         return;
       }
 
@@ -20,10 +20,10 @@ module.exports = {
 
       for (let i = 0; i < unusedColorRoles.size; i++) {
         await unusedColorRoles.at(i).delete();
-        await logAction({ name: `delete role`, role: unusedColorRoles.at(i) });
+        await logAction({ name: `role deletion`, role: unusedColorRoles.at(i) });
       }
 
-      await logAction({ name: `handle ${this.name} event`, guild: member.guild, member: member });
+      await logAction({ name: `${this.name} event handling`, guild: member.guild, member: member });
     } catch (err) {
       await logError({
         name: `${this.name} event handler error`,

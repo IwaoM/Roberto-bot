@@ -58,7 +58,7 @@ module.exports = {
 
         const sentReply = await interaction.editReply(`No results have been found for "${locationOption}".`);
         await logAction({
-          name: `handle weather command`,
+          name: `weather command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, arguments: { location: locationOption } },
           message: sentReply
         });
@@ -91,7 +91,7 @@ Feels like ${Math.round(weather.main.feels_like)}°C`)
 
         const sentReply = interaction.editReply({ embeds: [weatherEmbed] });
         await logAction({
-          name: `handle weather command`,
+          name: `weather command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, arguments: { location: locationOption } },
           message: sentReply
         });

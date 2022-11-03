@@ -61,7 +61,7 @@ module.exports = {
 
       const sentReply = await interaction.reply(answer);
       await logAction({
-        name: `handle help command`,
+        name: `help command handling`,
         command: commandOption ?
           { id: interaction.commandId, name: interaction.commandName, arguments: { command: commandOption } } :
           { id: interaction.commandId, name: interaction.commandName },

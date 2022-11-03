@@ -49,7 +49,7 @@ module.exports = {
       if (!searchData.pages.length) {
         const sentReply = await interaction.editReply(`No results were found for "${commandOption}".`);
         await logAction({
-          name: `handle dictionary command`,
+          name: `dictionary command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: { word: commandOption } },
           message: sentReply
         });
@@ -122,7 +122,7 @@ module.exports = {
 
       const sentReply = await interaction.editReply({ embeds: [dictionaryEmbed] });
       await logAction({
-        name: `handle dictionary command`,
+        name: `dictionary command handling`,
         command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: { word: commandOption } },
         message: sentReply
       });

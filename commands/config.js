@@ -107,7 +107,7 @@ module.exports = {
 
           }
           await logAction({
-            name: `handle config command`,
+            name: `config command handling`,
             command: commandArgs ?
               { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
               { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
@@ -136,7 +136,7 @@ module.exports = {
 
           const sentReply = await interaction.editReply(messageText);
           await logAction({
-            name: `handle config command`,
+            name: `config command handling`,
             command: commandArgs ?
               { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
               { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
@@ -190,7 +190,7 @@ module.exports = {
         for (let i = 0; i < rolesToDelete.size; i++) {
           try {
             await rolesToDelete.at(i).delete();
-            await logAction({ name: "delete role", guild: interaction.guild, role: rolesToDelete.at(i) });
+            await logAction({ name: "role deletion", guild: interaction.guild, role: rolesToDelete.at(i) });
             deletedCount++;
           } catch (err) {
             notDeletedCount++;
@@ -210,7 +210,7 @@ module.exports = {
 
         const sentReply = await interaction.editReply(messageText);
         await logAction({
-          name: `handle config command`,
+          name: `config command handling`,
           command: commandArgs ?
             { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
             { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },

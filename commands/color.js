@@ -115,7 +115,7 @@ module.exports = {
       }
 
       await logAction({
-        name: `handle color command`,
+        name: `color command handling`,
         command: commandArgs ?
           { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
           { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },

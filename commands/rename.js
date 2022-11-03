@@ -43,7 +43,7 @@ module.exports = {
       try {
 
         await memberToRename.setNickname(nicknameOption);
-        await logAction({ name: `update member nickname`, guild: interaction.guild, member: memberToRename });
+        await logAction({ name: `member nickname update`, guild: interaction.guild, member: memberToRename });
         let sentReply;
         if (nicknameOption) {
           sentReply = await interaction.editReply(`Nickname **${nicknameOption}** was given to <@${userOption.id}> by <@${interaction.user.id}>.`);

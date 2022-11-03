@@ -30,7 +30,7 @@ module.exports = {
       const text = `**${latestRelease.data.tag_name}**\n${latestRelease.data.body}\n\nFull list of releases : https://github.com/IwaoM/Roberto-bot/releases`;
       const sentReply = await interaction.editReply(text);
 
-      await logAction({ name: `handle changelog command`, command: { id: interaction.commandId, name: interaction.commandName }, message: sentReply });
+      await logAction({ name: `changelog command handling`, command: { id: interaction.commandId, name: interaction.commandName }, message: sentReply });
     } catch (err) {
       await logError({
         name: `changelog command handler error`,
