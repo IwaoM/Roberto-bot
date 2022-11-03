@@ -1,5 +1,18 @@
 MIT License
 
+Copyright (c) 2021 Noel Buechler
+Copyright (c) 2015 Amish Shah
+
+Copyright (c) 2019 Tao Qiufeng
+
+Copyright (c) 2015 Jari Zwarts
+Copyright (c) 2015 AKFish
+
+Copyright (c) 2018 Octokit contributors
+
+Copyright (c) 2015-2016 Rico Sta. Cruz and other contributors
+Copyright (c) 2016-2022 Zoltan Kochan and other contributors
+
 Copyright (c) 2022 Iwao Meunier
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
