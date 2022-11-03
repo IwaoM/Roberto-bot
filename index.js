@@ -33,21 +33,14 @@ for (const file of eventFiles) {
   const event = require(filePath);
   if (event.once) {
     client.once(event.name, (...args) => {
-      try {
-        event.execute(...args);
-      } catch (err) {
-        console.log(`Failed to handle event ${event.name} with arguments [${[...args].join(", ")}]`);
-      }
+      event.execute(...args);
     });
   } else {
     client.on(event.name, (...args) => {
-      try {
-        event.execute(...args, client);
-      } catch (err) {
-        console.log(`Failed to handle event ${event.name} with arguments [${[...args].join(", ")}]`);
-      }
+      event.execute(...args, client);
     });
   }
 }
 
+// log in to Discord
 client.login(token);

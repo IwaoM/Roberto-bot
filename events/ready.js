@@ -2,7 +2,7 @@ const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/files.he
 const { checkOwnMissingPermissions, dmUsers } = require("../helpers/discord.helper.js");
 const { processGuildCreate, processGuildDelete } = require("../helpers/processes.helper.js");
 const { robertoNeededPermissions } = require("../config.json");
-const { logEvent, logAction, logError } = require("../helpers/logs.helper.js");
+const { logEvent, logAction, logError, pruneLogs } = require("../helpers/logs.helper.js");
 
 module.exports = {
   name: "ready",
@@ -12,6 +12,10 @@ module.exports = {
     try {
       await logEvent({ name: this.name, description: "The discord.js client is ready to start working" });
       console.log(`Initializing ${client.user.username}`);
+
+      // Prune logs older than a week
+      const clearedLogsCount = await pruneLogs(14);
+      console.log(`\nCleared ${clearedLogsCount} log(s) older than 2 weeks.`);
 
       // * 1. Syncing & display of the joined guild list
 

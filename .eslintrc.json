@@ -18,6 +18,7 @@
         "indent": ["error", 2],
         "keyword-spacing": "error",
         "max-statements-per-line": ["error", { "max": 2 }],
+        "no-constant-condition": "off",
         "no-lonely-if": "error",
         "no-multi-spaces": "error",
         "no-trailing-spaces": ["error"],

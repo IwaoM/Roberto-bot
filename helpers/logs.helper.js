@@ -167,6 +167,20 @@ module.exports = {
     console.log(logEntry);
     await writeLogEntry(logEntry);
   },
+
+  async pruneLogs (days) {
+    const xDaysAgo = Date.now() - 1000 * 3600 * 24 * days;
+
+    const logsDir = path.join(path.dirname(__dirname), "logs.json");
+    let data = await fs.promises.readFile(logsDir);
+    const logs = JSON.parse(data);
+    const recentLogs = logs.filter(entry => entry.timestamp.time > xDaysAgo);
+
+    data = JSON.stringify(recentLogs, null, 2);
+    await fs.promises.writeFile(logsDir, data);
+
+    return logs.length - recentLogs.length;
+  }
 };
 
 async function writeLogEntry (logEntry) {
@@ -176,6 +190,7 @@ async function writeLogEntry (logEntry) {
     let data = await fs.promises.readFile(logsDir);
     const logs = JSON.parse(data);
     logs.push(logEntry);
+
     data = JSON.stringify(logs, null, 2);
     await fs.promises.writeFile(logsDir, data);
   } catch (err) {
