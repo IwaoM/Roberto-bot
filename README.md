@@ -12,9 +12,27 @@ If you find any issues, please report them in [Issues](https://github.com/IwaoM/
 
 ## Setting up the bot
 
-*TODO*
+### Inviting Roberto
+
+When inviting Roberto to your server, you will be prompted to give them a set of permissions within it. The purpose for each of those asked permissions are explained in the next section.
+
+Once Roberto has joined your server, a new **Roberto** role will have automatically been created and marked as "managed by an integration". This role is managed by Discord itself and is used to give Roberto their needed permissions. Note that if Roberto doesn't have more permissions than **@everyone**, no such role will be generated. **It is highly recommended to put this role at the very top of your server's role list. This is required for several features to work properly.**
+
+If the *Manage Roles* permissions was given to Roberto, another role will be created on your server : **Roberto Admin**. This role is not automatically created or managed by Discord, and is used solely by Roberto : some commands will require their caller to have this role. Its permissions or position in the role list are of no importance.
+
+### Managing Roberto
+
+The `/config` command is used to modify Roberto's behavior on the server. The last section explains those configurable options in more detail. This command can only be used by users with the **Roberto Admin** role, excepted the `roles-repair` subcommand, the purpose of which is to regenerate the **Roberto Admin** role, in case it was deleted or other roles with the same name were created (and you don't know which one is the real one).
+
+### Removing Roberto from your server
+
+The **Roberto** role managed by the integration will automatically be deleted when removing Roberto from your server. Other roles such as color roles or the **Roberto Admin** role, however, will remain.
 
 ## Needed permissions
+
+When inviting Roberto, you will be asked to grant them 5 permissions :
+
+- Read messages : this is mainly used to display Roberto in the right sidebar of Discord.
 
 *TODO*
 
@@ -113,7 +131,7 @@ Roberto needs the permission to manage roles for the *roles-repair* subcommand c
 - `/config auto-greet <action>`: Enables, disables or shows the current value for the *auto-greet* configuration option. 
 - `/config permission-dm <action>`: Enables, disables or shows the current value for the *permission-dm* configuration option. 
 - `/config roles-show`: Shows the current Roberto admin role name and ID.
-- `/config roles-repair`: Regenerates the Roberto admin role and deletes unused roles with the same name.
+- `/config roles-repair`: Regenerates the Roberto admin role and deletes unused roles with the same name (a role is considered unused if it has no members).
 
 ### /changelog
 
