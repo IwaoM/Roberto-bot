@@ -1,6 +1,6 @@
 # [Roberto-bot](link) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/IwaoM/Roberto-bot) ![GitHub](https://img.shields.io/github/license/IwaoM/Roberto-bot)
 
-<img src="icon.png" alt="drawing" width="120"/>
+<img src="icon.png" alt="Roberto logo" width="120"/>
 
 A Discord bot with various utility & customization features. It is most suited for small to medium servers.
 
@@ -18,7 +18,11 @@ When inviting Roberto to your server, you will be prompted to give them a set of
 
 Once Roberto has joined your server, a new **Roberto** role will have automatically been created and marked as "managed by an integration". This role is managed by Discord itself and is used to give Roberto their needed permissions. Note that if Roberto doesn't have more permissions than **@everyone**, no such role will be generated. **It is highly recommended to put this role at the very top of your server's role list. This is required for several features to work properly.**
 
+<img src="https://i.imgur.com/xSuik2f.png" alt="Roberto role on top of the role list" height=240/>
+
 If the *Manage Roles* permissions was given to Roberto, another role will be created on your server : **Roberto Admin**. This role is not automatically created or managed by Discord, and is used solely by Roberto : some commands will require their caller to have this role. Its permissions or position in the role list are of no importance.
+
+When inviting Roberto to a server, the server owner will automatically receive a DM from Roberto explaining the basics of the bot's usage. If the **View audit logs** permission is granted, the user who invited Roberto will receive this DM as well.
 
 ### Managing Roberto
 
@@ -30,11 +34,19 @@ The **Roberto** role managed by the integration will automatically be deleted wh
 
 ## Needed permissions
 
-When inviting Roberto, you will be asked to grant them 5 permissions :
+When inviting Roberto, you will be asked to grant them 5 permissions:
 
-- Read messages : this is mainly used to display Roberto in the right sidebar of Discord.
-
-*TODO*
+- **Read messages :** this is mainly used to display Roberto in the right sidebar of Discord.
+- **Send messages :** this is used for Roberto to send auto-greet messages on new member joins if the option is active (disabled by default).
+  - Note that neither **Read messages** or **Send messages** is needed for commands to be read and responded to by Roberto.
+- **Manage nicknames :** this is obviously needed for the `/rename` command.
+- **Manage roles :** this is needed for the following:
+  - Creating the **Roberto Admin** role (performed when Roberto joins your server - this role is needed to call some commands).
+  - Calling the `/config roles-repair` command, which may create a new role and delete unused roles.
+  - Using the `/color` command since name colors are given through roles. For the same reason, it is also needed for the **auto-color** feature to function.
+- **View audit logs:** this is used for the following:
+  - Fetch the user who invited Roberto in the server to send them a DM.
+  - Fetch the user who removed needed permissions from Roberto (by editing a server role or Roberto's role list) and send them a DM (configurable with the **permission-dm** option).
 
 ## Commands
 
@@ -143,17 +155,28 @@ Displays the changelog of the latest release of Roberto.
 
 ## Other features
 
-*TODO*
+Roberto's behavior on your server can be customized through 3 togglable options. Each of those options can be shown and edited through the corresponding subcommand of `/config`.
 
 ### Auto-color
 
-*TODO*
+This option is enabled by default.
+
+When this option is enabled, new members joining the server will automatically be given a color role - the chosen color will be the main dominant color from their profile picture (as if the member called the `/color dominant main` command upon joining).
+
+The color role will not be created or applied if Roberto was offline when the new member joined.
 
 ### Auto-greet
 
-*TODO*
+This option is disabled by default.
+
+When this option is enabled, Roberto will automatically send a greetings message when a new member joins the server. The message is randomly picked from a pool containing both Discord's old greetings message list (not used anymore) and new message list.
+
+If this option is enabled, it is recommended to disable Discord's native greeting feature to avoid a double greeting.
+
+The greeting message will not be sent if Roberto was offline when the new member joined.
 
 ### Permission DM
 
-*TODO*
+This option is enabled by default.
 
+When this option is enabled, whenever a role needed by Roberto is removed from them (this can happen when a role Roberto has is edited or removed from them), an alert DM is sent to the person who removed the permissions. If Roberto doesn't have the **View audit logs** permission or was offline when this was performed, the DM will be sent to the server owner instead (the next time Roberto starts up).
