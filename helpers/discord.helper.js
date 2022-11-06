@@ -77,7 +77,7 @@ module.exports = {
             name: `dm sending`,
             description: `Send a DM to a user`,
             message: { id: sentDm.id, content: sentDm.content },
-            user: { id: recipient.id, name: recipient.username }
+            user: { id: recipient.id, tag: recipient.tag }
           });
         } catch (err) {
           if (err.code === 50007) {

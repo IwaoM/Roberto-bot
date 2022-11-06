@@ -51,7 +51,7 @@ module.exports = {
       logEntry.event.role = {
         id: eventInput.role.id,
         name: eventInput.role.name,
-        permissions: eventInput.role.permissions.bitfield,
+        permissions: eventInput.role.permissions.toArray(),
         mentionable: eventInput.role.mentionable
       };
     }
@@ -121,7 +121,7 @@ module.exports = {
       logEntry.action.role = {
         id: actionInput.role.id,
         name: actionInput.role.name,
-        permissions: actionInput.role.permissions.bitfield,
+        permissions: actionInput.role.permissions.toArray(),
         mentionable: actionInput.role.mentionable
       };
     }
@@ -195,6 +195,8 @@ async function writeLogEntry (logEntry) {
     await fs.promises.writeFile(logsDir, data);
   } catch (err) {
     // if this fails, just log the entry
+    console.log("Log writing failed");
+    console.log(err);
     console.log(logEntry);
   }
 }

@@ -24,9 +24,18 @@ module.exports = {
       await interaction.deferReply();
 
       // get latest release from github
-      let latestRelease = await octokit.request("GET /repos/IwaoM/Roberto-bot/releases/latest");
+      let latestRelease;
+      try {
+        latestRelease = await octokit.request("GET /repos/IwaoM/Roberto-bot/releases/latest");
+      } catch (err) {
+        throw new Error("github API error");
+      }
 
       // Create text & message
+      if (!latestRelease.data) {
+        const sentReply = await interaction.editReply(`No releases were found.`);
+        await logAction({ name: `changelog command handling`, command: { id: interaction.commandId, name: interaction.commandName }, message: sentReply });
+      }
       const text = `**${latestRelease.data.tag_name}**\n${latestRelease.data.body}\n\nFull list of releases : https://github.com/IwaoM/Roberto-bot/releases`;
       const sentReply = await interaction.editReply(text);
 
@@ -39,11 +48,15 @@ module.exports = {
         errorObject: err
       });
 
-      try {
-        await interaction.reply("The command could not be executed - unknown error.");
-      } catch (e) {
-        if (e.code === "InteractionAlreadyReplied") {
-          await interaction.editReply("The command could not be executed - unknown error.");
+      if (err.message === "github API error") {
+        await interaction.editReply(`The command could not be executed - the GitHub API returned an error.`);
+      } else {
+        try {
+          await interaction.reply("The command could not be executed - unknown error.");
+        } catch (e) {
+          if (e.code === "InteractionAlreadyReplied") {
+            await interaction.editReply("The command could not be executed - unknown error.");
+          }
         }
       }
 

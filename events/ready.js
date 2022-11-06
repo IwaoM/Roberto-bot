@@ -29,7 +29,7 @@ module.exports = {
       }
       console.log(`\n${descText}`);
 
-      const guildConfigs = await getGuildConfigs();
+      let guildConfigs = await getGuildConfigs();
 
       // Check for guilds joined while Roberto was offline & perform join actions for them
       let guildUpdateCount = 0;
@@ -44,6 +44,7 @@ module.exports = {
       console.log(`${guildUpdateCount} guild(s) joined`);
 
       // Check for guilds left while Roberto was offline & perform leave actions for them
+      guildConfigs = await getGuildConfigs();
       guildUpdateCount = 0;
       console.log("\nChecking for guilds left while offline");
       for (let config of guildConfigs) {
@@ -61,8 +62,8 @@ module.exports = {
       guildUpdateCount = 0;
       console.log("\nChecking for needed permissions update for Roberto in all joined guilds");
 
+      guildConfigs = await getGuildConfigs();
       for (let guild of guildList) {
-
         let dmSent;
         const guildConfig = guildConfigs.find(entry => entry.id === guild.id);
         const newBotMissingPermissions = (await checkOwnMissingPermissions(guild, robertoNeededPermissions)).sort();
@@ -78,11 +79,11 @@ module.exports = {
 
           // construct DM text
           dmText = `Hello!
-  my permissions on the server **${guild.name}** were updated while I was offline, and the following permission${newlyBotMissingPermissions.length === 1 ? " was" : "s were"} removed from me: [${newlyBotMissingPermissions.join(", ")}].
-  I need th${newlyBotMissingPermissions.length === 1 ? "is permission" : "ese permissions"} to function properly (more details on why exactly here: https://github.com/IwaoM/Roberto-bot#readme). Please consider restoring ${newlyBotMissingPermissions.length === 1 ? "it" : "them"} :)
-  Thanks!
+my permissions on the server **${guild.name}** were updated while I was offline, and the following permission${newlyBotMissingPermissions.length === 1 ? " was" : "s were"} removed from me: [${newlyBotMissingPermissions.join(", ")}].
+I need th${newlyBotMissingPermissions.length === 1 ? "is permission" : "ese permissions"} to function properly (more details on why exactly here: https://github.com/IwaoM/Roberto-bot#readme). Please consider restoring ${newlyBotMissingPermissions.length === 1 ? "it" : "them"} :)
+Thanks!
 
-  Note: this automatic DM can be disabled with the \`/config permission-dm\` command.`;
+Note: this automatic DM can be disabled with the \`/config permission-dm\` command.`;
 
           // if DM text & recipient are not empty, send the text to the recipient
           dmSent = await dmUsers(dmText, [dmRecipient]);
