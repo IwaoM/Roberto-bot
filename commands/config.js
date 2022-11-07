@@ -238,12 +238,13 @@ module.exports = {
       }
 
       try {
-        await interaction.reply(replyText);
+        await interaction.editReply(replyText);
       } catch (e) {
-        if (e.code === "InteractionAlreadyReplied") {
-          await interaction.editReply(replyText);
+        if (e.code === "InteractionNotReplied") {
+          await interaction.reply(replyText);
         }
       }
+
 
       throw err;
     }

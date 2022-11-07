@@ -140,11 +140,18 @@ module.exports = {
         replyText = "The command could not be executed - dominant color processing failed, please retry later.";
       }
 
+      // const replied = await interaction.fetchReply();
+      // if (replied) {
+      //   await interaction.editReply(replyText);
+      // } else {
+      //   await interaction.reply(replyText);
+      // }
+
       try {
-        await interaction.reply(replyText);
+        await interaction.editReply(replyText);
       } catch (e) {
-        if (e.code === "InteractionAlreadyReplied") {
-          await interaction.editReply(replyText);
+        if (e.code === "InteractionNotReplied") {
+          await interaction.reply(replyText);
         }
       }
 
