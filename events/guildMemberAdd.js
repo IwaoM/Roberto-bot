@@ -63,7 +63,7 @@ module.exports = {
 
   async execute (member) {
     try {
-      await logEvent({ name: this.name, description: "A user joined the guild", guild: member.guild, member: member });
+      logEvent({ name: this.name, description: "A user joined the guild", guild: member.guild, member: member });
       const currentGuildConfig = await getGuildConfigs(member.guild.id);
 
       // auto color new members
@@ -74,7 +74,7 @@ module.exports = {
           await updateColorRole(hexCode, member);
           await unlinkFile (avatarDir);
         } catch (err) {
-          await logError({
+          logError({
             name: `auto color error`,
             description: `Failed to auto color a new guild member`,
             function: { name: `${this.name}.execute`, arguments: [...arguments] },
@@ -90,12 +90,12 @@ module.exports = {
         const welcomeMessage = welcomeMessages[messageIndex].replace("NEW_MEMBER", member.id);
 
         const sentMessage = await member.guild.systemChannel.send(welcomeMessage);
-        await logAction({ name: `welcome message sending`, guild: member.guild, message: sentMessage, member: member });
+        logAction({ name: `welcome message sending`, guild: member.guild, message: sentMessage, member: member });
       }
 
-      await logAction({ name: `${this.name} event handling`, guild: member.guild, member: member });
+      logAction({ name: `${this.name} event handling`, guild: member.guild, member: member });
     } catch (err) {
-      await logError({
+      logError({
         name: `${this.name} event handler error`,
         description: `Failed to handle the ${this.name} event`,
         function: { name: `${this.name}.execute`, arguments: [...arguments] },

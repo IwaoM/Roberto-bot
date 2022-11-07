@@ -26,7 +26,7 @@ module.exports = {
   async execute (interaction) {
     try {
       const commandOption = interaction.options.getString("command");
-      await logEvent({
+      logEvent({
         name: "help",
         description: "The help command was called",
         command: commandOption ?
@@ -60,7 +60,7 @@ module.exports = {
       }
 
       const sentReply = await interaction.reply(answer);
-      await logAction({
+      logAction({
         name: `help command handling`,
         command: commandOption ?
           { id: interaction.commandId, name: interaction.commandName, arguments: { command: commandOption } } :
@@ -68,18 +68,20 @@ module.exports = {
         message: sentReply
       });
     } catch (err) {
-      await logError({
+      logError({
         name: `help command handler error`,
         description: `Failed to handle the help command`,
         function: { name: `help.execute`, arguments: [...arguments] },
         errorObject: err
       });
 
+      let replyText = "The command could not be executed - unknown error.";
+
       try {
-        await interaction.reply("The command could not be executed - unknown error.");
+        await interaction.reply(replyText);
       } catch (e) {
         if (e.code === "InteractionAlreadyReplied") {
-          await interaction.editReply("The command could not be executed - unknown error.");
+          await interaction.editReply(replyText);
         }
       }
 

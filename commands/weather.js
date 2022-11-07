@@ -34,7 +34,7 @@ module.exports = {
     try {
       const locationOption = interaction.options.getString("location");
 
-      await logEvent({
+      logEvent({
         name: "weather",
         description: "The weather command was called",
         command: { id: interaction.commandId, name: interaction.commandName, arguments: { location: locationOption } },
@@ -57,7 +57,7 @@ module.exports = {
       if (!location.length) {
 
         const sentReply = await interaction.editReply(`No results have been found for "${locationOption}".`);
-        await logAction({
+        logAction({
           name: `weather command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, arguments: { location: locationOption } },
           message: sentReply
@@ -90,7 +90,7 @@ Feels like ${Math.round(weather.main.feels_like)}°C`)
           .setTimestamp(new Date());
 
         const sentReply = interaction.editReply({ embeds: [weatherEmbed] });
-        await logAction({
+        logAction({
           name: `weather command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, arguments: { location: locationOption } },
           message: sentReply
@@ -98,24 +98,25 @@ Feels like ${Math.round(weather.main.feels_like)}°C`)
 
       }
     } catch (err) {
-      await logError({
+      logError({
         name: `weather command handler error`,
         description: `Failed to handle the weather command`,
         function: { name: `weather.execute`, arguments: [...arguments] },
         errorObject: err
       });
 
+      let replyText = "The command could not be executed - unknown error.";
       if (err.message === "Geocoding API error") {
-        await interaction.editReply(`The command could not be executed - the OpenWeather geocoding API returned an error.`);
+        replyText = `The command could not be executed - the OpenWeather geocoding API returned an error.`;
       } else if (err.message === "Weather API error") {
-        await interaction.editReply(`The command could not be executed - the OpenWeather current weather API returned an error.`);
-      } else {
-        try {
-          await interaction.reply("The command could not be executed - unknown error.");
-        } catch (e) {
-          if (e.code === "InteractionAlreadyReplied") {
-            await interaction.editReply("The command could not be executed - unknown error.");
-          }
+        replyText = `The command could not be executed - the OpenWeather current weather API returned an error.`;
+      }
+
+      try {
+        await interaction.reply(replyText);
+      } catch (e) {
+        if (e.code === "InteractionAlreadyReplied") {
+          await interaction.editReply(replyText);
         }
       }
 

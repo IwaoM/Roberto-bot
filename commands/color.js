@@ -55,7 +55,7 @@ module.exports = {
         commandArgs = { type: commandOption };
       }
 
-      await logEvent({
+      logEvent({
         name: "color",
         description: "The color command was called",
         command: commandArgs ?
@@ -114,7 +114,7 @@ module.exports = {
         sentReply = await interaction.editReply(`Color <@&${resultRoleId}> was given to <@${interaction.user.id}>.`);
       }
 
-      await logAction({
+      logAction({
         name: `color command handling`,
         command: commandArgs ?
           { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
@@ -122,28 +122,29 @@ module.exports = {
         message: sentReply
       });
     } catch (err) {
-      await logError({
-        name: `config command handler error`,
-        description: `Failed to handle the config command`,
-        function: { name: `config.execute`, arguments: [...arguments] },
+      logError({
+        name: `color command handler error`,
+        description: `Failed to handle the color command`,
+        function: { name: `color.execute`, arguments: [...arguments] },
         errorObject: err
       });
 
+      let replyText = "The command could not be executed - unknown error.";
       if (err.message.startsWith("Missing permissions")) {
-        interaction.reply(`The command could not be executed - missing permissions : ${err.message.split(" - ")[1]}`);
+        replyText = `The command could not be executed - missing permissions : ${err.message.split(" - ")[1]}`;
       } else if (err.message.startsWith("Invalid hex code")) {
-        await interaction.editReply(`The command could not be executed - ${err.message.split(" - ")[1]} is not a valid hex color code.`);
+        replyText = `The command could not be executed - ${err.message.split(" - ")[1]} is not a valid hex color code.`;
       } else if (err.message === "Role too low") {
-        await interaction.editReply("The command could not be executed - the Roberto managed role should be placed above color roles in the server's role list.");
+        replyText = "The command could not be executed - the Roberto managed role should be placed above color roles in the server's role list.";
       } else if (err.message === "Dominant color processing failed") {
-        await interaction.editReply("The command could not be executed - dominant color processing failed, please retry later.");
-      } else {
-        try {
-          await interaction.reply("The command could not be executed - unknown error.");
-        } catch (e) {
-          if (e.code === "InteractionAlreadyReplied") {
-            await interaction.editReply("The command could not be executed - unknown error.");
-          }
+        replyText = "The command could not be executed - dominant color processing failed, please retry later.";
+      }
+
+      try {
+        await interaction.reply(replyText);
+      } catch (e) {
+        if (e.code === "InteractionAlreadyReplied") {
+          await interaction.editReply(replyText);
         }
       }
 

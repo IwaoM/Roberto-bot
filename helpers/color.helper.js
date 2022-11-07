@@ -61,7 +61,7 @@ module.exports = {
       const hexCode = palette[commandOption].hex;
       return hexCode;
     } catch (err) {
-      await logError({
+      logError({
         name: `palette error`,
         description: `Failed to get the image's palette`,
         function: { name: "getDominantColor", arguments: [...arguments] },

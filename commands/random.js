@@ -36,7 +36,7 @@ module.exports = {
         commandArgs = { total: totalOption, draws: drawsOption };
       }
 
-      await logEvent({
+      logEvent({
         name: "random",
         description: "The random command was called",
         command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs },
@@ -74,28 +74,29 @@ module.exports = {
 
       const buttonRow = new ActionRowBuilder().addComponents(againButton);
       const sentReply = await interaction.reply({ content: text, components: [buttonRow] });
-      await logAction({
+      logAction({
         name: `random command handling`,
         command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs },
         message: sentReply
       });
     } catch (err) {
-      await logError({
+      logError({
         name: `random command handler error`,
         description: `Failed to handle the random command`,
         function: { name: `random.execute`, arguments: [...arguments] },
         errorObject: err
       });
 
+      let replyText = "The command could not be executed - unknown error.";
       if (err.message === "Draws greater than total") {
-        await interaction.reply("The command could not be executed - the number of draws should be less than or equal to the number of drawable values.");
-      } else {
-        try {
-          await interaction.reply("The command could not be executed - unknown error.");
-        } catch (e) {
-          if (e.code === "InteractionAlreadyReplied") {
-            await interaction.editReply("The command could not be executed - unknown error.");
-          }
+        replyText = "The command could not be executed - the number of draws should be less than or equal to the number of drawable values.";
+      }
+
+      try {
+        await interaction.reply(replyText);
+      } catch (e) {
+        if (e.code === "InteractionAlreadyReplied") {
+          await interaction.editReply(replyText);
         }
       }
 
@@ -105,7 +106,7 @@ module.exports = {
 
   async executeButton (interaction) {
     try {
-      await logEvent({
+      logEvent({
         name: interaction.customId,
         description: `The ${interaction.customId} button was pressed`,
         guild: interaction.guild,
@@ -117,7 +118,7 @@ module.exports = {
       // return if the user who pressed the button is not the user who called the original command
       if (interaction.user.id !== interaction.message.interaction.user.id) {
         const sentReply = await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });
-        await logAction({ name: `${interaction.customId} button handling`, message: sentReply });
+        logAction({ name: `${interaction.customId} button handling`, message: sentReply });
         return;
       }
 
@@ -149,20 +150,22 @@ module.exports = {
       const newText = replyLines.join("\n");
 
       const sentReply = await interaction.update(newText);
-      await logAction({ name: `${interaction.customId} button handling`, message: sentReply });
+      logAction({ name: `${interaction.customId} button handling`, message: sentReply });
     } catch (err) {
-      await logError({
+      logError({
         name: `${interaction.customId} button handler error`,
         description: `Failed to handle the ${interaction.customId} button`,
         function: { name: `random.executeButton`, arguments: [...arguments] },
         errorObject: err
       });
 
+      let replyText = "The command could not be executed - unknown error.";
+
       try {
-        await interaction.reply("The command could not be executed - unknown error.");
+        await interaction.reply(replyText);
       } catch (e) {
         if (e.code === "InteractionAlreadyReplied") {
-          await interaction.editReply("The command could not be executed - unknown error.");
+          await interaction.editReply(replyText);
         }
       }
 

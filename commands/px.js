@@ -9,7 +9,7 @@ module.exports = {
 
   async execute (interaction) {
     try {
-      await logEvent({
+      logEvent({
         name: "px",
         description: "The px command was called",
         command: { id: interaction.commandId, name: interaction.commandName },
@@ -23,24 +23,26 @@ module.exports = {
 
       let name = generatePhoenix();
       const sentReply = await interaction.reply({ content: name, components: [buttonRow] });
-      await logAction({
+      logAction({
         name: `px command handling`,
         command: { id: interaction.commandId, name: interaction.commandName },
         message: sentReply
       });
     } catch (err) {
-      await logError({
+      logError({
         name: `px command handler error`,
         description: `Failed to handle the px command`,
         function: { name: `px.execute`, arguments: [...arguments] },
         errorObject: err
       });
 
+      let replyText = "The command could not be executed - unknown error.";
+
       try {
-        await interaction.reply("The command could not be executed - unknown error.");
+        await interaction.reply(replyText);
       } catch (e) {
         if (e.code === "InteractionAlreadyReplied") {
-          await interaction.editReply("The command could not be executed - unknown error.");
+          await interaction.editReply(replyText);
         }
       }
 
@@ -50,7 +52,7 @@ module.exports = {
 
   async executeButton (interaction) {
     try {
-      await logEvent({
+      logEvent({
         name: "px_again",
         description: "The px_again button was pressed",
         guild: interaction.guild,
@@ -62,26 +64,28 @@ module.exports = {
       // return if the user who pressed the button is not the user who called the original command
       if (interaction.user.id !== interaction.message.interaction.user.id) {
         const sentReply = await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });
-        await logAction({ name: `px_again button handling`, message: sentReply });
+        logAction({ name: `px_again button handling`, message: sentReply });
         return;
       }
 
       const name = generatePhoenix();
       const sentReply = await interaction.update(name);
-      await logAction({ name: `px_again button handling`, message: sentReply });
+      logAction({ name: `px_again button handling`, message: sentReply });
     } catch (err) {
-      await logError({
+      logError({
         name: `px_again button handler error`,
         description: `Failed to handle the px_again button interaction`,
         function: { name: `px.executeButton`, arguments: [...arguments] },
         errorObject: err
       });
 
+      let replyText = "The command could not be executed - unknown error.";
+
       try {
-        await interaction.reply("The button interaction could not be executed - unknown error.");
+        await interaction.reply(replyText);
       } catch (e) {
         if (e.code === "InteractionAlreadyReplied") {
-          await interaction.editReply("The button interaction could not be executed - unknown error.");
+          await interaction.editReply(replyText);
         }
       }
 

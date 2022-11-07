@@ -7,7 +7,7 @@ const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("dictionary")
-    .setDescription("Looks up definitions for a word")
+    .setDescription("Looks up definitions for a word or expression")
     .addSubcommand(subcommand =>
       subcommand
         .setName("en")
@@ -25,7 +25,7 @@ module.exports = {
     try {
       const subcommand = interaction.options.getSubcommand();
       const commandOption = trimAll(interaction.options.getString("word"));
-      await logEvent({
+      logEvent({
         name: "dictionary",
         description: "The dictionary command was called",
         command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: { word: commandOption } },
@@ -48,7 +48,7 @@ module.exports = {
 
       if (!searchData.pages.length) {
         const sentReply = await interaction.editReply(`No results were found for "${commandOption}".`);
-        await logAction({
+        logAction({
           name: `dictionary command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: { word: commandOption } },
           message: sentReply
@@ -121,30 +121,31 @@ module.exports = {
         .addFields(...definitionFields);
 
       const sentReply = await interaction.editReply({ embeds: [dictionaryEmbed] });
-      await logAction({
+      logAction({
         name: `dictionary command handling`,
         command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: { word: commandOption } },
         message: sentReply
       });
     } catch (err) {
-      await logError({
+      logError({
         name: `dictionary command handler error`,
         description: `Failed to handle the dictionary command`,
         function: { name: `dictionary.execute`, arguments: [...arguments] },
         errorObject: err
       });
 
+      let replyText = "The command could not be executed - unknown error.";
       if (err.message === "Search API error") {
-        await interaction.editReply(`The command could not be executed - the Wikimedia search API returned an error.`);
+        replyText = `The command could not be executed - the Wikimedia search API returned an error.`;
       } else if (err.message === "Page API error") {
-        await interaction.editReply(`The command could not be executed - the Wikimedia page fetch API returned an error.`);
-      } else {
-        try {
-          await interaction.reply("The command could not be executed - unknown error.");
-        } catch (e) {
-          if (e.code === "InteractionAlreadyReplied") {
-            await interaction.editReply("The command could not be executed - unknown error.");
-          }
+        replyText = `The command could not be executed - the Wikimedia page fetch API returned an error.`;
+      }
+
+      try {
+        await interaction.reply(replyText);
+      } catch (e) {
+        if (e.code === "InteractionAlreadyReplied") {
+          await interaction.editReply(replyText);
         }
       }
 
@@ -152,6 +153,6 @@ module.exports = {
     }
   },
 
-  usage: `• \`/dictionary [en|fr] <word>\`: looks up and returns definitions for *word* in the selected language code's dictionary.
-    • The returned definition may be trucated - the returned embed also contains a link to the full Wiktionary page for this word.`
+  usage: `• \`/dictionary [en|fr] <word-or-expr>\`: looks up and returns definitions for *word-or-expr* in the selected language code's dictionary.
+    • The returned definition may be trucated - the returned embed also contains a link to the full Wiktionary page for this word or expression.`
 };

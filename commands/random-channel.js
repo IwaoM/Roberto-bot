@@ -6,7 +6,7 @@ const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("random-channel")
-    .setDescription("Generates random numbers and lists (dice rolls, draws...)")
+    .setDescription("Generates random values based on voice channel members")
     .addSubcommand(subcommand =>
       subcommand
         .setName("teams")
@@ -23,7 +23,7 @@ module.exports = {
   async execute (interaction) {
     try {
       const subcommand = interaction.options.getSubcommand();
-      await logEvent({
+      logEvent({
         name: "random-channel",
         description: "The random-channel command was called",
         command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
@@ -35,7 +35,7 @@ module.exports = {
 
       // return if the caller is not in a voice channel or the channel doesn't have enough members
       const channelMemberNames = await getVoiceChannelMembers(interaction.member.voice.channel);
-      // channelMemberNames.push("Bob", "Mauricette", "Ricardo", "Bobine"); // used for testing
+      // channelMemberNames.push("Bob", "Mauricette", "Ricardo", "Bobine", "R2D2"); // used for testing
 
       if (!channelMemberNames.length) {
         throw new Error("Not connected to voice");
@@ -100,34 +100,35 @@ module.exports = {
 
       const buttonRow = new ActionRowBuilder().addComponents(againButton);
       const sentReply = await interaction.reply({ content: text, components: [buttonRow] });
-      await logAction({
+      logAction({
         name: `random-channel command handling`,
         command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
         message: sentReply
       });
     } catch (err) {
-      await logError({
+      logError({
         name: `random-channel command handler error`,
         description: `Failed to handle the random-channel command`,
         function: { name: `random-channel.execute`, arguments: [...arguments] },
         errorObject: err
       });
 
+      let replyText = "The command could not be executed - unknown error.";
       if (err.message === "Not connected to voice") {
-        await interaction.editReply(`The command could not be executed - you are not connected to a voice channel.`);
+        replyText = `The command could not be executed - you are not connected to a voice channel.`;
       } else if (err.message === "Not enough connected members") {
-        await interaction.editReply(`The command could not be executed - not enough members in this voice channel.`);
+        replyText = `The command could not be executed - not enough members in this voice channel.`;
       } else if (err.message === "Number of teams is too big") {
-        await interaction.editReply(`The command could not be executed - the number of teams should be less than the channel member count.`);
+        replyText = `The command could not be executed - the number of teams should be less than the channel member count.`;
       } else if (err.message === "Number of draws is too big") {
-        await interaction.editReply(`The command could not be executed - the number of draws should be less than or equal to the channel member count.`);
-      } else {
-        try {
-          await interaction.reply("The command could not be executed - unknown error.");
-        } catch (e) {
-          if (e.code === "InteractionAlreadyReplied") {
-            await interaction.editReply("The command could not be executed - unknown error.");
-          }
+        replyText = `The command could not be executed - the number of draws should be less than or equal to the channel member count.`;
+      }
+
+      try {
+        await interaction.reply(replyText);
+      } catch (e) {
+        if (e.code === "InteractionAlreadyReplied") {
+          await interaction.editReply(replyText);
         }
       }
 
@@ -137,7 +138,7 @@ module.exports = {
 
   async executeButton (interaction) {
     try {
-      await logEvent({
+      logEvent({
         name: interaction.customId,
         description: `The ${interaction.customId} button was pressed`,
         guild: interaction.guild,
@@ -149,13 +150,13 @@ module.exports = {
       // return if the user who pressed the button is not the user who called the original command
       if (interaction.user.id !== interaction.message.interaction.user.id) {
         const sentReply = await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });
-        await logAction({ name: `${interaction.customId} button handling`, message: sentReply });
+        logAction({ name: `${interaction.customId} button handling`, message: sentReply });
         return;
       }
 
       // return if the caller is not in a voice channel or the channel doesn't have enough members
       const channelMemberNames = await getVoiceChannelMembers(interaction.member.voice.channel);
-      // channelMemberNames.push("Bob", "Mauricette", "Ricardo", "Bobine"); // used for testing
+      // channelMemberNames.push("Bob", "Mauricette", "Ricardo", "Bobine", "R2D2"); // used for testing
 
       if (!channelMemberNames.length) {
         throw new Error("Not connected to voice");
@@ -217,30 +218,31 @@ module.exports = {
       }
 
       const sentReply = await interaction.update(text);
-      await logAction({ name: `${interaction.customId} button handling`, message: sentReply });
+      logAction({ name: `${interaction.customId} button handling`, message: sentReply });
     } catch (err) {
-      await logError({
+      logError({
         name: `${interaction.customId} button handler error`,
         description: `Failed to handle the ${interaction.customId} button interaction`,
         function: { name: `random-channel.executeButton`, arguments: [...arguments] },
         errorObject: err
       });
 
+      let replyText = "The command could not be executed - unknown error.";
       if (err.message === "Not connected to voice") {
-        await interaction.reply(`The command could not be executed - you are not connected to a voice channel.`);
+        replyText = `The command could not be executed - you are not connected to a voice channel.`;
       } else if (err.message === "Not enough connected members") {
-        await interaction.reply(`The command could not be executed - not enough members in this voice channel.`);
+        replyText = `The command could not be executed - not enough members in this voice channel.`;
       } else if (err.message === "Number of teams is too big") {
-        await interaction.reply(`The command could not be executed - the number of teams should be less than the channel member count.`);
+        replyText = `The command could not be executed - the number of teams should be less than the channel member count.`;
       } else if (err.message === "Number of draws is too big") {
-        await interaction.reply(`The command could not be executed - the number of draws should be less than or equal to the channel member count.`);
-      } else {
-        try {
-          await interaction.reply("The command could not be executed - unknown error.");
-        } catch (e) {
-          if (e.code === "InteractionAlreadyReplied") {
-            await interaction.editReply("The command could not be executed - unknown error.");
-          }
+        replyText = `The command could not be executed - the number of draws should be less than or equal to the channel member count.`;
+      }
+
+      try {
+        await interaction.reply(replyText);
+      } catch (e) {
+        if (e.code === "InteractionAlreadyReplied") {
+          await interaction.editReply(replyText);
         }
       }
 
@@ -248,8 +250,8 @@ module.exports = {
     }
   },
 
-  usage: `• \`/random-channel teams <teams>\`: splits all voice channel members into *teams* teams.
+  usage: `• \`/random-channel teams <count>\`: splits all voice channel members into *count* teams.
 • \`/random-channel draw <draws>\`: draws <draws> members among all users connected to the voice channel.
 
-To use these commands, a user should be connected to a voice channel. The channel also needs to have enough connected members.`
+To use those commands, a user should be connected to a voice channel. The channel also needs to have enough connected members.`
 };

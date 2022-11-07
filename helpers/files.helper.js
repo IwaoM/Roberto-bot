@@ -22,7 +22,7 @@ module.exports = {
 
       return imgDir;
     } catch (err) {
-      await logError({
+      logError({
         name: `avatar save error`,
         description: `Failed to save the user's avatar`,
         function: { name: "saveUserAvatar", arguments: [...arguments] },
@@ -38,7 +38,7 @@ module.exports = {
         if (err) { throw err; }
       });
     } catch (err) {
-      await logError({
+      logError({
         name: `file unlink error`,
         description: `Failed to unlink the file`,
         function: { name: "unlinkFile", arguments: [...arguments] },
@@ -70,7 +70,7 @@ module.exports = {
 
       }
     } catch (err) {
-      await logError({
+      logError({
         name: `guild config${guildId ? "" : "s"} read error`,
         description: `Failed to read the guild config${guildId ? "" : " list"}`,
         function: { name: "getGuildConfigs", arguments: [...arguments] },
@@ -98,12 +98,12 @@ module.exports = {
         guildConfigs.push(entry);
         data = JSON.stringify(guildConfigs, null, 2);
         await fs.promises.writeFile(guildConfigsDir, data);
-        await logAction({ name: "guild config creation", config: entry });
+        logAction({ name: "guild config creation", config: entry });
         return entry;
 
       }
     } catch (err) {
-      await logError({
+      logError({
         name: `guild config create error`,
         description: `Failed to create an entry in the guild configs list`,
         function: { name: "addGuildConfigEntry", arguments: [...arguments] },
@@ -127,7 +127,7 @@ module.exports = {
         const deletedConfig = guildConfigs.splice(configIndex, 1);
         data = JSON.stringify(guildConfigs, null, 2);
         await fs.promises.writeFile(guildConfigsDir, data);
-        await logAction({ name: "guild config deletion", config: deletedConfig[0] });
+        logAction({ name: "guild config deletion", config: deletedConfig[0] });
         return deletedConfig[0];
 
       } else {
@@ -136,7 +136,7 @@ module.exports = {
 
       }
     } catch (err) {
-      await logError({
+      logError({
         name: `guild config delete error`,
         description: `Failed to delete an entry from the guild configs list`,
         function: { name: "removeGuildConfigEntry", arguments: [...arguments] },
@@ -167,7 +167,7 @@ module.exports = {
         guildConfigs.splice(configIndex, 1, config);
         data = JSON.stringify(guildConfigs, null, 2);
         await fs.promises.writeFile(guildConfigsDir, data);
-        await logAction({ name: "guild config update", config: config });
+        logAction({ name: "guild config update", config: config });
         return config;
 
       } else {
@@ -176,7 +176,7 @@ module.exports = {
 
       }
     } catch (err) {
-      await logError({
+      logError({
         name: `guild config update error`,
         description: `Failed to update an entry in the guild configs list`,
         function: { name: "updateGuildConfigEntry", arguments: [...arguments] },

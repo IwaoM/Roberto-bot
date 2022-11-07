@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 module.exports = {
-  async logEvent (eventInput) {
+  logEvent (eventInput) {
     const logEntry = {};
 
     // log entry timestamp & type
@@ -58,10 +58,10 @@ module.exports = {
 
     // write in the logs file
     console.log(logEntry);
-    await writeLogEntry(logEntry);
+    writeLogEntry(logEntry);
   },
 
-  async logAction (actionInput) {
+  logAction (actionInput) {
     const logEntry = {};
 
     // log entry timestamp & type
@@ -135,10 +135,10 @@ module.exports = {
 
     // write in the logs file
     console.log(logEntry);
-    await writeLogEntry(logEntry);
+    writeLogEntry(logEntry);
   },
 
-  async logError (errorInput) {
+  logError (errorInput) {
     const logEntry = {};
 
     // log entry timestamp & type
@@ -154,8 +154,7 @@ module.exports = {
 
     if (errorInput.function) {
       logEntry.error.function = {
-        name: errorInput.function.name,
-        arguments: errorInput.function.arguments
+        name: errorInput.function.name
       };
     }
 
@@ -165,7 +164,7 @@ module.exports = {
 
     // write in the logs file
     console.log(logEntry);
-    await writeLogEntry(logEntry);
+    writeLogEntry(logEntry);
   },
 
   async pruneLogs (days) {
@@ -183,16 +182,17 @@ module.exports = {
   }
 };
 
-async function writeLogEntry (logEntry) {
+function writeLogEntry (logEntry) {
   try {
-    // open the file, read its content, append a new list element, then overwrite the file
+    // open the file, read its content, append a new list element
     const logsDir = path.join(path.dirname(__dirname), "logs.json");
-    let data = await fs.promises.readFile(logsDir);
+    let data = fs.readFileSync(logsDir);
     const logs = JSON.parse(data);
     logs.push(logEntry);
 
+    // try overwriting the file with the new list
     data = JSON.stringify(logs, null, 2);
-    await fs.promises.writeFile(logsDir, data);
+    fs.writeFileSync(logsDir, data);
   } catch (err) {
     // if this fails, just log the entry
     console.log("Log writing failed");

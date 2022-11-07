@@ -24,12 +24,14 @@ module.exports = {
       // for each found color role
       for (let role of userMemberColorRoleList.entries()) {
         // remove the color role from the user
-        await userMember.roles.remove(role[1]);
-        await logAction({ name: "member role removal", guild: userMember.guild, member: userMember, role: role[1] });
-        if (role[1].members.size <= 1) {
-          // delete role if no one else used it
+        if (role[1].members.size === 1) {
+          // delete role altogether if no one else has it
           await role[1].delete();
-          await logAction({ name: "role deletion", guild: userMember.guild, role: role[1] });
+          logAction({ name: "member role removal", guild: userMember.guild, member: userMember, role: role[1] });
+          logAction({ name: "role deletion", guild: userMember.guild, role: role[1] });
+        } else {
+          await userMember.roles.remove(role[1]);
+          logAction({ name: "member role removal", guild: userMember.guild, member: userMember, role: role[1] });
         }
       }
 
@@ -41,22 +43,22 @@ module.exports = {
         if (!wantedColorRole) {
           // if not : create it
           wantedColorRole = await userMember.guild.roles.create({ name: hexCode, color: hexCode });
-          await logAction({ name: "role creation", guild: userMember.guild, role: wantedColorRole });
+          logAction({ name: "role creation", guild: userMember.guild, role: wantedColorRole });
           wantedColorRole = await wantedColorRole.setPermissions([]);
-          await logAction({ name: "role update", guild: userMember.guild, role: wantedColorRole });
+          logAction({ name: "role update", guild: userMember.guild, role: wantedColorRole });
           wantedColorRole = await wantedColorRole.setMentionable(true);
-          await logAction({ name: "role update", guild: userMember.guild, role: wantedColorRole });
+          logAction({ name: "role update", guild: userMember.guild, role: wantedColorRole });
         }
 
         // assign the found or created color role to user
         userMember.roles.add(wantedColorRole);
-        await logAction({ name: "member role addition", guild: userMember.guild, member: userMember, role: wantedColorRole });
+        logAction({ name: "member role addition", guild: userMember.guild, member: userMember, role: wantedColorRole });
         return wantedColorRole.id;
       }
 
       return hexCode;
     } catch (err) {
-      await logError({
+      logError({
         name: `role update error`,
         description: `Failed to update the user's color role`,
         function: { name: "updateColorRole", arguments: [...arguments] },
@@ -132,7 +134,7 @@ module.exports = {
         await updateGuildConfigEntry(newElem.guild.id, { missingPermissions: newBotMissingPermissions });
       }
     } catch (err) {
-      await logError({
+      logError({
         name: `permissions update processing error`,
         description: `Failed to process Roberto's permissions update`,
         function: { name: "processPermissionUpdates", arguments: [...arguments] },
@@ -160,7 +162,7 @@ module.exports = {
         robertoRoleIds = await createRobertoAdminRole(guild);
         console.log(`* Roberto admin [${robertoRoleIds.robertoAdminRoleId}] role created`);
       } else {
-        await logError({
+        logError({
           name: `missing permissions for Roberto roles creation`,
           description: `Roberto admin role could not be created - missing permission ManageRoles`,
           function: { name: "processGuildCreate", arguments: [...arguments] },
@@ -215,7 +217,7 @@ module.exports = {
       }
       await dmUsers(dmText, [inviter, owner]);
     } catch (err) {
-      await logError({
+      logError({
         name: `guild join processing error`,
         description: `Failed to process a guild join`,
         function: { name: "processGuildCreate", arguments: [...arguments] },
@@ -232,7 +234,7 @@ module.exports = {
       // delete entry from guildConfigs.json
       await removeGuildConfigEntry(guild.id);
     } catch (err) {
-      await logError({
+      logError({
         name: `guild leave processing error`,
         description: `Failed to process a guild leave`,
         function: { name: "processGuildDelete", arguments: [...arguments] },

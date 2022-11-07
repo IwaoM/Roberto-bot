@@ -6,11 +6,11 @@ module.exports = {
 
   async execute (guild, client) {
     try {
-      await logEvent({ name: this.name, description: "Roberto has joined a guild", guild: guild });
+      logEvent({ name: this.name, description: "Roberto has joined a guild", guild: guild });
       await processGuildCreate(guild, client);
-      await logAction({ name: `${this.name} event handling`, guild: guild });
+      logAction({ name: `${this.name} event handling`, guild: guild });
     } catch (err) {
-      await logError({
+      logError({
         name: `${this.name} event handler error`,
         description: `Failed to handle the ${this.name} event`,
         function: { name: `${this.name}.execute`, arguments: [...arguments] },

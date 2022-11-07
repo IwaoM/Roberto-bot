@@ -6,11 +6,11 @@ module.exports = {
 
   async execute (oldRole, newRole, client) {
     try {
-      await logEvent({ name: this.name, description: "A guild role was updated", guild: newRole.guild, role: newRole });
+      logEvent({ name: this.name, description: "A guild role was updated", guild: newRole.guild, role: newRole });
       await processPermissionUpdates(oldRole, newRole, client, "roleUpdate");
-      await logAction({ name: `${this.name} event handling`, guild: newRole.guild, role: newRole });
+      logAction({ name: `${this.name} event handling`, guild: newRole.guild, role: newRole });
     } catch (err) {
-      await logError({
+      logError({
         name: `${this.name} event handler error`,
         description: `Failed to handle the ${this.name} event`,
         function: { name: `${this.name}.execute`, arguments: [...arguments] },

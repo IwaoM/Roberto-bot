@@ -10,12 +10,12 @@ module.exports = {
 
   async execute (client) {
     try {
-      await logEvent({ name: this.name, description: "The discord.js client is ready to start working" });
+      logEvent({ name: this.name, description: "The discord.js client is ready to start working" });
       console.log(`Initializing ${client.user.username}`);
 
       // Prune logs older than a week
-      const clearedLogsCount = await pruneLogs(14);
-      console.log(`\nCleared ${clearedLogsCount} log(s) older than 2 weeks.`);
+      const clearedLogsCount = await pruneLogs(7);
+      console.log(`\nCleared ${clearedLogsCount} log(s) older than 1 week.`);
 
       // * 1. Syncing & display of the joined guild list
 
@@ -105,10 +105,10 @@ Note: this automatic DM can be disabled with the \`/config permission-dm\` comma
       if (guildUpdateCount) { console.log(""); }
       console.log(`Needed permissions were updated in ${guildUpdateCount} guild(s)`);
 
-      await logAction({ name: `${this.name} event handling` });
+      logAction({ name: `${this.name} event handling` });
       console.log(`\n${client.user.username} ready!\n`);
     } catch (err) {
-      await logError({
+      logError({
         name: `${this.name} event handler error`,
         description: `Failed to handle the ${this.name} event`,
         function: { name: `${this.name}.execute`, arguments: [...arguments] },

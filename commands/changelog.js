@@ -12,7 +12,7 @@ module.exports = {
 
   async execute (interaction) {
     try {
-      await logEvent({
+      logEvent({
         name: "changelog",
         description: "The changelog command was called",
         command: { id: interaction.commandId, name: interaction.commandName },
@@ -34,29 +34,30 @@ module.exports = {
       // Create text & message
       if (!latestRelease.data) {
         const sentReply = await interaction.editReply(`No releases were found.`);
-        await logAction({ name: `changelog command handling`, command: { id: interaction.commandId, name: interaction.commandName }, message: sentReply });
+        logAction({ name: `changelog command handling`, command: { id: interaction.commandId, name: interaction.commandName }, message: sentReply });
       }
       const text = `**${latestRelease.data.tag_name}**\n${latestRelease.data.body}\n\nFull list of releases : https://github.com/IwaoM/Roberto-bot/releases`;
       const sentReply = await interaction.editReply(text);
 
-      await logAction({ name: `changelog command handling`, command: { id: interaction.commandId, name: interaction.commandName }, message: sentReply });
+      logAction({ name: `changelog command handling`, command: { id: interaction.commandId, name: interaction.commandName }, message: sentReply });
     } catch (err) {
-      await logError({
+      logError({
         name: `changelog command handler error`,
         description: `Failed to handle the changelog command`,
         function: { name: `changelog.execute`, arguments: [...arguments] },
         errorObject: err
       });
 
+      let replyText = "The command could not be executed - unknown error.";
       if (err.message === "github API error") {
-        await interaction.editReply(`The command could not be executed - the GitHub API returned an error.`);
-      } else {
-        try {
-          await interaction.reply("The command could not be executed - unknown error.");
-        } catch (e) {
-          if (e.code === "InteractionAlreadyReplied") {
-            await interaction.editReply("The command could not be executed - unknown error.");
-          }
+        replyText = `The command could not be executed - the GitHub API returned an error.`;
+      }
+
+      try {
+        await interaction.reply(replyText);
+      } catch (e) {
+        if (e.code === "InteractionAlreadyReplied") {
+          await interaction.editReply(replyText);
         }
       }
 

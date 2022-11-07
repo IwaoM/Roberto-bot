@@ -46,10 +46,10 @@ module.exports = {
         result.push(resultEntry);
       }
 
-      await logAction({ name: "FR wiktionary page parsing" });
+      logAction({ name: "FR wiktionary page parsing" });
       return result;
     } catch (err) {
-      await logError({
+      logError({
         name: `fr wiktionary parsing error`,
         description: `Failed to parse the html file of the fetched french wiktionary page`,
         function: { name: "bodyToListFrench", arguments: [...arguments] },
@@ -147,10 +147,10 @@ module.exports = {
         result.push(resultEntry);
       }
 
-      await logAction({ name: "EN wiktionary page parsing" });
+      logAction({ name: "EN wiktionary page parsing" });
       return result;
     } catch (err) {
-      await logError({
+      logError({
         name: `en wiktionary parsing error`,
         description: `Failed to parse the html file of the fetched english wiktionary page`,
         function: { name: "bodyToListEnglish", arguments: [...arguments] },

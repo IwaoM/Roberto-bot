@@ -30,7 +30,7 @@ module.exports = {
     )
     .addSubcommand(subcommand =>
       subcommand
-        .setName("roles-show")
+        .setName("role-show")
         .setDescription("Shows the admin role used by Roberto and its ID")
     )
     .addSubcommand(subcommand =>
@@ -54,7 +54,7 @@ module.exports = {
         commandArgs = { permissionDm: commandOption };
       }
 
-      await logEvent({
+      logEvent({
         name: "config",
         description: "The config command was called",
         command: commandArgs ?
@@ -106,7 +106,7 @@ module.exports = {
             sentReply = await interaction.editReply(`The ${subcommand} option has been disabled.`);
 
           }
-          await logAction({
+          logAction({
             name: `config command handling`,
             command: commandArgs ?
               { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
@@ -125,7 +125,7 @@ module.exports = {
 
         }
 
-      } else if (subcommand === "roles-show") {
+      } else if (subcommand === "role-show") {
 
         // allow command only if caller has the Roberto admin role
         if (await checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
@@ -135,7 +135,7 @@ module.exports = {
           const messageText = `Roberto Administrator role : "${adminRole.name}" - ID ${guildConfig.robertoAdminRoleId}`;
 
           const sentReply = await interaction.editReply(messageText);
-          await logAction({
+          logAction({
             name: `config command handling`,
             command: commandArgs ?
               { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
@@ -190,7 +190,7 @@ module.exports = {
         for (let i = 0; i < rolesToDelete.size; i++) {
           try {
             await rolesToDelete.at(i).delete();
-            await logAction({ name: "role deletion", guild: interaction.guild, role: rolesToDelete.at(i) });
+            logAction({ name: "role deletion", guild: interaction.guild, role: rolesToDelete.at(i) });
             deletedCount++;
           } catch (err) {
             notDeletedCount++;
@@ -200,7 +200,9 @@ module.exports = {
           tempMessageText += notDeletedCount ? `\n    • ${notDeletedCount} could not be deleted - the Roberto managed role should be placed above other roles in the server's role list.` : "";
           interaction.editReply(tempMessageText);
         }
-        messageText = tempMessageText;
+        if (tempMessageText) {
+          messageText = tempMessageText;
+        }
 
         if (messageText.split("\n").length === 1) {
           messageText = `No repair was needed.`;
@@ -209,7 +211,7 @@ module.exports = {
         }
 
         const sentReply = await interaction.editReply(messageText);
-        await logAction({
+        logAction({
           name: `config command handling`,
           command: commandArgs ?
             { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
@@ -218,28 +220,28 @@ module.exports = {
         });
       }
     } catch (err) {
-      await logError({
+      logError({
         name: `config command handler error`,
         description: `Failed to handle the config command`,
         function: { name: `config.execute`, arguments: [...arguments] },
         errorObject: err
       });
 
-      let missingRoleMessage = "The command could not be executed - this command can only be used by Roberto administrators.";
+      let replyText = "The command could not be executed - unknown error.";
+      const missingRoleMessage = "The command could not be executed - this command can only be used by Roberto administrators.";
       if (err.message === "Missing admin role - role exists") {
-        await interaction.editReply(missingRoleMessage);
+        replyText = missingRoleMessage;
       } else if (err.message === "Missing admin role - role does not exist") {
-        missingRoleMessage += "\nCurrently, the role does not exist. This can be fixed with the `/config roles-repair` command.";
-        await interaction.editReply(missingRoleMessage);
+        replyText = missingRoleMessage + "\nCurrently, the role does not exist. This can be fixed with the `/config roles-repair` command.";
       } else if (err.message.startsWith("Missing permissions")) {
-        await interaction.reply(`The command could not be executed - missing permissions : ${err.message.split(" - ")[1]}`);
-      } else {
-        try {
-          await interaction.reply("The command could not be executed - unknown error.");
-        } catch (e) {
-          if (e.code === "InteractionAlreadyReplied") {
-            await interaction.editReply("The command could not be executed - unknown error.");
-          }
+        replyText = `The command could not be executed - missing permissions : ${err.message.split(" - ")[1]}`;
+      }
+
+      try {
+        await interaction.reply(replyText);
+      } catch (e) {
+        if (e.code === "InteractionAlreadyReplied") {
+          await interaction.editReply(replyText);
         }
       }
 
@@ -254,7 +256,7 @@ module.exports = {
 • \`/config permission-dm <enable|disable|show>\`: enables, disables or shows the current value for the option to automatically send a DM to the person who modified a server role if this modification removed required permissions from Roberto.
     • If Roberto doesn't have the ViewAuditLog permission (which allows them to fetch the person who edited the role), the DM will automatically be sent to the server owner instead.
     • If Roberto's permissions changes occurred while they were offline, the DM will automatically be sent to the server owner on Roberto's startup, regardless of whether Roberto has the ViewAuditLog permission.
-• \`/config roles-show\`: Shows the current Roberto admin role name and ID.
+• \`/config role-show\`: Shows the current Roberto admin role name and ID.
 • \`/config roles-repair\`: Regenerates the Roberto admin role and deletes unused roles with the same name.
 
 Most of those commands are only usable by members with the Roberto admin role, the only exception being \`/config roles-repair\`.`

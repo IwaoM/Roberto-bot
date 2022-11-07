@@ -6,11 +6,11 @@ module.exports = {
 
   async execute (member, client) {
     try {
-      await logEvent({ name: this.name, description: "A user left the guild", guild: member.guild, member: member });
+      logEvent({ name: this.name, description: "A user left the guild", guild: member.guild, member: member });
 
       // return if the removed member was Roberto themself
       if (member.id === client.user.id) {
-        await logAction({ name: `guild leaving`, guild: member.guild });
+        logAction({ name: `guild leaving`, guild: member.guild });
         return;
       }
 
@@ -20,12 +20,12 @@ module.exports = {
 
       for (let i = 0; i < unusedColorRoles.size; i++) {
         await unusedColorRoles.at(i).delete();
-        await logAction({ name: `role deletion`, role: unusedColorRoles.at(i) });
+        logAction({ name: `role deletion`, role: unusedColorRoles.at(i) });
       }
 
-      await logAction({ name: `${this.name} event handling`, guild: member.guild, member: member });
+      logAction({ name: `${this.name} event handling`, guild: member.guild, member: member });
     } catch (err) {
-      await logError({
+      logError({
         name: `${this.name} event handler error`,
         description: `Failed to handle the ${this.name} event`,
         function: { name: `${this.name}.execute`, arguments: [...arguments] },
