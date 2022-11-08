@@ -157,7 +157,7 @@ module.exports = {
     }
 
     if (errorInput.errorObject) {
-      logEntry.error.errorObject = errorInput.errorObject;
+      logEntry.error.errorObject = errorInput.errorObject.toString();
     }
 
     // write in the logs file
