@@ -52,7 +52,7 @@ module.exports = {
   async getGuildConfigs (guildId = "") {
     try {
       const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
-      let data = await fs.promises.readFile(guildConfigsDir);
+      let data = fs.readFileSync(guildConfigsDir);
       const guildConfigs = JSON.parse(data);
 
       if (guildId) { // return the config for a single guild
@@ -85,10 +85,10 @@ module.exports = {
   async addGuildConfigEntry (entry) {
     try {
       const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
-      let data = await fs.promises.readFile(guildConfigsDir);
+      let data = fs.readFileSync(guildConfigsDir);
       const guildConfigs = JSON.parse(data);
 
-      let configIndex = guildConfigs.findIndex(conf => conf.id = entry.id);
+      let configIndex = guildConfigs.findIndex(conf => conf.id === entry.id);
       if (configIndex >= 0) {
 
         throw new Error("Config entry already exists");
@@ -97,7 +97,7 @@ module.exports = {
 
         guildConfigs.push(entry);
         data = JSON.stringify(guildConfigs, null, 2);
-        await fs.promises.writeFile(guildConfigsDir, data);
+        fs.writeFileSync(guildConfigsDir, data);
         logAction({ name: "guild config creation", config: entry });
         return entry;
 
@@ -118,7 +118,7 @@ module.exports = {
   async removeGuildConfigEntry (id) {
     try {
       const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
-      let data = await fs.promises.readFile(guildConfigsDir);
+      let data = fs.readFileSync(guildConfigsDir);
       const guildConfigs = JSON.parse(data);
 
       let configIndex = guildConfigs.findIndex(config => config.id = id);
@@ -126,7 +126,7 @@ module.exports = {
 
         const deletedConfig = guildConfigs.splice(configIndex, 1);
         data = JSON.stringify(guildConfigs, null, 2);
-        await fs.promises.writeFile(guildConfigsDir, data);
+        fs.writeFileSync(guildConfigsDir, data);
         logAction({ name: "guild config deletion", config: deletedConfig[0] });
         return deletedConfig[0];
 
@@ -156,7 +156,7 @@ module.exports = {
       }
 
       const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
-      let data = await fs.promises.readFile(guildConfigsDir);
+      let data = fs.readFileSync(guildConfigsDir);
       const guildConfigs = JSON.parse(data);
 
       let configIndex = guildConfigs.findIndex(config => config.id = id);
@@ -166,7 +166,7 @@ module.exports = {
         config = { ...config, ...configItem };
         guildConfigs.splice(configIndex, 1, config);
         data = JSON.stringify(guildConfigs, null, 2);
-        await fs.promises.writeFile(guildConfigsDir, data);
+        fs.writeFileSync(guildConfigsDir, data);
         logAction({ name: "guild config update", config: config });
         return config;
 

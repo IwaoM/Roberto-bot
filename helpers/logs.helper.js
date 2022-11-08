@@ -157,23 +157,23 @@ module.exports = {
     }
 
     if (errorInput.errorObject) {
-      logEntry.error.errorObject = errorInput.errorObject.toString();
+      logEntry.error.errorObject = errorInput.errorObject;
     }
 
     // write in the logs file
     writeLogEntry(logEntry);
   },
 
-  async pruneLogs (days) {
+  pruneLogs (days) {
     const xDaysAgo = Date.now() - 1000 * 3600 * 24 * days;
 
     const logsDir = path.join(path.dirname(__dirname), "logs.json");
-    let data = await fs.promises.readFile(logsDir);
+    let data = fs.readFileSync(logsDir);
     const logs = JSON.parse(data);
     const recentLogs = logs.filter(entry => entry.timestamp.time > xDaysAgo);
 
     data = JSON.stringify(recentLogs, null, 2);
-    await fs.promises.writeFile(logsDir, data);
+    fs.writeFileSync(logsDir, data);
 
     return logs.length - recentLogs.length;
   }

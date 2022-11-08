@@ -14,7 +14,7 @@ module.exports = {
       console.log(`Initializing ${client.user.username}`);
 
       // Prune logs older than a week
-      const clearedLogsCount = await pruneLogs(7);
+      const clearedLogsCount = pruneLogs(7);
       console.log(`\nCleared ${clearedLogsCount} log(s) older than 1 week.`);
 
       // * 1. Syncing & display of the joined guild list
