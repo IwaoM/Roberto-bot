@@ -57,7 +57,6 @@ module.exports = {
     }
 
     // write in the logs file
-    console.log(logEntry);
     writeLogEntry(logEntry);
   },
 
@@ -134,7 +133,6 @@ module.exports = {
     }
 
     // write in the logs file
-    console.log(logEntry);
     writeLogEntry(logEntry);
   },
 
@@ -163,7 +161,6 @@ module.exports = {
     }
 
     // write in the logs file
-    console.log(logEntry);
     writeLogEntry(logEntry);
   },
 
