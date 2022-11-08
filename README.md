@@ -1,4 +1,4 @@
-# [Roberto-bot](link) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/IwaoM/Roberto-bot) ![GitHub](https://img.shields.io/github/license/IwaoM/Roberto-bot)
+# [Roberto-bot](https://discord.com/api/oauth2/authorize?client_id=253939437610860544&permissions=402656384&scope=bot%20applications.commands) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/IwaoM/Roberto-bot) ![GitHub](https://img.shields.io/github/license/IwaoM/Roberto-bot)
 
 <img src="icon.png" alt="Roberto logo" width="120"/>
 
@@ -8,7 +8,7 @@ Roberto is licensed under the MIT license. Feel free to reuse it if you want!
 
 If you find any issues, please report them in [Issues](https://github.com/IwaoM/Roberto-bot/issues).
 
-**[Invite Roberto in your server](link)**
+**[Invite Roberto in your server](https://discord.com/api/oauth2/authorize?client_id=253939437610860544&permissions=402656384&scope=bot%20applications.commands)**
 
 ## Setting up the bot
 
