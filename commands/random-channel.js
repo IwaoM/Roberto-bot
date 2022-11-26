@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
 const { randomTeams, randomDraw } = require("../helpers/misc.helper.js");
 const { getVoiceChannelMembers } = require("../helpers/discord.helper.js");
-const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
+const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -106,6 +106,7 @@ module.exports = {
         message: sentReply
       });
     } catch (err) {
+      consoleError(err);
       logError({
         name: `random-channel command handler error`,
         description: `Failed to handle the random-channel command`,
@@ -220,6 +221,7 @@ module.exports = {
       const sentReply = await interaction.update(text);
       logAction({ name: `${interaction.customId} button handling`, message: sentReply });
     } catch (err) {
+      consoleError(err);
       logError({
         name: `${interaction.customId} button handler error`,
         description: `Failed to handle the ${interaction.customId} button interaction`,

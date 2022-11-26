@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
 const { randomDice, randomDraw } = require("../helpers/misc.helper.js");
-const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
+const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -80,6 +80,7 @@ module.exports = {
         message: sentReply
       });
     } catch (err) {
+      consoleError(err);
       logError({
         name: `random command handler error`,
         description: `Failed to handle the random command`,
@@ -152,6 +153,7 @@ module.exports = {
       const sentReply = await interaction.update(newText);
       logAction({ name: `${interaction.customId} button handling`, message: sentReply });
     } catch (err) {
+      consoleError(err);
       logError({
         name: `${interaction.customId} button handler error`,
         description: `Failed to handle the ${interaction.customId} button`,

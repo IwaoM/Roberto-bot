@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { openWeatherToken } = require("../config.json");
 const { capitalizeFirstLetter } = require("../helpers/misc.helper.js");
-const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
+const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 // Beaufort scale of wind speeds (converted to m/s)
 const windTypes = [
@@ -98,6 +98,7 @@ Feels like ${Math.round(weather.main.feels_like)}°C`)
 
       }
     } catch (err) {
+      consoleError(err);
       logError({
         name: `weather command handler error`,
         description: `Failed to handle the weather command`,

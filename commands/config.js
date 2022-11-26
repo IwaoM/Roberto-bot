@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require("discord.js");
 const { checkRoleAssignment, createRobertoAdminRole, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/files.helper.js");
 const { adminRoleName } = require("../config.json");
-const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
+const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 const trueFalseOptionChoices = [{ name: "Enable", value: "enable" }, { name: "Disable", value: "disable" }, { name: "Show", value: "show" }];
 
@@ -220,6 +220,7 @@ module.exports = {
         });
       }
     } catch (err) {
+      consoleError(err);
       logError({
         name: `config command handler error`,
         description: `Failed to handle the config command`,
@@ -244,7 +245,6 @@ module.exports = {
           await interaction.reply(replyText);
         }
       }
-
 
       throw err;
     }

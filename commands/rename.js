@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
-const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
+const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -70,6 +70,7 @@ module.exports = {
 
       }
     } catch (err) {
+      consoleError(err);
       logError({
         name: `rename command handler error`,
         description: `Failed to handle the rename command`,

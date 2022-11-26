@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
 const { generatePhoenix } = require("../helpers/misc.helper.js");
-const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
+const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,6 +29,7 @@ module.exports = {
         message: sentReply
       });
     } catch (err) {
+      consoleError(err);
       logError({
         name: `px command handler error`,
         description: `Failed to handle the px command`,
@@ -72,6 +73,7 @@ module.exports = {
       const sentReply = await interaction.update(name);
       logAction({ name: `px_again button handling`, message: sentReply });
     } catch (err) {
+      consoleError(err);
       logError({
         name: `px_again button handler error`,
         description: `Failed to handle the px_again button interaction`,

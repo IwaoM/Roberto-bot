@@ -3,7 +3,7 @@ const { randomColor, checkHexCode, getDominantColor } = require("../helpers/colo
 const { checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { updateColorRole } = require("../helpers/processes.helper.js");
 const { saveUserAvatar, unlinkFile } = require("../helpers/files.helper.js");
-const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
+const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 const dominantChoices = [
   { name: "main", value: "Vibrant" },
@@ -122,6 +122,7 @@ module.exports = {
         message: sentReply
       });
     } catch (err) {
+      consoleError(err);
       logError({
         name: `color command handler error`,
         description: `Failed to handle the color command`,

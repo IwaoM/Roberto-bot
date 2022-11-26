@@ -2,7 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const HTMLParser = require("node-html-parser");
 const { bodyToListFrench, bodyToListEnglish } = require("../helpers/wiktionary.helper.js");
 const { trimAll } = require("../helpers/misc.helper.js");
-const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
+const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -77,6 +77,9 @@ module.exports = {
         throw new Error("Page API error");
       }
       const parsedHtml = HTMLParser.parse(pageHtml);
+      if (!parsedHtml.getElementsByTagName("html").length) {
+        throw new Error("Page API error");
+      }
       const body = parsedHtml.getElementsByTagName("html")[0].getElementsByTagName("body")[0];
 
       const dictionaryResult = {
@@ -127,6 +130,7 @@ module.exports = {
         message: sentReply
       });
     } catch (err) {
+      consoleError(err);
       logError({
         name: `dictionary command handler error`,
         description: `Failed to handle the dictionary command`,

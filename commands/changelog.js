@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { OctokitToken } = require("../config.json");
 const { Octokit } = require("octokit");
-const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
+const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 const octokit = new Octokit({ auth: OctokitToken });
 
@@ -41,6 +41,7 @@ module.exports = {
 
       logAction({ name: `changelog command handling`, command: { id: interaction.commandId, name: interaction.commandName }, message: sentReply });
     } catch (err) {
+      consoleError(err);
       logError({
         name: `changelog command handler error`,
         description: `Failed to handle the changelog command`,

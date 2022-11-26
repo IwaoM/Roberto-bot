@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
 const fs = require("node:fs");
 const path = require("node:path");
-const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
+const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 // Construct list of choices for command argument
 const optionChoices = [];
@@ -68,6 +68,7 @@ module.exports = {
         message: sentReply
       });
     } catch (err) {
+      consoleError(err);
       logError({
         name: `help command handler error`,
         description: `Failed to handle the help command`,

@@ -164,6 +164,11 @@ module.exports = {
     writeLogEntry(logEntry);
   },
 
+  consoleError (error) {
+    console.error(`\n[${new Date().toISOString()}]`);
+    console.error(error.stack);
+  },
+
   pruneLogs (days) {
     const xDaysAgo = Date.now() - 1000 * 3600 * 24 * days;
 
