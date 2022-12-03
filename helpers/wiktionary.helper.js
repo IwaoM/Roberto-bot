@@ -6,7 +6,11 @@ module.exports = {
     try {
       const result = [];
 
-      const frSections = body.childNodes.find(node => node.childNodes[0]?.id === "Français").getElementsByTagName("section");
+      const frDefinition = body.childNodes.find(node => node.childNodes[0]?.id === "Français");
+      if (!frDefinition) {
+        return 0;
+      }
+      const frSections = frDefinition.getElementsByTagName("section");
 
       // * 1. Get all grammar class sections
       const allGrammarClasses = frSections.filter(elem => (
@@ -62,9 +66,13 @@ module.exports = {
   async bodyToListEnglish (body) {
     try {
       const result = [];
-      const grammarClassNames = ["Noun", "Verb", "Adjective", "Adverb", "Preposition", "Conjunction", "Pronoun", "Determiner", "Interjection"];
+      const grammarClassNames = ["Noun", "Proper_noun", "Verb", "Adjective", "Adverb", "Preposition", "Conjunction", "Pronoun", "Determiner", "Interjection"];
 
-      const enSections = body.childNodes.find(node => node.childNodes[0]?.id === "English").getElementsByTagName("section");
+      const enDefinition = body.childNodes.find(node => node.childNodes[0]?.id === "English");
+      if (!enDefinition) {
+        return 0;
+      }
+      const enSections = enDefinition.getElementsByTagName("section");
 
       // * 1. Get all grammar class sections
       // their layout in the page depends on how many etymologies are listed

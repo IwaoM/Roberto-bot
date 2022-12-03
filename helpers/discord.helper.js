@@ -134,12 +134,12 @@ module.exports = {
       }
 
       // otherwise, get channel members
-      const channelMemberNames = [];
+      const channelMemberIds = [];
       for (let i = 0; i < channel.members.size; i++) {
-        channelMemberNames.push(channel.members.at(i).nickname ? channel.members.at(i).nickname : channel.members.at(i).user.username);
+        channelMemberIds.push(channel.members.at(i).user.id);
       }
 
-      return channelMemberNames;
+      return channelMemberIds;
     } catch (err) {
       logError({
         name: `channel members get error`,

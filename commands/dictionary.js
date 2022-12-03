@@ -96,6 +96,16 @@ module.exports = {
         dictionaryResult.resultData = await bodyToListFrench(body);
       }
 
+      if (dictionaryResult.resultData === 0) {
+        const sentReply = await interaction.editReply(`No results were found in this language for "${commandOption}".`);
+        logAction({
+          name: `dictionary command handling`,
+          command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: { word: commandOption } },
+          message: sentReply
+        });
+        return;
+      }
+
       // construct embed
       const definitionFields = [];
       for (let data of dictionaryResult.resultData) {

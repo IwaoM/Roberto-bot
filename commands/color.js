@@ -105,13 +105,14 @@ module.exports = {
 
       // unassign any previous color, delete the role if not needed anymore
       // assign the new color - use the existing color role if it exists, create a new one otherwise
-      const resultRoleId = await updateColorRole(hexCode, interaction.member);
+      const resultRole = await updateColorRole(hexCode, interaction.member);
 
       let sentReply;
-      if (resultRoleId === "none") {
+      if (resultRole === "none") {
         sentReply = await interaction.editReply(`Color was reset for <@${interaction.user.id}>.`);
       } else {
-        sentReply = await interaction.editReply(`Color <@&${resultRoleId}> was given to <@${interaction.user.id}>.`);
+        sentReply = await interaction.editReply(`Color <@&${resultRole.id}> was given to <@${interaction.user.id}>.`);
+        await resultRole.setMentionable(false);
       }
 
       logAction({
@@ -164,7 +165,7 @@ module.exports = {
     • *hex-code* should be a valid hex color code (with or without the \`#\`).
     • 6-characters as well as 3-characters hex color codes are accepted.
     • Example: \`/color hex #ff7f00\`
-    • Hex color picker : https://www.w3schools.com/colors/colors_picker.asp
+    • Hex color picker : https://www.webfx.com/web-design/color-picker/
 • \`/color random\`: gives your name a random color.
 • \`/color random-vibrant\`: gives your name a random vibrant color.
 • \`/color dominant <type>\`: gives your name a dominant color from your profile picture.

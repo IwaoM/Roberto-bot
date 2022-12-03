@@ -34,14 +34,14 @@ module.exports = {
       // No specific permission needed
 
       // return if the caller is not in a voice channel or the channel doesn't have enough members
-      const channelMemberNames = await getVoiceChannelMembers(interaction.member.voice.channel);
-      // channelMemberNames.push("Bob", "Mauricette", "Ricardo", "Bobine", "R2D2"); // used for testing
+      const channelMemberIds = await getVoiceChannelMembers(interaction.member.voice.channel);
+      // channelMemberIds.push("123", "456", "789", "147", "258"); // used for testing
 
-      if (!channelMemberNames.length) {
+      if (!channelMemberIds.length) {
         throw new Error("Not connected to voice");
       }
 
-      if (channelMemberNames.length <= 2) {
+      if (channelMemberIds.length <= 2) {
         throw new Error("Not enough connected members");
       }
 
@@ -52,17 +52,17 @@ module.exports = {
 
         // get & check option values
         const teamsOption = interaction.options.getInteger("teams");
-        if (teamsOption >= channelMemberNames.length) {
+        if (teamsOption >= channelMemberIds.length) {
           throw new Error("Number of teams is too big");
         }
 
         // creating teams
-        const numberTeams = randomTeams(channelMemberNames.length, teamsOption);
+        const numberTeams = randomTeams(channelMemberIds.length, teamsOption);
         const teams = [];
         for (let numberTeam of numberTeams) {
           const team = [];
           for (let num of numberTeam) {
-            team.push(channelMemberNames[num - 1]);
+            team.push(channelMemberIds[num - 1]);
           }
           teams.push(team);
         }
@@ -70,31 +70,31 @@ module.exports = {
         // create button & text
         againButton = new ButtonBuilder().setCustomId("random-channel_teams_again").setLabel("Generate again").setStyle(ButtonStyle.Primary);
 
-        text = `Splitting ${channelMemberNames.length} channel members into ${teamsOption} teams:`;
+        text = `Splitting ${channelMemberIds.length} channel members into ${teamsOption} teams:`;
         for (let i = 0; i < teams.length; i++) {
-          text += `\n${i + 1}. [**${teams[i].join("** - **")}**]`;
+          text += `\n${i + 1}. [<@${teams[i].join("> - <@")}>]`;
         }
 
       } else if (subcommand === "draw") {
 
         // get & check option values
         const drawsOption = interaction.options.getInteger("draws");
-        if (drawsOption > channelMemberNames.length) {
+        if (drawsOption > channelMemberIds.length) {
           throw new Error("Number of draws is too big");
         }
 
         // drawing users
-        const numberSample = randomDraw(channelMemberNames.length, drawsOption);
+        const numberSample = randomDraw(channelMemberIds.length, drawsOption);
         const sample = [];
         for (let num of numberSample) {
-          sample.push(channelMemberNames[num - 1]);
+          sample.push(channelMemberIds[num - 1]);
         }
 
         // create button & text
         againButton = new ButtonBuilder().setCustomId("random-channel_draw_again").setLabel("Draw again").setStyle(ButtonStyle.Primary);
 
-        text = `Drawing ${drawsOption} channel member${drawsOption > 1 ? "s" : ""} among ${channelMemberNames.length} connected users:`;
-        text += `\n[**${sample.join("** - **")}**]`;
+        text = `Drawing ${drawsOption} channel member${drawsOption > 1 ? "s" : ""} among ${channelMemberIds.length} connected users:`;
+        text += `\n[<@${sample.join("> - <@")}>]`;
 
       }
 
@@ -156,14 +156,14 @@ module.exports = {
       }
 
       // return if the caller is not in a voice channel or the channel doesn't have enough members
-      const channelMemberNames = await getVoiceChannelMembers(interaction.member.voice.channel);
-      // channelMemberNames.push("Bob", "Mauricette", "Ricardo", "Bobine", "R2D2"); // used for testing
+      const channelMemberIds = await getVoiceChannelMembers(interaction.member.voice.channel);
+      // channelMemberIds.push("123", "456", "789", "147", "258"); // used for testing
 
-      if (!channelMemberNames.length) {
+      if (!channelMemberIds.length) {
         throw new Error("Not connected to voice");
       }
 
-      if (channelMemberNames.length <= 2) {
+      if (channelMemberIds.length <= 2) {
         throw new Error("Not enough connected members");
       }
 
@@ -176,45 +176,45 @@ module.exports = {
 
         // get & check option values
         const teamsOption = parseInt(replyLines[0].split(" ")[5]);
-        if (teamsOption >= channelMemberNames.length) {
+        if (teamsOption >= channelMemberIds.length) {
           throw new Error("Number of teams is too big");
         }
 
         // creating teams
-        const numberTeams = randomTeams(channelMemberNames.length, teamsOption);
+        const numberTeams = randomTeams(channelMemberIds.length, teamsOption);
         const teams = [];
         for (let numberTeam of numberTeams) {
           const team = [];
           for (let num of numberTeam) {
-            team.push(channelMemberNames[num - 1]);
+            team.push(channelMemberIds[num - 1]);
           }
           teams.push(team);
         }
 
         // create text
-        text = `Splitting ${channelMemberNames.length} channel members into ${teamsOption} teams:`;
+        text = `Splitting ${channelMemberIds.length} channel members into ${teamsOption} teams:`;
         for (let i = 0; i < teams.length; i++) {
-          text += `\n${i + 1}. [**${teams[i].join("** - **")}**]`;
+          text += `\n${i + 1}. [<@${teams[i].join("> - <@")}>]`;
         }
 
       } else if (interaction.customId === "random-channel_draw_again") {
 
         // get & check option values
         const drawsOption = parseInt(replyLines[0].split(" ")[1]);
-        if (drawsOption > channelMemberNames.length) {
+        if (drawsOption > channelMemberIds.length) {
           throw new Error("Number of draws is too big");
         }
 
         // drawing users
-        const numberSample = randomDraw(channelMemberNames.length, drawsOption);
+        const numberSample = randomDraw(channelMemberIds.length, drawsOption);
         const sample = [];
         for (let num of numberSample) {
-          sample.push(channelMemberNames[num - 1]);
+          sample.push(channelMemberIds[num - 1]);
         }
 
         // create text
-        text = `Drawing ${drawsOption} channel member${drawsOption > 1 ? "s" : ""} among ${channelMemberNames.length} connected users:`;
-        text += `\n[**${sample.join("** - **")}**]`;
+        text = `Drawing ${drawsOption} channel member${drawsOption > 1 ? "s" : ""} among ${channelMemberIds.length} connected users:`;
+        text += `\n[<@${sample.join("> - <@")}>]`;
 
       }
 

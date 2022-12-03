@@ -71,7 +71,8 @@ module.exports = {
         try {
           const avatarDir = await saveUserAvatar(member);
           const hexCode = await getDominantColor("Vibrant", avatarDir);
-          await updateColorRole(hexCode, member);
+          const newUserColorRole = await updateColorRole(hexCode, member);
+          await newUserColorRole.setMentionable(false);
           await unlinkFile (avatarDir);
         } catch (err) {
           logError({

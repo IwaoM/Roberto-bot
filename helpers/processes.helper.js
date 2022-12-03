@@ -45,15 +45,13 @@ module.exports = {
           wantedColorRole = await userMember.guild.roles.create({ name: hexCode, color: hexCode });
           logAction({ name: "role creation", guild: userMember.guild, role: wantedColorRole });
           wantedColorRole = await wantedColorRole.setPermissions([]);
-          logAction({ name: "role update", guild: userMember.guild, role: wantedColorRole });
           wantedColorRole = await wantedColorRole.setMentionable(true);
-          logAction({ name: "role update", guild: userMember.guild, role: wantedColorRole });
         }
 
         // assign the found or created color role to user
         userMember.roles.add(wantedColorRole);
         logAction({ name: "member role addition", guild: userMember.guild, member: userMember, role: wantedColorRole });
-        return wantedColorRole.id;
+        return wantedColorRole;
       }
 
       return hexCode;
