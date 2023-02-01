@@ -6,7 +6,7 @@ A Discord bot with various utility & customization features. It is most suited f
 
 Roberto is licensed under the MIT license. Feel free to reuse it if you want!
 
-If you find any issues, please report them in [Issues](https://github.com/IwaoM/Roberto-bot/issues).
+If you find any issues, please report them in [Issues](https://github.com/IwaoM/Roberto-bot/issues). Additionally, feel free to dm me on Discord directly at **iwao#9999** if you need any help!
 
 **[Invite Roberto in your server](https://discord.com/api/oauth2/authorize?client_id=253939437610860544&permissions=402656384&scope=bot%20applications.commands)**
 
