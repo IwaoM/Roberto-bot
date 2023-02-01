@@ -142,7 +142,7 @@ Roberto needs the permission to manage roles for the *roles-repair* subcommand c
 - `/config auto-color <action>`: Enables, disables or shows the current value for the *auto-color* configuration option. 
 - `/config auto-greet <action>`: Enables, disables or shows the current value for the *auto-greet* configuration option. 
 - `/config permission-dm <action>`: Enables, disables or shows the current value for the *permission-dm* configuration option. 
-- `/config role-show`: Shows the current Roberto admin role name and ID.
+- `/config roles-show`: Shows the current Roberto admin role name and ID.
 - `/config roles-repair`: Regenerates the Roberto admin role and deletes unused roles with the same name (a role is considered unused if it has no members).
 
 ### /changelog
