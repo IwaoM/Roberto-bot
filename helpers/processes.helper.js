@@ -1,6 +1,6 @@
 const { checkHexCode } = require("./color.helper.js");
 const { getGuildConfigs, updateGuildConfigEntry, removeGuildConfigEntry, addGuildConfigEntry } = require("../helpers/files.helper.js");
-const { checkOwnMissingPermissions, getPermissionUpdaterUser, dmUsers, createRobertoAdminRole, getInviterUser } = require("../helpers/discord.helper.js");
+const { checkOwnMissingPermissions, getPermissionUpdaterUser, dmUsers, createRobertoAdminRole, createSlowmodeRole, getInviterUser } = require("../helpers/discord.helper.js");
 const { robertoNeededPermissions } = require("../config.json");
 const { logAction, logError } = require("../helpers/logs.helper.js");
 
@@ -154,19 +154,22 @@ module.exports = {
       // check if managed role was created
       const ownManagedRole = (await guild.roles.fetch()).find(role => role.name === client.user.username && role.managed && role.tags?.botId === client.user.id);
 
-      let robertoRoleIds;
+      let robertoAdminRole, slowmodeRole;
       if (missingPermissions.indexOf("ManageRoles") === -1) {
         // create admin role
-        robertoRoleIds = await createRobertoAdminRole(guild);
-        console.log(`* Roberto admin [${robertoRoleIds.robertoAdminRoleId}] role created`);
+        robertoAdminRole = await createRobertoAdminRole(guild);
+        console.log(`* Roberto admin [${robertoAdminRole.robertoAdminRoleId}] role created`);
+
+        slowmodeRole = await createSlowmodeRole(guild);
+        console.log(`* Slowmode [${slowmodeRole.slowmodeRoleId}] role created`);
       } else {
         logError({
           name: `missing permissions for Roberto roles creation`,
-          description: `Roberto admin role could not be created - missing permission ManageRoles`,
+          description: `Roberto admin & slowmode roles could not be created - missing permission ManageRoles`,
           function: { name: "processGuildCreate", arguments: [...arguments] },
           errorObject: new Error("Missing permissions")
         });
-        console.log(`* Roberto admin role could not be created - missing permission ManageRoles`);
+        console.log(`* Robert admin & slowmode roles could not be created - missing permission ManageRoles`);
       }
 
       // create new entry in guildConfigs.json
@@ -176,8 +179,11 @@ module.exports = {
         greetNewMembers: false,
         colorNewMembers: true,
         dmOnPermissionRemoved: true,
-        robertoAdminRoleId: robertoRoleIds?.robertoAdminRoleId || "none",
-        missingPermissions: missingPermissions
+        missingPermissions: missingPermissions,
+        ...robertoAdminRole,
+        slowmodeChannels: [],
+        slowmodeDelay: 5,
+        ...slowmodeRole
       };
 
       await addGuildConfigEntry(newEntry);

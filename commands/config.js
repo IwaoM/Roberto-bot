@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
-const { checkRoleAssignment, createRobertoAdminRole, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
+const { checkRoleAssignment, createRobertoAdminRole, checkOwnMissingPermissions, createSlowmodeRole } = require("../helpers/discord.helper.js");
 const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/files.helper.js");
-const { adminRoleName } = require("../config.json");
+const { adminRoleName, slowmodeRoleName } = require("../config.json");
 const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 const trueFalseOptionChoices = [{ name: "Enable", value: "enable" }, { name: "Disable", value: "disable" }];
@@ -51,7 +51,8 @@ module.exports = {
       subcommand
         .setName("roles-repair")
         .setDescription("Recreates the admin role if it was deleted")
-    ).addSubcommand(subcommand =>
+    )
+    .addSubcommand(subcommand =>
       subcommand
         .setName("slowmode-show")
         .setDescription("Shows the current configuration for the slowmode role")
@@ -166,6 +167,21 @@ module.exports = {
 
             // currently, only the slowmode-channels command has this action option
             const guildConfig = await getGuildConfigs(interaction.guildId);
+
+            // create the slowmode role on the fly if it does not exist
+            if (!guildConfig.slowmodeRoleId) {
+              // check if Roberto has the required permission to create the slowmode role
+              const neededPermissionsForCommand = ["ManageRoles"];
+              const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
+              if (missingPermissions.length) {
+                throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
+              }
+              const slowmodeRole = await createSlowmodeRole(interaction.guild);
+              await updateGuildConfigEntry(interaction.guildId, slowmodeRole);
+            }
+
+            // add the channel to the slowmodeChannels list
+            // create the list if it doesn't exist
             const slowmodeChannels = guildConfig[configOption] ? [...guildConfig[configOption]] : [];
             if (!slowmodeChannels.includes(commandParamChannel.id)) {
               slowmodeChannels.push(commandParamChannel.id);
@@ -181,6 +197,9 @@ module.exports = {
 
             // currently, only the slowmode-channels command has this action option
             const guildConfig = await getGuildConfigs(interaction.guildId);
+
+            // remove the channel from the slowmodeChannels list
+            // create the list if it doesn't exist
             const slowmodeChannels = guildConfig[configOption] ? [...guildConfig[configOption]] : [];
             if (slowmodeChannels.includes(commandParamChannel.id)) {
               slowmodeChannels.splice(slowmodeChannels.indexOf(commandParamChannel.id), 1);
@@ -247,8 +266,12 @@ module.exports = {
         // this command is allowed for everyone (in case the Roberto admin role is deleted)
         const guildRoles = await interaction.guild.roles.fetch();
         const adminRole = guildRoles.get(guildConfig.robertoAdminRoleId);
+        const slowmodeRole = guildRoles.get(guildConfig.slowmodeRoleId);
         const rolesToDelete = guildRoles.filter(
-          role => !role.members.size && (role.name === adminRoleName && role.id !== guildConfig.robertoAdminRoleId)
+          role => !role.members.size && (
+            role.name === adminRoleName && role.id !== guildConfig.robertoAdminRoleId
+            || role.name === slowmodeRoleName && role.id !== guildConfig.slowmodeRoleId
+          )
         );
         let messageText = "Repairing roles...";
         interaction.editReply(messageText);
@@ -261,7 +284,15 @@ module.exports = {
           interaction.editReply(messageText);
         }
 
-        // delete unused roles with the same name as the admin role if any
+        // regenerate slowmode role if not found
+        if (!slowmodeRole) {
+          const newSlowmodeRole = await createSlowmodeRole(interaction.guild);
+          await updateGuildConfigEntry(interaction.guildId, newSlowmodeRole);
+          messageText += `\n• Slowmode role was recreated (ID ${newSlowmodeRole.slowmodeRoleId}).`;
+          interaction.editReply(messageText);
+        }
+
+        // delete unused roles with the same name as the admin or slowmode roles if any
         if (rolesToDelete.size) {
           messageText += `\n• ${rolesToDelete.size} unused role${rolesToDelete.size === 1 ? " was" : "s were"} found.`;
           interaction.editReply(messageText);

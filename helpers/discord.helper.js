@@ -1,25 +1,45 @@
-const { adminRoleName } = require("../config.json");
+const { adminRoleName, slowmodeRoleName } = require("../config.json");
 const { logError, logAction } = require("../helpers/logs.helper.js");
 
 module.exports = {
   async createRobertoAdminRole (guild) {
     try {
-      const roleIds = {};
+      const role = {};
 
       let robertoAdminRole = await guild.roles.create({ name: adminRoleName });
-      logAction({ name: "role creation", guild: guild, role: robertoAdminRole });
       robertoAdminRole = await robertoAdminRole.setPermissions([]);
-      logAction({ name: "role update", guild: guild, role: robertoAdminRole });
       robertoAdminRole = await robertoAdminRole.setMentionable(true);
-      logAction({ name: "role update", guild: guild, role: robertoAdminRole });
-      roleIds.robertoAdminRoleId = robertoAdminRole.id;
+      logAction({ name: "role creation", guild: guild, role: robertoAdminRole });
+      role.robertoAdminRoleId = robertoAdminRole.id;
 
-      return roleIds;
+      return role;
     } catch (err) {
       logError({
-        name: `roberto roles create error`,
-        description: `Failed to create roberto roles`,
+        name: `roberto admin role create error`,
+        description: `Failed to create roberto admin role`,
         function: { name: "createRobertoAdminRole", arguments: [...arguments] },
+        errorObject: err
+      });
+      throw err;
+    }
+  },
+
+  async createSlowmodeRole (guild) {
+    try {
+      const role = {};
+
+      let slowmodeRole = await guild.roles.create({ name: slowmodeRoleName });
+      slowmodeRole = await slowmodeRole.setPermissions([]);
+      slowmodeRole = await slowmodeRole.setMentionable(true);
+      logAction({ name: "role creation", guild: guild, role: slowmodeRole });
+      role.slowmodeRoleId = slowmodeRole.id;
+
+      return role;
+    } catch (err) {
+      logError({
+        name: `roberto slowmode role create error`,
+        description: `Failed to create slowmode role`,
+        function: { name: "createSlowmodeRole", arguments: [...arguments] },
         errorObject: err
       });
       throw err;
