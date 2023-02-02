@@ -228,14 +228,37 @@ module.exports = {
 
         }
 
+      } else if (subcommand === "slowmode-delay") {
+
+        const configOption = "slowmodeDelay";
+        const argObject = {};
+        argObject[configOption] = commandParamInteger;
+        await updateGuildConfigEntry(interaction.guildId, argObject);
+
+        const messageText = `A slowmode delay of **${commandParamInteger} seconds** has been set.`;
+        const sentReply = await interaction.editReply(messageText);
+        logAction({
+          name: `config command handling`,
+          command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs },
+          message: sentReply
+        });
+
       } else if (subcommand === "roles-show") {
 
         // allow command only if caller has the Roberto admin role
         if (await checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
 
           // admin role always exists or the command couldn't be called in the first place
-          const adminRole = await interaction.guild.roles.fetch(guildConfig.robertoAdminRoleId);
-          const messageText = `Roberto Administrator role : "${adminRole.name}" - ID ${guildConfig.robertoAdminRoleId}`;
+          const slowmodeRole = await interaction.guild.roles.fetch(guildConfig.slowmodeRoleId);
+
+          let messageText = `Roberto Administrator role: <@&${guildConfig.robertoAdminRoleId}>`;
+          if (slowmodeRole?.id) {
+            messageText += `\nSlowmode role: <@&${guildConfig.slowmodeRoleId}>`;
+          } else if (guildConfig.slowmodeRoleId) {
+            messageText += `\nSlowmode role was not found - this can be fixed with the \`/config roles-repair\` command.`;
+          } else {
+            messageText += `\nSlowmode role does not exist yet - it will be created if you add a channel with the \`/config slowmode-channels add\` command.`;
+          }
 
           const sentReply = await interaction.editReply(messageText);
           logAction({
@@ -247,7 +270,7 @@ module.exports = {
         } else {
 
           const adminRole = await interaction.guild.roles.fetch(guildConfig.robertoAdminRoleId);
-          if (adminRole) {
+          if (adminRole?.id) {
             throw new Error(`Missing admin role - role exists`);
           } else {
             throw new Error(`Missing admin role - role does not exist`);
