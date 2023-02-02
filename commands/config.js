@@ -68,7 +68,7 @@ module.exports = {
           .setChoices(...addRemoveOptionChoices))
         .addChannelOption(option => option
           .addChannelTypes(0)
-          .setName("parameter-channel")
+          .setName("channel")
           .setDescription("Text channels only")
           .setRequired(true))
     )
@@ -77,7 +77,7 @@ module.exports = {
         .setName("slowmode-delay")
         .setDescription("Add or remove a channel to be affected by the slowmode role")
         .addIntegerOption(option => option
-          .setName("parameter-integer")
+          .setName("delay")
           .setDescription("Between 1 and 3600 seconds")
           .setMinValue(1)
           .setMaxValue(3600)
@@ -91,8 +91,8 @@ module.exports = {
 
       // get the command options
       const commandAction = interaction.options.getString(`action`) || null;
-      const commandParamInteger = interaction.options.getInteger(`parameter-integer`) || null;
-      const fullChannel = interaction.options.getChannel(`parameter-channel`) || null;
+      const commandParamInteger = interaction.options.getInteger(`delay`) || null;
+      const fullChannel = interaction.options.getChannel(`channel`) || null;
       const commandParamChannel = fullChannel ? { id: fullChannel.id, name: fullChannel.name } : null;
 
       if (subcommand === "auto-color") {
@@ -166,8 +166,6 @@ module.exports = {
           } else if (commandAction === "add") {
 
             // currently, only the slowmode-channels command has this action option
-            const guildConfig = await getGuildConfigs(interaction.guildId);
-
             // create the slowmode role on the fly if it does not exist
             if (!guildConfig.slowmodeRoleId) {
               // check if Roberto has the required permission to create the slowmode role
@@ -196,8 +194,6 @@ module.exports = {
           } else if (commandAction === "remove") {
 
             // currently, only the slowmode-channels command has this action option
-            const guildConfig = await getGuildConfigs(interaction.guildId);
-
             // remove the channel from the slowmodeChannels list
             // create the list if it doesn't exist
             const slowmodeChannels = guildConfig[configOption] ? [...guildConfig[configOption]] : [];
@@ -240,6 +236,25 @@ module.exports = {
         logAction({
           name: `config command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs },
+          message: sentReply
+        });
+
+      } else if (subcommand === "slowmode-show") {
+
+        // display current value for the option
+        if (guildConfig.slowmodeChannels === undefined) {
+          await updateGuildConfigEntry(interaction.guildId, { slowmodeChannels: [] });
+        }
+        if (!guildConfig.slowmodeDelay) {
+          await updateGuildConfigEntry(interaction.guildId, { slowmodeDelay: 5 });
+        }
+        let sentReply = await interaction.editReply(`Current settings for slowmode : 
+Slowmode-enabled channels: ${guildConfig.slowmodeChannels?.length ? `[<#${guildConfig.slowmodeChannels.join(">, <#")}>]` : "none"}
+Slowmode delay: ${guildConfig.slowmodeDelay ? guildConfig.slowmodeDelay : 5} seconds`);
+
+        logAction({
+          name: `config command handling`,
+          command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
           message: sentReply
         });
 
