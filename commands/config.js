@@ -118,7 +118,6 @@ module.exports = {
       });
 
       await interaction.deferReply({ ephemeral: true });
-
       const guildConfig = await getGuildConfigs(interaction.guildId);
 
       // for subcommands with an action option

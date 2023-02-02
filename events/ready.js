@@ -79,8 +79,8 @@ module.exports = {
 
           // construct DM text
           dmText = `Hello!
-my permissions on the server **${guild.name}** were updated while I was offline, and the following permission${newlyBotMissingPermissions.length === 1 ? " was" : "s were"} removed from me: [${newlyBotMissingPermissions.join(", ")}].
-I need th${newlyBotMissingPermissions.length === 1 ? "is permission" : "ese permissions"} to function properly (more details on why exactly here: https://github.com/IwaoM/Roberto-bot#readme). Please consider restoring ${newlyBotMissingPermissions.length === 1 ? "it" : "them"} :)
+my permissions on the server **${guild.name}** or my list of needed permissions was updated while I was offline, and I currently miss the following permission${newlyBotMissingPermissions.length === 1 ? "" : "s"}: [${newlyBotMissingPermissions.join(", ")}].
+I need th${newlyBotMissingPermissions.length === 1 ? "is permission" : "ese permissions"} to function properly (more details on why exactly here: https://github.com/IwaoM/Roberto-bot#readme). Please consider giving ${newlyBotMissingPermissions.length === 1 ? "it" : "them"} to me :)
 Thanks!
 
 Note: this automatic DM can be disabled with the \`/config permission-dm\` command.`;
