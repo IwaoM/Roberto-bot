@@ -103,7 +103,7 @@ module.exports = {
 
         // construct DM text
         dmText = `Hello!
-  ${missingPermissions.length ? "Someone" : "You"} recently `;
+${missingPermissions.length ? "Someone" : "You"} recently `;
 
         if (eventType === "roleUpdate") {
           dmText += `updated the role **${newElem.name}** in the server **${newElem.guild.name}**, `;
@@ -112,10 +112,10 @@ module.exports = {
         }
 
         dmText += `which removed the following permission${newlyBotMissingPermissions.length === 1 ? "" : "s"} from me: [${newlyBotMissingPermissions.map(key => neededPermissionNames.get(key)).join(", ")}].
-  I need th${newlyBotMissingPermissions.length === 1 ? "is permission" : "ese permissions"} to function properly (more details on why exactly here: https://github.com/IwaoM/Roberto-bot#readme). Please consider restoring ${newlyBotMissingPermissions.length === 1 ? "it" : "them"} :)
-  Thanks!
+I need th${newlyBotMissingPermissions.length === 1 ? "is permission" : "ese permissions"} to function properly (more details on why exactly here: https://github.com/IwaoM/Roberto-bot#readme). Please consider restoring ${newlyBotMissingPermissions.length === 1 ? "it" : "them"} :)
+Thanks!
 
-  Note: this automatic DM can be disabled with the \`/config permission-dm\` command.`;
+Note: this automatic DM can be disabled with the \`/config permission-dm\` command.`;
 
         // if DM text & recipient are not empty, send the text to the recipient
         if (dmText && dmRecipient) {
@@ -129,7 +129,7 @@ module.exports = {
 
       // in any case, if permissions were changed for Roberto, replace the missing permission value in the guild config
       if (client.guilds.cache.find(guild => guild.id === newElem.guild.id) && newBotMissingPermissions.toString() !== oldBotMissingPermissions.toString()) {
-        await updateGuildConfigEntry(newElem.guild.id, { missingPermissions: newBotMissingPermissions });
+        updateGuildConfigEntry(newElem.guild.id, { missingPermissions: newBotMissingPermissions });
       }
     } catch (err) {
       logError({
@@ -159,7 +159,7 @@ module.exports = {
         // create admin role
         robertoAdminRole = await createRole(0, guild);
         console.log(`* Roberto admin [${robertoAdminRole.robertoAdminRoleId}] role created`);
-
+        // create slowmode role
         slowmodeRole = await createRole(1, guild);
         console.log(`* Slowmode [${slowmodeRole.slowmodeRoleId}] role created`);
       } else {
@@ -186,7 +186,7 @@ module.exports = {
         ...slowmodeRole
       };
 
-      await addGuildConfigEntry(newEntry);
+      addGuildConfigEntry(newEntry);
       console.log(`* New entry [${guild.name} - ${guild.id}] added in guildConfigs.json`);
 
       // construct DM text
@@ -208,10 +208,10 @@ module.exports = {
         dmText += `\n• A *Roberto Admin* role should have been created but couldn't, as I did not have the ManageRoles permission required to create roles. Please refer to the GitHub link for more details about why this role is needed and how to create it afterwards.`;
       }
 
-      dmText += `\n• Elements of my behavior can be configured using \`/config\` - at the moment, available options are *auto-color*, *auto-greet* and *permission-dm*.
-  • Use \`/help\` in a server channel to see all available commands and their usage.
-      
-  For more info about commands, bot permissions, recommended first steps and various other things, please visit my GitHub page: https://github.com/IwaoM/Roberto-bot#readme`;
+      dmText += `\n• Elements of my behavior can be configured using \`/config\` - at the moment, available options are *auto color*, *auto greet*, *permission DM* and *slowmode*.
+• Use \`/help\` in a server channel to see all available commands and their usage.
+    
+For more info about commands, bot permissions, recommended first steps and various other things, please visit my GitHub page: https://github.com/IwaoM/Roberto-bot#readme`;
 
       // DM the server owner & inviter
       const owner = (await guild.fetchOwner()).user;
@@ -236,7 +236,7 @@ module.exports = {
       console.log(`\nGuild ${guild.name} (ID ${guild.id}) left`);
 
       // delete entry from guildConfigs.json
-      await removeGuildConfigEntry(guild.id);
+      removeGuildConfigEntry(guild.id);
     } catch (err) {
       logError({
         name: `guild leave processing error`,

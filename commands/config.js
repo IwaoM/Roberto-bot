@@ -151,7 +151,7 @@ module.exports = {
             // set the option's value to true
             const argObject = {};
             argObject[configOption] = true;
-            await updateGuildConfigEntry(interaction.guildId, argObject);
+            updateGuildConfigEntry(interaction.guildId, argObject);
             sentReply = await interaction.editReply(`The ${subcommand} option has been enabled.`);
 
           } else if (commandAction === "disable") {
@@ -159,7 +159,7 @@ module.exports = {
             // set the option's value to false
             const argObject = {};
             argObject[configOption] = false;
-            await updateGuildConfigEntry(interaction.guildId, argObject);
+            updateGuildConfigEntry(interaction.guildId, argObject);
             sentReply = await interaction.editReply(`The ${subcommand} option has been disabled.`);
 
           } else if (commandAction === "add") {
@@ -174,7 +174,7 @@ module.exports = {
                 throw new Error(`Missing permissions - [${neededPermissionsForCommand.map(key => neededPermissionNames.get(key)).join(", ")}]`);
               }
               const slowmodeRole = await createRole(1, interaction.guild);
-              await updateGuildConfigEntry(interaction.guildId, slowmodeRole);
+              updateGuildConfigEntry(interaction.guildId, slowmodeRole);
             }
 
             // add the channel to the slowmodeChannels list
@@ -184,7 +184,7 @@ module.exports = {
               slowmodeChannels.push(commandParamChannel.id);
               const argObject = {};
               argObject[configOption] = slowmodeChannels;
-              await updateGuildConfigEntry(interaction.guildId, argObject);
+              updateGuildConfigEntry(interaction.guildId, argObject);
               sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> has been added to the list of channels affected by slowmode.`);
             } else {
               sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> is already in the list of channels affected by slowmode.`);
@@ -200,7 +200,7 @@ module.exports = {
               slowmodeChannels.splice(slowmodeChannels.indexOf(commandParamChannel.id), 1);
               const argObject = {};
               argObject[configOption] = slowmodeChannels;
-              await updateGuildConfigEntry(interaction.guildId, argObject);
+              updateGuildConfigEntry(interaction.guildId, argObject);
               sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> has been removed from the list of channels affected by slowmode.`);
             } else {
               sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> is already not in the list of channels affected by slowmode.`);
@@ -228,7 +228,7 @@ module.exports = {
         const configOption = "slowmodeDelay";
         const argObject = {};
         argObject[configOption] = commandParamInteger;
-        await updateGuildConfigEntry(interaction.guildId, argObject);
+        updateGuildConfigEntry(interaction.guildId, argObject);
 
         const messageText = `A slowmode delay of **${commandParamInteger} seconds** has been set.`;
         const sentReply = await interaction.editReply(messageText);
@@ -242,10 +242,10 @@ module.exports = {
 
         // display current value for the option
         if (guildConfig.slowmodeChannels === undefined) {
-          await updateGuildConfigEntry(interaction.guildId, { slowmodeChannels: [] });
+          updateGuildConfigEntry(interaction.guildId, { slowmodeChannels: [] });
         }
         if (!guildConfig.slowmodeDelay) {
-          await updateGuildConfigEntry(interaction.guildId, { slowmodeDelay: 5 });
+          updateGuildConfigEntry(interaction.guildId, { slowmodeDelay: 5 });
         }
         let sentReply = await interaction.editReply(`Current settings for slowmode : 
 Slowmode-enabled channels: ${guildConfig.slowmodeChannels?.length ? `[<#${guildConfig.slowmodeChannels.join(">, <#")}>]` : "none"}
@@ -316,7 +316,7 @@ Slowmode delay: ${guildConfig.slowmodeDelay ? guildConfig.slowmodeDelay : 5} sec
         // regenerate admin role if not found
         if (!adminRole) {
           const newAdminRole = await createRole(0, interaction.guild);
-          await updateGuildConfigEntry(interaction.guildId, newAdminRole);
+          updateGuildConfigEntry(interaction.guildId, newAdminRole);
           messageText += `\n• Roberto admin role was recreated (ID ${newAdminRole.robertoAdminRoleId}).`;
           interaction.editReply(messageText);
         }
@@ -324,7 +324,7 @@ Slowmode delay: ${guildConfig.slowmodeDelay ? guildConfig.slowmodeDelay : 5} sec
         // regenerate slowmode role if not found
         if (!slowmodeRole) {
           const newSlowmodeRole = await createRole(1, interaction.guild);
-          await updateGuildConfigEntry(interaction.guildId, newSlowmodeRole);
+          updateGuildConfigEntry(interaction.guildId, newSlowmodeRole);
           messageText += `\n• Slowmode role was recreated (ID ${newSlowmodeRole.slowmodeRoleId}).`;
           interaction.editReply(messageText);
         }

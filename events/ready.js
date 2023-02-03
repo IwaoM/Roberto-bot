@@ -99,7 +99,7 @@ Note: this automatic DM can be disabled with the \`/config permission-dm\` comma
             console.log("* DM sent to the guild owner");
           }
 
-          await updateGuildConfigEntry(guild.id, { missingPermissions: newBotMissingPermissions });
+          updateGuildConfigEntry(guild.id, { missingPermissions: newBotMissingPermissions });
         }
       }
       if (guildUpdateCount) { console.log(""); }

@@ -1,8 +1,9 @@
+const fs = require("node:fs");
 const { SlashCommandBuilder } = require("discord.js");
 const { randomColor, checkHexCode, getDominantColor } = require("../helpers/color.helper.js");
 const { checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { updateColorRole } = require("../helpers/processes.helper.js");
-const { saveUserAvatar, unlinkFile } = require("../helpers/files.helper.js");
+const { saveUserAvatar } = require("../helpers/files.helper.js");
 const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 const { neededPermissionNames } = require("../publicConfig.js");
 
@@ -96,7 +97,7 @@ module.exports = {
 
         const avatarDir = await saveUserAvatar(interaction.member);
         hexCode = await getDominantColor(commandOption, avatarDir);
-        await unlinkFile (avatarDir);
+        fs.unlinkSync(avatarDir);
 
       } else if (subcommand === "remove") {
 

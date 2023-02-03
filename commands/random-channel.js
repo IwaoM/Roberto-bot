@@ -32,13 +32,13 @@ module.exports = {
 
       // No specific permission needed
 
+      if (!interaction.member.voice.channel) {
+        throw new Error("Not connected to voice");
+      }
+
       // return if the caller is not in a voice channel or the channel doesn't have enough members
       const channelMemberIds = [...interaction.member.voice.channel.members.values()].map(elem => elem.user.id);
       // channelMemberIds.push("123", "456", "789", "147", "258"); // used for testing
-
-      if (!channelMemberIds.length) {
-        throw new Error("Not connected to voice");
-      }
 
       // get subcommand & init variables
       let text, againButton;
@@ -158,13 +158,13 @@ module.exports = {
         return;
       }
 
+      if (!interaction.member.voice.channel) {
+        throw new Error("Not connected to voice");
+      }
+
       // return if the caller is not in a voice channel or the channel doesn't have enough members
       const channelMemberIds = [...interaction.member.voice.channel.members.values()].map(elem => elem.user.id);
       // channelMemberIds.push("123", "456", "789", "147", "258"); // used for testing
-
-      if (!channelMemberIds.length) {
-        throw new Error("Not connected to voice");
-      }
 
       // get the text of the original command reply & init variables
       const replyText = interaction.message.content;
@@ -228,7 +228,6 @@ module.exports = {
       const sentReply = await interaction.update(text);
       logAction({ name: `${interaction.customId} button handling`, message: sentReply });
     } catch (err) {
-      consoleError(err);
       logError({
         name: `${interaction.customId} button handler error`,
         description: `Failed to handle the ${interaction.customId} button interaction`,
