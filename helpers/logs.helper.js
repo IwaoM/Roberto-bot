@@ -116,6 +116,10 @@ module.exports = {
       };
     }
 
+    if (actionInput.reason) {
+      logEntry.action.reason = actionInput.reason;
+    }
+
     if (actionInput.role) {
       logEntry.action.role = {
         id: actionInput.role.id,

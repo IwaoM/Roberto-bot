@@ -4,6 +4,7 @@ const { checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { updateColorRole } = require("../helpers/processes.helper.js");
 const { saveUserAvatar, unlinkFile } = require("../helpers/files.helper.js");
 const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
+const { neededPermissionNames } = require("../publicConfig.js");
 
 const dominantChoices = [
   { name: "main", value: "Vibrant" },
@@ -69,7 +70,7 @@ module.exports = {
       const neededPermissionsForCommand = ["ManageRoles"];
       const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
       if (missingPermissions.length) {
-        throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
+        throw new Error(`Missing permissions - [${neededPermissionsForCommand.map(key => neededPermissionNames.get(key)).join(", ")}]`);
       }
 
       await interaction.deferReply();

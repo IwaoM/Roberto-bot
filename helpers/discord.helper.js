@@ -1,48 +1,44 @@
-const { adminRoleName, slowmodeRoleName } = require("../config.json");
+const { adminRoleName, slowmodeRoleName } = require("../publicConfig.js");
 const { logError, logAction } = require("../helpers/logs.helper.js");
 
 module.exports = {
-  async createRobertoAdminRole (guild) {
-    try {
-      const role = {};
-
-      let robertoAdminRole = await guild.roles.create({ name: adminRoleName });
-      robertoAdminRole = await robertoAdminRole.setPermissions([]);
-      robertoAdminRole = await robertoAdminRole.setMentionable(true);
-      logAction({ name: "role creation", guild: guild, role: robertoAdminRole });
-      role.robertoAdminRoleId = robertoAdminRole.id;
-
-      return role;
-    } catch (err) {
-      logError({
-        name: `roberto admin role create error`,
-        description: `Failed to create roberto admin role`,
-        function: { name: "createRobertoAdminRole", arguments: [...arguments] },
-        errorObject: err
-      });
-      throw err;
+  async createRole (type, guild) {
+    // create a generic mentionable role with no permission
+    // 0 for Roberto admin, 1 for Slowmode
+    let roleName;
+    if (type === 0) {
+      roleName = adminRoleName;
+    } else if (type === 1) {
+      roleName = slowmodeRoleName;
     }
-  },
 
-  async createSlowmodeRole (guild) {
+    if (!roleName) {
+      return null;
+    }
+
     try {
-      const role = {};
 
-      let slowmodeRole = await guild.roles.create({ name: slowmodeRoleName });
-      slowmodeRole = await slowmodeRole.setPermissions([]);
-      slowmodeRole = await slowmodeRole.setMentionable(true);
-      logAction({ name: "role creation", guild: guild, role: slowmodeRole });
-      role.slowmodeRoleId = slowmodeRole.id;
+      let newRole = await guild.roles.create({ name: roleName });
+      newRole = await newRole.setPermissions([]);
+      newRole = await newRole.setMentionable(true);
+      logAction({ name: "role creation", guild: guild, role: newRole });
 
-      return role;
+      if (type === 0) {
+        return { robertoAdminRoleId: newRole.id };
+      } else if (type === 1) {
+        return { slowmodeRoleId: newRole.id };
+      }
+
     } catch (err) {
+
       logError({
-        name: `roberto slowmode role create error`,
-        description: `Failed to create slowmode role`,
-        function: { name: "createSlowmodeRole", arguments: [...arguments] },
+        name: `role create error`,
+        description: `Failed to create ${roleName} role`,
+        function: { name: "createRole", arguments: [...arguments] },
         errorObject: err
       });
       throw err;
+
     }
   },
 
@@ -50,16 +46,14 @@ module.exports = {
     try {
       // get latest logs and look for Roberto's invite log entry
       let logs = await guild.fetchAuditLogs();
-      let botInvites = logs.entries.filter(entry => entry.action === 28);
-      let robertoInvite = botInvites.find(entry => entry.target?.id === client.user.id);
+      let robertoInvite = logs.entries.filter(entry => entry.action === 28 && entry.target?.id === client.user.id)[0];
 
       // search through older logs until the wanted log is found or end of logs is reached
       let oldestLog;
       while (!robertoInvite && logs.entries.size === 50) {
         oldestLog = logs.entries.at(49);
         logs = await guild.fetchAuditLogs({ before: oldestLog });
-        botInvites = logs.entries.filter(entry => entry.action === 28);
-        robertoInvite = botInvites.find(entry => entry.target?.id === client.user.id);
+        robertoInvite = logs.entries.filter(entry => entry.action === 28 && entry.target?.id === client.user.id)[0];
       }
 
       // return the executor of Roberto's invite (ie the inviter) or null if not found
@@ -80,26 +74,34 @@ module.exports = {
   },
 
   async dmUsers (text, users) {
+    // send text to users
     try {
       const recipientList = [];
 
+      // eliminate potential duplicate recipients
       for (let user of users) {
         if (user && recipientList.findIndex(elem => elem.id === user.id) === -1) {
           recipientList.push(user);
         }
       }
 
+      let sentCount = 0;
       for (let recipient of recipientList) {
         try {
+
           const recipientDm = await recipient.createDM();
           const sentDm = await recipientDm.send(text);
+
+          sentCount++;
           logAction({
             name: `dm sending`,
             description: `Send a DM to a user`,
             message: { id: sentDm.id, content: sentDm.content },
             user: { id: recipient.id, tag: recipient.tag }
           });
+
         } catch (err) {
+
           if (err.code === 50007) {
             // log the failure of this particular dm but continue iterating
             logError({
@@ -111,11 +113,13 @@ module.exports = {
           } else {
             throw err;
           }
+
         }
       }
 
-      // if all DMs succeeded, return the number of sent DMs
-      return recipientList.length;
+      // if all DMs succeeded, return the number of successfully sent DMs
+      return sentCount;
+
     } catch (err) {
       logError({
         name: `dm dispatch error`,
@@ -127,57 +131,14 @@ module.exports = {
     }
   },
 
-  async checkRoleAssignment (member, roleId) {
-    try {
-      if (!member || !roleId) {
-        return false;
-      }
-
-      const userRoles = member.roles.cache;
-      return userRoles.get(roleId);
-    } catch (err) {
-      logError({
-        name: `role assignment check error`,
-        description: `Failed to check if user has the role`,
-        function: { name: "checkRoleAssignment", arguments: [...arguments] },
-        errorObject: err
-      });
-      throw err;
-    }
-  },
-
-  async getVoiceChannelMembers (channel) {
-    try {
-      // if argument is null, return
-      if (!channel) {
-        return [];
-      }
-
-      // otherwise, get channel members
-      const channelMemberIds = [];
-      for (let i = 0; i < channel.members.size; i++) {
-        channelMemberIds.push(channel.members.at(i).user.id);
-      }
-
-      return channelMemberIds;
-    } catch (err) {
-      logError({
-        name: `channel members get error`,
-        description: `Failed to get the current members of the voice channel`,
-        function: { name: "getVoiceChannelMembers", arguments: [...arguments] },
-        errorObject: err
-      });
-      throw err;
-    }
-  },
-
   async checkOwnMissingPermissions (guild, missingPermissions) {
     try {
       missingPermissions = [...missingPermissions]; // copying the array instead of altering the argument
       const ownPermissions = (await guild.members.me).permissions.toArray();
       for (let permission of ownPermissions) {
+        // if permission is found, remove from missing permissions
         if (missingPermissions.indexOf(permission) >= 0) {
-          missingPermissions.splice(missingPermissions.indexOf(permission), 1); // if permission is found, remove from missing permissions
+          missingPermissions.splice(missingPermissions.indexOf(permission), 1);
         }
       }
       return missingPermissions;

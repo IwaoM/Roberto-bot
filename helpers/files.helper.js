@@ -49,7 +49,7 @@ module.exports = {
   },
 
   // Return the entire config list or a single entry if a guild id is provided
-  async getGuildConfigs (guildId = "") {
+  getGuildConfigs (guildId = "") {
     try {
       const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
       let data = fs.readFileSync(guildConfigsDir);

@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
-const { checkRoleAssignment, createRobertoAdminRole, checkOwnMissingPermissions, createSlowmodeRole } = require("../helpers/discord.helper.js");
+const { createRole, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/files.helper.js");
-const { adminRoleName, slowmodeRoleName } = require("../config.json");
+const { adminRoleName, slowmodeRoleName, neededPermissionNames } = require("../publicConfig.js");
 const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 const trueFalseOptionChoices = [{ name: "Enable", value: "enable" }, { name: "Disable", value: "disable" }];
@@ -118,7 +118,7 @@ module.exports = {
       });
 
       await interaction.deferReply({ ephemeral: true });
-      const guildConfig = await getGuildConfigs(interaction.guildId);
+      const guildConfig = getGuildConfigs(interaction.guildId);
 
       // for subcommands with an action option
       if (subcommand === "auto-color"
@@ -128,7 +128,7 @@ module.exports = {
       ) {
 
         // allow command only if caller has the Roberto admin role
-        if (await checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
+        if (interaction.member.roles.cache.get(guildConfig.robertoAdminRoleId)) {
           let configOption;
           if (subcommand === "auto-color") {
             configOption = "colorNewMembers";
@@ -171,9 +171,9 @@ module.exports = {
               const neededPermissionsForCommand = ["ManageRoles"];
               const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
               if (missingPermissions.length) {
-                throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
+                throw new Error(`Missing permissions - [${neededPermissionsForCommand.map(key => neededPermissionNames.get(key)).join(", ")}]`);
               }
-              const slowmodeRole = await createSlowmodeRole(interaction.guild);
+              const slowmodeRole = await createRole(1, interaction.guild);
               await updateGuildConfigEntry(interaction.guildId, slowmodeRole);
             }
 
@@ -260,7 +260,7 @@ Slowmode delay: ${guildConfig.slowmodeDelay ? guildConfig.slowmodeDelay : 5} sec
       } else if (subcommand === "roles-show") {
 
         // allow command only if caller has the Roberto admin role
-        if (await checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
+        if (interaction.member.roles.cache.get(guildConfig.robertoAdminRoleId)) {
 
           // admin role always exists or the command couldn't be called in the first place
           const slowmodeRole = await interaction.guild.roles.fetch(guildConfig.slowmodeRoleId);
@@ -297,7 +297,7 @@ Slowmode delay: ${guildConfig.slowmodeDelay ? guildConfig.slowmodeDelay : 5} sec
         const neededPermissionsForCommand = ["ManageRoles"];
         const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
         if (missingPermissions.length) {
-          throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
+          throw new Error(`Missing permissions - [${neededPermissionsForCommand.map(key => neededPermissionNames.get(key)).join(", ")}]`);
         }
 
         // this command is allowed for everyone (in case the Roberto admin role is deleted)
@@ -315,7 +315,7 @@ Slowmode delay: ${guildConfig.slowmodeDelay ? guildConfig.slowmodeDelay : 5} sec
 
         // regenerate admin role if not found
         if (!adminRole) {
-          const newAdminRole = await createRobertoAdminRole(interaction.guild);
+          const newAdminRole = await createRole(0, interaction.guild);
           await updateGuildConfigEntry(interaction.guildId, newAdminRole);
           messageText += `\n• Roberto admin role was recreated (ID ${newAdminRole.robertoAdminRoleId}).`;
           interaction.editReply(messageText);
@@ -323,7 +323,7 @@ Slowmode delay: ${guildConfig.slowmodeDelay ? guildConfig.slowmodeDelay : 5} sec
 
         // regenerate slowmode role if not found
         if (!slowmodeRole) {
-          const newSlowmodeRole = await createSlowmodeRole(interaction.guild);
+          const newSlowmodeRole = await createRole(1, interaction.guild);
           await updateGuildConfigEntry(interaction.guildId, newSlowmodeRole);
           messageText += `\n• Slowmode role was recreated (ID ${newSlowmodeRole.slowmodeRoleId}).`;
           interaction.editReply(messageText);

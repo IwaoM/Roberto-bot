@@ -1,6 +1,5 @@
 const { logError, logAction } = require("../helpers/logs.helper.js");
 const { getGuildConfigs } = require("../helpers/files.helper.js");
-const { checkRoleAssignment } = require("../helpers/discord.helper.js");
 const { Collection } = require("discord.js");
 
 // collection of collections to store timestamps of latest messages per user and per channel
@@ -14,14 +13,13 @@ module.exports = {
   async execute (message) {
     try {
       // console.log(message.channel);
-      const guildConfig = await getGuildConfigs(message.guildId);
+      const guildConfig = getGuildConfigs(message.guildId);
       if (!guildConfig.slowmodeDelay || !guildConfig.slowmodeChannels?.length || guildConfig.missingPermissions.includes("ManageMessages")) {
         return;
       }
 
-      const messageAuthorMember = await message.guild.members.fetch(message.author.id);
-      // if message author has the slowmode role
-      if (await checkRoleAssignment(messageAuthorMember, guildConfig.slowmodeRoleId)) {
+      // if message author (as a guild member) has the slowmode role
+      if (message?.member.roles.cache.get(guildConfig.slowmodeRoleId)) {
         // if channel is affected by slowmode role
         if (guildConfig.slowmodeChannels.includes(message.channelId) && message.channel.type === 0) {
           if (!latestMessages.has(message.channelId)) {
@@ -30,8 +28,19 @@ module.exports = {
           if (!latestMessages.get(message.channelId).has(message.author.id)) {
             latestMessages.get(message.channelId).set(message.author.id, message.createdTimestamp);
           } else if (message.createdTimestamp - latestMessages.get(message.channelId).get(message.author.id) < guildConfig.slowmodeDelay * 1000) {
-            message.delete();
-            logAction({ name: `${this.name} event handling (slowmode)`, guild: message.guild, message: message });
+            const t1 = Date.now();
+            await message.delete();
+            const t2 = Date.now();
+            logAction({ name: `${this.name} event handling - applying slowmode`, guild: message.guild, message: message });
+
+            if (t2 - t1 > 1000 && !guildConfig.missingPermissions.includes("ModerateMembers")) {
+              // if the delete method takes too much time, it means that the user is spamming too quickly and Roberto reaches their API rate limit
+              // in that case, timeout the user for 2x the slowmode delay
+              // (of course, an admin can still revoke the timeout before it expires)
+              const timeoutMessage = `${guildConfig.slowmodeDelay * 4} seconds timeout for spamming`;
+              message.member.timeout(guildConfig.slowmodeDelay * 4000, timeoutMessage);
+              logAction({ name: `${this.name} event handling - applying a timeout`, guild: message.guild, member: message.member, reason: timeoutMessage });
+            }
           } else {
             latestMessages.get(message.channelId).set(message.author.id, message.createdTimestamp);
           }

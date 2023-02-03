@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
 const { randomTeams, randomDraw } = require("../helpers/misc.helper.js");
-const { getVoiceChannelMembers } = require("../helpers/discord.helper.js");
 const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 module.exports = {
@@ -34,21 +33,21 @@ module.exports = {
       // No specific permission needed
 
       // return if the caller is not in a voice channel or the channel doesn't have enough members
-      const channelMemberIds = await getVoiceChannelMembers(interaction.member.voice.channel);
+      const channelMemberIds = [...interaction.member.voice.channel.members.values()].map(elem => elem.user.id);
       // channelMemberIds.push("123", "456", "789", "147", "258"); // used for testing
 
       if (!channelMemberIds.length) {
         throw new Error("Not connected to voice");
       }
 
-      if (channelMemberIds.length <= 2) {
-        throw new Error("Not enough connected members");
-      }
-
       // get subcommand & init variables
       let text, againButton;
 
       if (subcommand === "teams") {
+
+        if (channelMemberIds.length < 3) {
+          throw new Error("Not enough connected members");
+        }
 
         // get & check option values
         const teamsOption = interaction.options.getInteger("teams");
@@ -76,6 +75,10 @@ module.exports = {
         }
 
       } else if (subcommand === "draw") {
+
+        if (channelMemberIds.length < 2) {
+          throw new Error("Not enough connected members");
+        }
 
         // get & check option values
         const drawsOption = interaction.options.getInteger("draws");
@@ -156,15 +159,11 @@ module.exports = {
       }
 
       // return if the caller is not in a voice channel or the channel doesn't have enough members
-      const channelMemberIds = await getVoiceChannelMembers(interaction.member.voice.channel);
+      const channelMemberIds = [...interaction.member.voice.channel.members.values()].map(elem => elem.user.id);
       // channelMemberIds.push("123", "456", "789", "147", "258"); // used for testing
 
       if (!channelMemberIds.length) {
         throw new Error("Not connected to voice");
-      }
-
-      if (channelMemberIds.length <= 2) {
-        throw new Error("Not enough connected members");
       }
 
       // get the text of the original command reply & init variables
@@ -173,6 +172,10 @@ module.exports = {
       let text;
 
       if (interaction.customId === "random-channel_teams_again") {
+
+        if (channelMemberIds.length < 3) {
+          throw new Error("Not enough connected members");
+        }
 
         // get & check option values
         const teamsOption = parseInt(replyLines[0].split(" ")[5]);
@@ -198,6 +201,10 @@ module.exports = {
         }
 
       } else if (interaction.customId === "random-channel_draw_again") {
+
+        if (channelMemberIds.length < 2) {
+          throw new Error("Not enough connected members");
+        }
 
         // get & check option values
         const drawsOption = parseInt(replyLines[0].split(" ")[1]);
@@ -253,7 +260,7 @@ module.exports = {
   },
 
   usage: `• \`/random-channel teams <count>\`: splits all voice channel members into *count* teams.
-• \`/random-channel draw <draws>\`: draws <draws> members among all users connected to the voice channel.
+• \`/random-channel draw <draws>\`: draws *draws* members among all users connected to the voice channel.
 
-To use those commands, a user should be connected to a voice channel. The channel also needs to have enough connected members.`
+To use those commands, a user should be connected to a voice channel. The channel also needs to have enough connected members - \`teams\` needs at least 3 connected members, whereas \`draw\` needs 2.`
 };

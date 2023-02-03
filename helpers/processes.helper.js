@@ -1,7 +1,7 @@
 const { checkHexCode } = require("./color.helper.js");
 const { getGuildConfigs, updateGuildConfigEntry, removeGuildConfigEntry, addGuildConfigEntry } = require("../helpers/files.helper.js");
-const { checkOwnMissingPermissions, getPermissionUpdaterUser, dmUsers, createRobertoAdminRole, createSlowmodeRole, getInviterUser } = require("../helpers/discord.helper.js");
-const { robertoNeededPermissions } = require("../config.json");
+const { checkOwnMissingPermissions, getPermissionUpdaterUser, dmUsers, createRole, getInviterUser } = require("../helpers/discord.helper.js");
+const { neededPermissionNames } = require("../publicConfig.js");
 const { logAction, logError } = require("../helpers/logs.helper.js");
 
 module.exports = {
@@ -76,9 +76,9 @@ module.exports = {
       // oldElem & newElem can be either roles (for event roleUpdate) or members (for event guildMemberUpdate)
 
       // get guild config
-      const guildConfig = await getGuildConfigs(newElem.guild.id);
+      const guildConfig = getGuildConfigs(newElem.guild.id);
 
-      const newBotMissingPermissions = (await checkOwnMissingPermissions(newElem.guild, robertoNeededPermissions)).sort();
+      const newBotMissingPermissions = (await checkOwnMissingPermissions(newElem.guild, [...neededPermissionNames.keys()])).sort();
       const oldBotMissingPermissions = guildConfig.missingPermissions.sort();
       const newlyBotMissingPermissions = newBotMissingPermissions.filter(perm => oldBotMissingPermissions.indexOf(perm) === -1);
 
@@ -111,7 +111,7 @@ module.exports = {
           dmText += `updated my role list in the server **${newElem.guild.name}**, `;
         }
 
-        dmText += `which removed the following permission${newlyBotMissingPermissions.length === 1 ? "" : "s"} from me: [${newlyBotMissingPermissions.join(", ")}].
+        dmText += `which removed the following permission${newlyBotMissingPermissions.length === 1 ? "" : "s"} from me: [${newlyBotMissingPermissions.map(key => neededPermissionNames.get(key)).join(", ")}].
   I need th${newlyBotMissingPermissions.length === 1 ? "is permission" : "ese permissions"} to function properly (more details on why exactly here: https://github.com/IwaoM/Roberto-bot#readme). Please consider restoring ${newlyBotMissingPermissions.length === 1 ? "it" : "them"} :)
   Thanks!
 
@@ -147,7 +147,7 @@ module.exports = {
       console.log(`\nGuild ${guild.name} (ID ${guild.id}) joined`);
 
       // check own permissions
-      const missingPermissions = await checkOwnMissingPermissions(guild, robertoNeededPermissions);
+      const missingPermissions = await checkOwnMissingPermissions(guild, [...neededPermissionNames.keys()]);
 
       console.log(`* Missing permissions : [${missingPermissions.join(", ")}] (${missingPermissions.length})`);
 
@@ -157,10 +157,10 @@ module.exports = {
       let robertoAdminRole, slowmodeRole;
       if (missingPermissions.indexOf("ManageRoles") === -1) {
         // create admin role
-        robertoAdminRole = await createRobertoAdminRole(guild);
+        robertoAdminRole = await createRole(0, guild);
         console.log(`* Roberto admin [${robertoAdminRole.robertoAdminRoleId}] role created`);
 
-        slowmodeRole = await createSlowmodeRole(guild);
+        slowmodeRole = await createRole(1, guild);
         console.log(`* Slowmode [${slowmodeRole.slowmodeRoleId}] role created`);
       } else {
         logError({
@@ -199,7 +199,7 @@ module.exports = {
       }
 
       if (missingPermissions.length) {
-        dmText += `\n    • **Please note that the following permission${missingPermissions.length === 1 ? " is" : "s are"} missing :** [${missingPermissions.join(", ")}]. I need ${missingPermissions.length === 1 ? "this permission" : "those permissions"} to function correctly! Please refer to the GitHub link for more details about why each requested permission is required.`;
+        dmText += `\n    • **Please note that the following permission${missingPermissions.length === 1 ? " is" : "s are"} missing :** [${missingPermissions.map(key => neededPermissionNames.get(key)).join(", ")}]. I need ${missingPermissions.length === 1 ? "this permission" : "those permissions"} to function correctly! Please refer to the GitHub link for more details about why each requested permission is required.`;
       }
 
       if (missingPermissions.indexOf("ManageRoles") === -1) {

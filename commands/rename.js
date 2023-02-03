@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
+const { neededPermissionNames } = require("../publicConfig.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -34,7 +35,7 @@ module.exports = {
       const neededPermissionsForCommand = ["ManageNicknames"];
       const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
       if (missingPermissions.length) {
-        throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
+        throw new Error(`Missing permissions - [${neededPermissionsForCommand.map(key => neededPermissionNames.get(key)).join(", ")}]`);
       }
 
       await interaction.deferReply();
