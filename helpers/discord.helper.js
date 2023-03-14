@@ -107,12 +107,11 @@ module.exports = {
     }
   },
 
-  async checkRoleAssignment (member, roleId) {
+  checkRoleAssignment (member, roleId) {
     try {
       if (!member || !roleId) {
         return false;
       }
-
       const userRoles = member.roles.cache;
       return userRoles.get(roleId);
     } catch (err) {
@@ -126,7 +125,7 @@ module.exports = {
     }
   },
 
-  async getVoiceChannelMembers (channel) {
+  getVoiceChannelMembers (channel) {
     try {
       // if argument is null, return
       if (!channel) {
@@ -151,10 +150,10 @@ module.exports = {
     }
   },
 
-  async checkOwnMissingPermissions (guild, missingPermissions) {
+  checkOwnMissingPermissions (guild, missingPermissions) {
     try {
       missingPermissions = [...missingPermissions]; // copying the array instead of altering the argument
-      const ownPermissions = (await guild.members.me).permissions.toArray();
+      const ownPermissions = guild.members.me.permissions.toArray();
       for (let permission of ownPermissions) {
         if (missingPermissions.indexOf(permission) >= 0) {
           missingPermissions.splice(missingPermissions.indexOf(permission), 1); // if permission is found, remove from missing permissions

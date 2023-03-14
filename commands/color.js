@@ -67,7 +67,7 @@ module.exports = {
 
       // before anything else, check if Roberto has the required permissions
       const neededPermissionsForCommand = ["ManageRoles"];
-      const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
+      const missingPermissions = checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
       if (missingPermissions.length) {
         throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
       }
@@ -95,7 +95,7 @@ module.exports = {
 
         const avatarDir = await saveUserAvatar(interaction.member);
         hexCode = await getDominantColor(commandOption, avatarDir);
-        await unlinkFile (avatarDir);
+        unlinkFile (avatarDir);
 
       } else if (subcommand === "remove") {
 
@@ -120,6 +120,7 @@ module.exports = {
         command: commandArgs ?
           { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
           { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
+        guild: interaction.guild,
         message: sentReply
       });
     } catch (err) {

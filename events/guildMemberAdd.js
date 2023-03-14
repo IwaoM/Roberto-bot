@@ -64,7 +64,7 @@ module.exports = {
   async execute (member) {
     try {
       logEvent({ name: this.name, description: "A user joined the guild", guild: member.guild, member: member });
-      const currentGuildConfig = await getGuildConfigs(member.guild.id);
+      const currentGuildConfig = getGuildConfigs(member.guild.id);
 
       // auto color new members
       if (currentGuildConfig.colorNewMembers) {
@@ -73,7 +73,7 @@ module.exports = {
           const hexCode = await getDominantColor("Vibrant", avatarDir);
           const newUserColorRole = await updateColorRole(hexCode, member);
           await newUserColorRole.setMentionable(false);
-          await unlinkFile (avatarDir);
+          unlinkFile (avatarDir);
         } catch (err) {
           logError({
             name: `auto color error`,

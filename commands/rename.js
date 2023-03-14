@@ -32,7 +32,7 @@ module.exports = {
 
       // before anything else, check if Roberto has the required permissions
       const neededPermissionsForCommand = ["ManageNicknames"];
-      const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
+      const missingPermissions = checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
       if (missingPermissions.length) {
         throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
       }
@@ -53,6 +53,7 @@ module.exports = {
         logAction({
           name: `handle random command`,
           command: { id: interaction.commandId, name: interaction.commandName, arguments: commandArgs },
+          guild: interaction.guild,
           message: sentReply
         });
 

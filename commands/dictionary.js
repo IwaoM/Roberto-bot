@@ -51,6 +51,7 @@ module.exports = {
         logAction({
           name: `dictionary command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: { word: commandOption } },
+          guild: interaction.guild,
           message: sentReply
         });
         return;
@@ -90,10 +91,10 @@ module.exports = {
       // Parse the HTML body to get relevant info
       if (subcommand === "en") {
         dictionaryResult.language = "en";
-        dictionaryResult.resultData = await bodyToListEnglish(body);
+        dictionaryResult.resultData = bodyToListEnglish(body);
       } else if (subcommand === "fr") {
         dictionaryResult.language = "fr";
-        dictionaryResult.resultData = await bodyToListFrench(body);
+        dictionaryResult.resultData = bodyToListFrench(body);
       }
 
       if (dictionaryResult.resultData === 0) {
@@ -101,6 +102,7 @@ module.exports = {
         logAction({
           name: `dictionary command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: { word: commandOption } },
+          guild: interaction.guild,
           message: sentReply
         });
         return;
@@ -137,6 +139,7 @@ module.exports = {
       logAction({
         name: `dictionary command handling`,
         command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: { word: commandOption } },
+        guild: interaction.guild,
         message: sentReply
       });
     } catch (err) {

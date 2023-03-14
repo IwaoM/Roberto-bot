@@ -118,7 +118,7 @@ module.exports = {
 
       await interaction.deferReply({ ephemeral: true });
 
-      const guildConfig = await getGuildConfigs(interaction.guildId);
+      const guildConfig = getGuildConfigs(interaction.guildId);
 
       // for subcommands with an action option
       if (subcommand === "auto-color"
@@ -128,7 +128,7 @@ module.exports = {
       ) {
 
         // allow command only if caller has the Roberto admin role
-        if (await checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
+        if (checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
           let configOption;
           if (subcommand === "auto-color") {
             configOption = "colorNewMembers";
@@ -151,7 +151,7 @@ module.exports = {
             // set the option's value to true
             const argObject = {};
             argObject[configOption] = true;
-            await updateGuildConfigEntry(interaction.guildId, argObject);
+            updateGuildConfigEntry(interaction.guildId, argObject);
             sentReply = await interaction.editReply(`The ${subcommand} option has been enabled.`);
 
           } else if (commandAction === "disable") {
@@ -159,19 +159,19 @@ module.exports = {
             // set the option's value to false
             const argObject = {};
             argObject[configOption] = false;
-            await updateGuildConfigEntry(interaction.guildId, argObject);
+            updateGuildConfigEntry(interaction.guildId, argObject);
             sentReply = await interaction.editReply(`The ${subcommand} option has been disabled.`);
 
           } else if (commandAction === "add") {
 
             // currently, only the slowmode-channels command has this action option
-            const guildConfig = await getGuildConfigs(interaction.guildId);
+            const guildConfig = getGuildConfigs(interaction.guildId);
             const slowmodeChannels = guildConfig[configOption] ? [...guildConfig[configOption]] : [];
             if (!slowmodeChannels.includes(commandParamChannel.id)) {
               slowmodeChannels.push(commandParamChannel.id);
               const argObject = {};
               argObject[configOption] = slowmodeChannels;
-              await updateGuildConfigEntry(interaction.guildId, argObject);
+              updateGuildConfigEntry(interaction.guildId, argObject);
               sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> has been added to the list of channels affected by slowmode.`);
             } else {
               sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> is already in the list of channels affected by slowmode.`);
@@ -180,13 +180,13 @@ module.exports = {
           } else if (commandAction === "remove") {
 
             // currently, only the slowmode-channels command has this action option
-            const guildConfig = await getGuildConfigs(interaction.guildId);
+            const guildConfig = getGuildConfigs(interaction.guildId);
             const slowmodeChannels = guildConfig[configOption] ? [...guildConfig[configOption]] : [];
             if (slowmodeChannels.includes(commandParamChannel.id)) {
               slowmodeChannels.splice(slowmodeChannels.indexOf(commandParamChannel.id), 1);
               const argObject = {};
               argObject[configOption] = slowmodeChannels;
-              await updateGuildConfigEntry(interaction.guildId, argObject);
+              updateGuildConfigEntry(interaction.guildId, argObject);
               sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> has been removed from the list of channels affected by slowmode.`);
             } else {
               sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> is already not in the list of channels affected by slowmode.`);
@@ -196,6 +196,7 @@ module.exports = {
           logAction({
             name: `config command handling`,
             command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs },
+            guild: interaction.guild,
             message: sentReply
           });
 
@@ -212,7 +213,7 @@ module.exports = {
       } else if (subcommand === "roles-show") {
 
         // allow command only if caller has the Roberto admin role
-        if (await checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
+        if (checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
 
           // admin role always exists or the command couldn't be called in the first place
           const adminRole = await interaction.guild.roles.fetch(guildConfig.robertoAdminRoleId);
@@ -222,6 +223,7 @@ module.exports = {
           logAction({
             name: `config command handling`,
             command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
+            guild: interaction.guild,
             message: sentReply
           });
 
@@ -239,7 +241,7 @@ module.exports = {
       } else if (subcommand === "roles-repair") {
         // before anything else, check if Roberto has the required permissions
         const neededPermissionsForCommand = ["ManageRoles"];
-        const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
+        const missingPermissions = checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
         if (missingPermissions.length) {
           throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
         }
@@ -256,7 +258,7 @@ module.exports = {
         // regenerate admin role if not found
         if (!adminRole) {
           const newAdminRole = await createRobertoAdminRole(interaction.guild);
-          await updateGuildConfigEntry(interaction.guildId, newAdminRole);
+          updateGuildConfigEntry(interaction.guildId, newAdminRole);
           messageText += `\n• Roberto admin role was recreated (ID ${newAdminRole.robertoAdminRoleId}).`;
           interaction.editReply(messageText);
         }
@@ -298,6 +300,7 @@ module.exports = {
           command: commandArgs ?
             { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
             { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
+          guild: interaction.guild,
           message: sentReply
         });
       }

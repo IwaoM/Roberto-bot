@@ -34,12 +34,12 @@ module.exports = {
       // Create text & message
       if (!latestRelease.data) {
         const sentReply = await interaction.editReply(`No releases were found.`);
-        logAction({ name: `changelog command handling`, command: { id: interaction.commandId, name: interaction.commandName }, message: sentReply });
+        logAction({ name: `changelog command handling`, command: { id: interaction.commandId, name: interaction.commandName }, guild: interaction.guild, message: sentReply });
       }
       const text = `**${latestRelease.data.tag_name}**\n${latestRelease.data.body}\n\nFull list of releases : https://github.com/IwaoM/Roberto-bot/releases`;
       const sentReply = await interaction.editReply(text);
 
-      logAction({ name: `changelog command handling`, command: { id: interaction.commandId, name: interaction.commandName }, message: sentReply });
+      logAction({ name: `changelog command handling`, command: { id: interaction.commandId, name: interaction.commandName }, guild: interaction.guild, message: sentReply });
     } catch (err) {
       consoleError(err);
       logError({

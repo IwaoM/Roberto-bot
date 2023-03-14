@@ -29,7 +29,7 @@ module.exports = {
       }
       console.log(`\n${descText}`);
 
-      let guildConfigs = await getGuildConfigs();
+      let guildConfigs = getGuildConfigs();
 
       // Check for guilds joined while Roberto was offline & perform join actions for them
       let guildUpdateCount = 0;
@@ -44,13 +44,13 @@ module.exports = {
       console.log(`${guildUpdateCount} guild(s) joined`);
 
       // Check for guilds left while Roberto was offline & perform leave actions for them
-      guildConfigs = await getGuildConfigs();
+      guildConfigs = getGuildConfigs();
       guildUpdateCount = 0;
       console.log("\nChecking for guilds left while offline");
       for (let config of guildConfigs) {
         if (guildList.findIndex(guild => guild.id === config.id) === -1) {
           guildUpdateCount++;
-          await processGuildDelete(config);
+          processGuildDelete(config);
         }
       }
       if (guildUpdateCount) { console.log(""); }
@@ -62,11 +62,11 @@ module.exports = {
       guildUpdateCount = 0;
       console.log("\nChecking for needed permissions update for Roberto in all joined guilds");
 
-      guildConfigs = await getGuildConfigs();
+      guildConfigs = getGuildConfigs();
       for (let guild of guildList) {
         let dmSent;
         const guildConfig = guildConfigs.find(entry => entry.id === guild.id);
-        const newBotMissingPermissions = (await checkOwnMissingPermissions(guild, robertoNeededPermissions)).sort();
+        const newBotMissingPermissions = checkOwnMissingPermissions(guild, robertoNeededPermissions).sort();
         const oldBotMissingPermissions = guildConfig.missingPermissions.sort();
         const newlyBotMissingPermissions = newBotMissingPermissions.filter(perm => oldBotMissingPermissions.indexOf(perm) === -1);
 
@@ -99,7 +99,7 @@ Note: this automatic DM can be disabled with the \`/config permission-dm\` comma
             console.log("* DM sent to the guild owner");
           }
 
-          await updateGuildConfigEntry(guild.id, { missingPermissions: newBotMissingPermissions });
+          updateGuildConfigEntry(guild.id, { missingPermissions: newBotMissingPermissions });
         }
       }
       if (guildUpdateCount) { console.log(""); }

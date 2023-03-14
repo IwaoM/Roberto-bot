@@ -190,7 +190,7 @@ function writeLogEntry (logEntry) {
     const logsDir = path.join(path.dirname(__dirname), "logs.json");
     let data = fs.readFileSync(logsDir);
     const logs = JSON.parse(data);
-    logs.push(logEntry);
+    logs.unshift(logEntry);
 
     // try overwriting the file with the new list
     data = JSON.stringify(logs, null, 2);

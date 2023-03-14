@@ -34,7 +34,7 @@ module.exports = {
       // No specific permission needed
 
       // return if the caller is not in a voice channel or the channel doesn't have enough members
-      const channelMemberIds = await getVoiceChannelMembers(interaction.member.voice.channel);
+      const channelMemberIds = getVoiceChannelMembers(interaction.member.voice.channel);
       // channelMemberIds.push("123", "456", "789", "147", "258"); // used for testing
 
       if (!channelMemberIds.length) {
@@ -103,6 +103,7 @@ module.exports = {
       logAction({
         name: `random-channel command handling`,
         command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
+        guild: interaction.guild,
         message: sentReply
       });
     } catch (err) {
@@ -151,12 +152,12 @@ module.exports = {
       // return if the user who pressed the button is not the user who called the original command
       if (interaction.user.id !== interaction.message.interaction.user.id) {
         const sentReply = await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });
-        logAction({ name: `${interaction.customId} button handling`, message: sentReply });
+        logAction({ name: `${interaction.customId} button handling`, guild: interaction.guild, message: sentReply });
         return;
       }
 
       // return if the caller is not in a voice channel or the channel doesn't have enough members
-      const channelMemberIds = await getVoiceChannelMembers(interaction.member.voice.channel);
+      const channelMemberIds = getVoiceChannelMembers(interaction.member.voice.channel);
       // channelMemberIds.push("123", "456", "789", "147", "258"); // used for testing
 
       if (!channelMemberIds.length) {
@@ -219,7 +220,7 @@ module.exports = {
       }
 
       const sentReply = await interaction.update(text);
-      logAction({ name: `${interaction.customId} button handling`, message: sentReply });
+      logAction({ name: `${interaction.customId} button handling`, guild: interaction.guild, message: sentReply });
     } catch (err) {
       consoleError(err);
       logError({

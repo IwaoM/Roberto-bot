@@ -77,6 +77,7 @@ module.exports = {
       logAction({
         name: `random command handling`,
         command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs },
+        guild: interaction.guild,
         message: sentReply
       });
     } catch (err) {
@@ -119,7 +120,7 @@ module.exports = {
       // return if the user who pressed the button is not the user who called the original command
       if (interaction.user.id !== interaction.message.interaction.user.id) {
         const sentReply = await interaction.reply({ content: "Only the original command caller can use this button.", ephemeral: true });
-        logAction({ name: `${interaction.customId} button handling`, message: sentReply });
+        logAction({ name: `${interaction.customId} button handling`, guild: interaction.guild, message: sentReply });
         return;
       }
 
@@ -151,7 +152,7 @@ module.exports = {
       const newText = replyLines.join("\n");
 
       const sentReply = await interaction.update(newText);
-      logAction({ name: `${interaction.customId} button handling`, message: sentReply });
+      logAction({ name: `${interaction.customId} button handling`, guild: interaction.guild, message: sentReply });
     } catch (err) {
       consoleError(err);
       logError({
