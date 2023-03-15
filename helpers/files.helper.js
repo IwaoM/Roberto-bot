@@ -32,24 +32,8 @@ module.exports = {
     }
   },
 
-  async unlinkFile (fileDir) {
-    try {
-      await fs.unlink(fileDir, err => {
-        if (err) { throw err; }
-      });
-    } catch (err) {
-      logError({
-        name: `file unlink error`,
-        description: `Failed to unlink the file`,
-        function: { name: "unlinkFile", arguments: [...arguments] },
-        errorObject: err
-      });
-      throw err;
-    }
-  },
-
   // Return the entire config list or a single entry if a guild id is provided
-  async getGuildConfigs (guildId = "") {
+  getGuildConfigs (guildId = "") {
     try {
       const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
       let data = fs.readFileSync(guildConfigsDir);
@@ -82,7 +66,7 @@ module.exports = {
 
   // add the input object to the guild configs array if it does not already exist
   // returns the added entry or false if invalid argument
-  async addGuildConfigEntry (entry) {
+  addGuildConfigEntry (entry) {
     try {
       const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
       let data = fs.readFileSync(guildConfigsDir);
@@ -115,13 +99,13 @@ module.exports = {
 
   // remove an entry in the guild configs array by guild id
   // returns the updated array or false if invalid argument
-  async removeGuildConfigEntry (id) {
+  removeGuildConfigEntry (id) {
     try {
       const guildConfigsDir = path.join(path.dirname(__dirname), "guildConfigs.json");
       let data = fs.readFileSync(guildConfigsDir);
       const guildConfigs = JSON.parse(data);
 
-      let configIndex = guildConfigs.findIndex(config => config.id = id);
+      let configIndex = guildConfigs.findIndex(config => config.id === id);
       if (configIndex >= 0) {
 
         const deletedConfig = guildConfigs.splice(configIndex, 1);
@@ -149,7 +133,7 @@ module.exports = {
   // update an entry by guild id, by setting the configItem key/value pair
   // the pair can set a new attribute for the entry or update an existing one
   // returns the updated entry or false if invalid argument
-  async updateGuildConfigEntry (id, configItem) {
+  updateGuildConfigEntry (id, configItem) {
     try {
       if (!configItem) {
         throw new Error("Invalid argument");
@@ -159,10 +143,10 @@ module.exports = {
       let data = fs.readFileSync(guildConfigsDir);
       const guildConfigs = JSON.parse(data);
 
-      let configIndex = guildConfigs.findIndex(config => config.id = id);
+      let configIndex = guildConfigs.findIndex(config => config.id === id);
       if (configIndex >= 0) {
 
-        let config = guildConfigs.find(config => config.id = id);
+        let config = guildConfigs.find(config => config.id === id);
         config = { ...config, ...configItem };
         guildConfigs.splice(configIndex, 1, config);
         data = JSON.stringify(guildConfigs, null, 2);

@@ -65,6 +65,7 @@ module.exports = {
         command: commandOption ?
           { id: interaction.commandId, name: interaction.commandName, arguments: { command: commandOption } } :
           { id: interaction.commandId, name: interaction.commandName },
+        guild: interaction.guild,
         message: sentReply
       });
     } catch (err) {

@@ -1,12 +1,11 @@
 const { SlashCommandBuilder } = require("discord.js");
-const { checkRoleAssignment, createRobertoAdminRole, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
+const { createRobertoAdminRole, checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/files.helper.js");
-const { adminRoleName } = require("../config.json");
+const { adminRoleName, neededPermissionNames } = require("../publicConfig.js");
 const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
 
 const trueFalseOptionChoices = [{ name: "Enable", value: "enable" }, { name: "Disable", value: "disable" }];
 const showOptionChoice = { name: "Show", value: "show" };
-const addRemoveOptionChoices = [{ name: "Add", value: "add" }, { name: "Remove", value: "remove" }];
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -51,36 +50,6 @@ module.exports = {
       subcommand
         .setName("roles-repair")
         .setDescription("Recreates the admin role if it was deleted")
-    ).addSubcommand(subcommand =>
-      subcommand
-        .setName("slowmode-show")
-        .setDescription("Shows the current configuration for the slowmode role")
-    )
-    .addSubcommand(subcommand =>
-      subcommand
-        .setName("slowmode-channels")
-        .setDescription("Add or remove a channel to be affected by the slowmode role")
-        .addStringOption(option => option
-          .setName("action")
-          .setDescription("Action")
-          .setRequired(true)
-          .setChoices(...addRemoveOptionChoices))
-        .addChannelOption(option => option
-          .addChannelTypes(0)
-          .setName("parameter-channel")
-          .setDescription("Text channels only")
-          .setRequired(true))
-    )
-    .addSubcommand(subcommand =>
-      subcommand
-        .setName("slowmode-delay")
-        .setDescription("Add or remove a channel to be affected by the slowmode role")
-        .addIntegerOption(option => option
-          .setName("parameter-integer")
-          .setDescription("Between 1 and 3600 seconds")
-          .setMinValue(1)
-          .setMaxValue(3600)
-          .setRequired(true))
     ),
 
   async execute (interaction) {
@@ -90,9 +59,6 @@ module.exports = {
 
       // get the command options
       const commandAction = interaction.options.getString(`action`) || null;
-      const commandParamInteger = interaction.options.getInteger(`parameter-integer`) || null;
-      const fullChannel = interaction.options.getChannel(`parameter-channel`) || null;
-      const commandParamChannel = fullChannel ? { id: fullChannel.id, name: fullChannel.name } : null;
 
       if (subcommand === "auto-color") {
         commandArgs = { action: commandAction };
@@ -100,10 +66,6 @@ module.exports = {
         commandArgs = { action: commandAction };
       } else if (subcommand === "permission-dm") {
         commandArgs = { action: commandAction };
-      } else if (subcommand === "slowmode-channels") {
-        commandArgs = { action: commandAction, parameter: commandParamChannel };
-      } else if (subcommand === "slowmode-delay") {
-        commandArgs = { parameter: commandParamInteger };
       }
 
       logEvent({
@@ -118,17 +80,16 @@ module.exports = {
 
       await interaction.deferReply({ ephemeral: true });
 
-      const guildConfig = await getGuildConfigs(interaction.guildId);
+      const guildConfig = getGuildConfigs(interaction.guildId);
 
       // for subcommands with an action option
       if (subcommand === "auto-color"
         || subcommand === "auto-greet"
         || subcommand === "permission-dm"
-        || subcommand === "slowmode-channels"
       ) {
 
         // allow command only if caller has the Roberto admin role
-        if (await checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
+        if (interaction.member.roles.cache.get(guildConfig.robertoAdminRoleId)) {
           let configOption;
           if (subcommand === "auto-color") {
             configOption = "colorNewMembers";
@@ -136,8 +97,6 @@ module.exports = {
             configOption = "greetNewMembers";
           } else if (subcommand === "permission-dm") {
             configOption = "dmOnPermissionRemoved";
-          } else if (subcommand === "slowmode-channels") {
-            configOption = "slowmodeChannels";
           }
 
           let sentReply;
@@ -151,7 +110,7 @@ module.exports = {
             // set the option's value to true
             const argObject = {};
             argObject[configOption] = true;
-            await updateGuildConfigEntry(interaction.guildId, argObject);
+            updateGuildConfigEntry(interaction.guildId, argObject);
             sentReply = await interaction.editReply(`The ${subcommand} option has been enabled.`);
 
           } else if (commandAction === "disable") {
@@ -159,43 +118,15 @@ module.exports = {
             // set the option's value to false
             const argObject = {};
             argObject[configOption] = false;
-            await updateGuildConfigEntry(interaction.guildId, argObject);
+            updateGuildConfigEntry(interaction.guildId, argObject);
             sentReply = await interaction.editReply(`The ${subcommand} option has been disabled.`);
 
-          } else if (commandAction === "add") {
-
-            // currently, only the slowmode-channels command has this action option
-            const guildConfig = await getGuildConfigs(interaction.guildId);
-            const slowmodeChannels = guildConfig[configOption] ? [...guildConfig[configOption]] : [];
-            if (!slowmodeChannels.includes(commandParamChannel.id)) {
-              slowmodeChannels.push(commandParamChannel.id);
-              const argObject = {};
-              argObject[configOption] = slowmodeChannels;
-              await updateGuildConfigEntry(interaction.guildId, argObject);
-              sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> has been added to the list of channels affected by slowmode.`);
-            } else {
-              sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> is already in the list of channels affected by slowmode.`);
-            }
-
-          } else if (commandAction === "remove") {
-
-            // currently, only the slowmode-channels command has this action option
-            const guildConfig = await getGuildConfigs(interaction.guildId);
-            const slowmodeChannels = guildConfig[configOption] ? [...guildConfig[configOption]] : [];
-            if (slowmodeChannels.includes(commandParamChannel.id)) {
-              slowmodeChannels.splice(slowmodeChannels.indexOf(commandParamChannel.id), 1);
-              const argObject = {};
-              argObject[configOption] = slowmodeChannels;
-              await updateGuildConfigEntry(interaction.guildId, argObject);
-              sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> has been removed from the list of channels affected by slowmode.`);
-            } else {
-              sentReply = await interaction.editReply(`Channel <#${commandParamChannel.id}> is already not in the list of channels affected by slowmode.`);
-            }
-
           }
+
           logAction({
             name: `config command handling`,
             command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs },
+            guild: interaction.guild,
             message: sentReply
           });
 
@@ -212,7 +143,7 @@ module.exports = {
       } else if (subcommand === "roles-show") {
 
         // allow command only if caller has the Roberto admin role
-        if (await checkRoleAssignment(interaction.member, guildConfig.robertoAdminRoleId)) {
+        if (interaction.member.roles.cache.get(guildConfig.robertoAdminRoleId)) {
 
           // admin role always exists or the command couldn't be called in the first place
           const adminRole = await interaction.guild.roles.fetch(guildConfig.robertoAdminRoleId);
@@ -222,13 +153,14 @@ module.exports = {
           logAction({
             name: `config command handling`,
             command: { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
+            guild: interaction.guild,
             message: sentReply
           });
 
         } else {
 
           const adminRole = await interaction.guild.roles.fetch(guildConfig.robertoAdminRoleId);
-          if (adminRole) {
+          if (adminRole?.id) {
             throw new Error(`Missing admin role - role exists`);
           } else {
             throw new Error(`Missing admin role - role does not exist`);
@@ -239,9 +171,9 @@ module.exports = {
       } else if (subcommand === "roles-repair") {
         // before anything else, check if Roberto has the required permissions
         const neededPermissionsForCommand = ["ManageRoles"];
-        const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
+        const missingPermissions = checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
         if (missingPermissions.length) {
-          throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
+          throw new Error(`Missing permissions - [${neededPermissionsForCommand.map(key => neededPermissionNames.get(key)).join(", ")}]`);
         }
 
         // this command is allowed for everyone (in case the Roberto admin role is deleted)
@@ -256,7 +188,7 @@ module.exports = {
         // regenerate admin role if not found
         if (!adminRole) {
           const newAdminRole = await createRobertoAdminRole(interaction.guild);
-          await updateGuildConfigEntry(interaction.guildId, newAdminRole);
+          updateGuildConfigEntry(interaction.guildId, newAdminRole);
           messageText += `\n• Roberto admin role was recreated (ID ${newAdminRole.robertoAdminRoleId}).`;
           interaction.editReply(messageText);
         }
@@ -298,6 +230,7 @@ module.exports = {
           command: commandArgs ?
             { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
             { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
+          guild: interaction.guild,
           message: sentReply
         });
       }
@@ -317,7 +250,7 @@ module.exports = {
       } else if (err.message === "Missing admin role - role does not exist") {
         replyText = missingRoleMessage + "\nCurrently, the role does not exist. This can be fixed with the `/config roles-repair` command.";
       } else if (err.message.startsWith("Missing permissions")) {
-        replyText = `The command could not be executed - missing permissions : ${err.message.split(" - ")[1]}`;
+        replyText = `The command could not be executed - missing bot permission(s) : ${err.message.split(" - ")[1]}`;
       }
 
       try {

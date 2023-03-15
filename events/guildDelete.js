@@ -7,7 +7,7 @@ module.exports = {
   async execute (guild) {
     try {
       logEvent({ name: this.name, description: "Roberto has left a guild", guild: guild });
-      await processGuildDelete(guild);
+      processGuildDelete(guild);
       logAction({ name: `${this.name} event handling`, guild: guild });
     } catch (err) {
       logError({

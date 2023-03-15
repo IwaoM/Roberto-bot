@@ -2,7 +2,7 @@ const { htmlToPlainText, trimAll } = require("./misc.helper.js");
 const { logError, logAction } = require("../helpers/logs.helper.js");
 
 module.exports = {
-  async bodyToListFrench (body) {
+  bodyToListFrench (body) {
     try {
       const result = [];
 
@@ -63,7 +63,7 @@ module.exports = {
     }
   },
 
-  async bodyToListEnglish (body) {
+  bodyToListEnglish (body) {
     try {
       const result = [];
       const grammarClassNames = ["Noun", "Proper_noun", "Verb", "Adjective", "Adverb", "Preposition", "Conjunction", "Pronoun", "Determiner", "Interjection"];

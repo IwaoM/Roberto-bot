@@ -60,6 +60,7 @@ module.exports = {
         logAction({
           name: `weather command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, arguments: { location: locationOption } },
+          guild: interaction.guild,
           message: sentReply
         });
         return;
@@ -93,6 +94,7 @@ Feels like ${Math.round(weather.main.feels_like)}°C`)
         logAction({
           name: `weather command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, arguments: { location: locationOption } },
+          guild: interaction.guild,
           message: sentReply
         });
 

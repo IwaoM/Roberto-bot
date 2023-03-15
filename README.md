@@ -30,14 +30,14 @@ The `/config` command is used to modify Roberto's behavior on the server. The la
 
 ### Removing Roberto from your server
 
-The **Roberto** role managed by the integration will automatically be deleted when removing Roberto from your server. Other roles such as color roles or the **Roberto Admin** role, however, will remain.
+The **Roberto** role managed by the integration will automatically be deleted when removing Roberto from your server. Other roles such as color roles or the **Roberto Admin** role, however, will remain: bots cannot clean up servers they are not in anymore.
 
 ## Needed permissions
 
 When inviting Roberto, you will be asked to grant them 5 permissions:
 
 - **Read messages :** this is mainly used to display Roberto in the right sidebar of Discord.
-- **Send messages :** this is used for Roberto to send auto-greet messages on new member joins if the option is active (disabled by default).
+- **Send messages :** this is used for Roberto to send auto-greet messages on new member joins if the option is enabled (disabled by default).
   - Note that neither **Read messages** or **Send messages** is needed for commands to be read and responded to by Roberto.
 - **Manage nicknames :** this is obviously needed for the `/rename` command.
 - **Manage roles :** this is needed for the following:
@@ -50,13 +50,15 @@ When inviting Roberto, you will be asked to grant them 5 permissions:
 
 ## Commands
 
-Roberto currently has 10 commands. All of them support Discord's slash command feature.
+Roberto currently has 10 commands. All of them support Discord's [slash command feature](https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ).
 
 ### /color
 
 Changes the user's name's color in the server using roles. When a user changes their color, the old color role is automatically deleted if unused.
 
 Roberto needs the permission to manage roles for this command to work. Additionally, Roberto's role should be placed above all color roles in order for this command to work properly.
+
+Note that the created color role is placed at the very bottom of the role list. For this reason, any other role with a color placed above the color role created by this command will override it. This can be prevented by simply reordering roles.
 
 #### Usage
 
@@ -68,20 +70,20 @@ Roberto needs the permission to manage roles for this command to work. Additiona
 
 ### /dictionary
 
-Looks up the entered word or expression on Wiktionary and displays an embed with the found definitions.
+Looks up the entered word or expression on [Wiktionary](https://www.wiktionary.org/) and displays an embed with the found definitions.
 
 #### Usage
 
 - `/dictionary en <word-or-expression>`: Looks up the word or expression in the english Wiktionary. Only english definitions will be displayed.
-- `/dictionary fr <word-or-expression>`: Looks up the word or expression in the french Wiktionary. Only english definitions will be displayed.
+- `/dictionary fr <word-or-expression>`: Looks up the word or expression in the french Wiktionary. Only french definitions will be displayed.
 
 ### /px
 
-When you play Valorant, you sometimes need to send chat messages to your team - but in the heat of a round, it can be difficult to quickly type that british fire guy's name without errors. That's where this command comes handy: it generates alternative spellings for his name, that are guaranteed to be easier to write but still recognizable!
+When you play Valorant, you sometimes need to send chat messages to your team - but in the heat of a round, it can be difficult to quickly type that british fire guy's name without errors. That's where this command comes handy: it generates alternative spellings for his name, that are guaranteed to be easier to write but still recognizable. Use its results to impress your teammates!
 
 #### Usage
 
-- `/px`: Generates an alternative spelling for "Phoenix" - the "Again!" button can be pressed to regenerate it as many times as needed.
+- `/px`: Generates an alternative spelling for "Phoenix" - the "Again!" button can be pressed by the command caller to regenerate it as many times as needed.
 
 ### /random
 
@@ -89,8 +91,8 @@ Generates random values, such as dice rolls or draws from a pool of values.
 
 #### Usage
 
-- `/random dice <sides> <rolls>`: Rolls a dice with a specific number of sides one or several times.
-- `/random draw <total> <draws>`: Draws a specific number of values (without duplicates) from a pool of possible numbers.
+- `/random dice <sides> <rolls>`: Rolls a dice with a specific number of sides one or several times - the "Roll again" button can be pressed by the command caller to generate more rolls. Only the 10 most recent roll results will be displayed.
+- `/random draw <total> <draws>`: Draws a specific number of values (without duplicates) from a pool of possible numbers - the "Draw again" button can be pressed by the command caller to generate more draws. Only the 10 most recent draw results will be displayed.
 
 ### /random-channel
 
@@ -98,14 +100,14 @@ Randomly chooses users from your voice channel - can be used to pick people or g
 
 #### Usage
 
-- `/random-channel teams <teams>`: distributes all channel members in a specific number of teams.
-- `/random-channel draw <draws>`: randomly draws a specific number of users from the voice channel.
+- `/random-channel teams <teams>`: distributes all channel members in a specific number of teams - the "Generate again" button can be pressed by the command caller to regenerate the teams. This command can only be called when the caller is in a voice channel with at least 3 connected members.
+- `/random-channel draw <draws>`: randomly draws a specific number of users from the voice channel - the "Draw again" button can be pressed by the command caller to redraw channel members. This command can only be called when the caller is in a voice channel with at least 2 connected members.
 
 ### /rename
 
 Adds or changes the nickname of a server member (the command caller or another member).
 
-Roberto needs the permission to manage nicknames for this command to work. Additionally, Roberto's role should be placed above all roles of a user in order for him to successfully give them a new nickname. For this reason, it is impossible to rename the server owner, as their owner status automatically counts as the highest role in the role list.
+Roberto needs the permission to manage nicknames for this command to work. Additionally, Roberto's role should be placed above all roles of a user in order to successfully give them a new nickname. For this reason, it is impossible to rename the server owner, as their owner status automatically counts as the highest role in the role list.
 
 #### Usage
 
@@ -114,7 +116,7 @@ Roberto needs the permission to manage nicknames for this command to work. Addit
 
 ### /weather
 
-Fetches the weather for the entered location on OpenWeather and displays an embed with the found information.
+Fetches the weather for the entered location on [OpenWeather](https://openweathermap.org/) and displays an embed with the found information.
 
 #### Usage
 
@@ -135,15 +137,15 @@ This command is used to configure Roberto's behavior on your server.
 
 Most of its subcommands can only be called by server members with the **Roberto Admin** role - the only exception is the *roles-repair* subcommand.
 
-Roberto needs the permission to manage roles for the *roles-repair* subcommand command to work.
+Roberto needs the permission to manage roles for the *roles-repair* subcommand to work.
 
 #### Usage
 
-- `/config auto-color <action>`: Enables, disables or shows the current value for the *auto-color* configuration option. 
-- `/config auto-greet <action>`: Enables, disables or shows the current value for the *auto-greet* configuration option. 
-- `/config permission-dm <action>`: Enables, disables or shows the current value for the *permission-dm* configuration option. 
+- `/config auto-color <action>`: Enables, disables or shows the current value for the *auto-color* configuration option (enabled by default). 
+- `/config auto-greet <action>`: Enables, disables or shows the current value for the *auto-greet* configuration option (disabled by default). 
+- `/config permission-dm <action>`: Enables, disables or shows the current value for the *permission-dm* configuration option (enabled by default). 
 - `/config roles-show`: Shows the current Roberto admin role name and ID.
-- `/config roles-repair`: Regenerates the Roberto admin role and deletes unused roles with the same name (a role is considered unused if it has no members).
+- `/config roles-repair`: Regenerates the Roberto admin role if needed and deletes unused roles with the same name (a role is considered unused if it has no members).
 
 ### /changelog
 

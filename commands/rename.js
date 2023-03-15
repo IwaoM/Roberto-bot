@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
+const { neededPermissionNames } = require("../publicConfig.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -32,9 +33,9 @@ module.exports = {
 
       // before anything else, check if Roberto has the required permissions
       const neededPermissionsForCommand = ["ManageNicknames"];
-      const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
+      const missingPermissions = checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
       if (missingPermissions.length) {
-        throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
+        throw new Error(`Missing permissions - [${neededPermissionsForCommand.map(key => neededPermissionNames.get(key)).join(", ")}]`);
       }
 
       await interaction.deferReply();
@@ -53,6 +54,7 @@ module.exports = {
         logAction({
           name: `handle random command`,
           command: { id: interaction.commandId, name: interaction.commandName, arguments: commandArgs },
+          guild: interaction.guild,
           message: sentReply
         });
 
@@ -80,9 +82,9 @@ module.exports = {
 
       let replyText = "The command could not be executed - unknown error.";
       if (err.message.startsWith("Missing permissions")) {
-        replyText = `The command could not be executed - missing permissions : ${err.message.split(" - ")[1]}`;
+        replyText = `The command could not be executed - missing bot permission(s) : ${err.message.split(" - ")[1]}`;
       } else if (err.message === "Target is server owner") {
-        replyText = `The command could not be executed - the server owner cannot be renamed by this command.`;
+        replyText = `The command could not be executed - the server owner cannot be renamed by Roberto.`;
       } else if (err.message === "Role too low") {
         replyText = `The command could not be executed - the Roberto managed role should be placed above all roles of the user to rename in the server's role list.`;
       }

@@ -2,8 +2,10 @@ const { SlashCommandBuilder } = require("discord.js");
 const { randomColor, checkHexCode, getDominantColor } = require("../helpers/color.helper.js");
 const { checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { updateColorRole } = require("../helpers/processes.helper.js");
-const { saveUserAvatar, unlinkFile } = require("../helpers/files.helper.js");
+const { saveUserAvatar } = require("../helpers/files.helper.js");
 const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
+const { neededPermissionNames } = require("../publicConfig.js");
+const fs = require("node:fs");
 
 const dominantChoices = [
   { name: "main", value: "Vibrant" },
@@ -67,9 +69,9 @@ module.exports = {
 
       // before anything else, check if Roberto has the required permissions
       const neededPermissionsForCommand = ["ManageRoles"];
-      const missingPermissions = await checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
+      const missingPermissions = checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
       if (missingPermissions.length) {
-        throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
+        throw new Error(`Missing permissions - [${neededPermissionsForCommand.map(key => neededPermissionNames.get(key)).join(", ")}]`);
       }
 
       await interaction.deferReply();
@@ -95,7 +97,7 @@ module.exports = {
 
         const avatarDir = await saveUserAvatar(interaction.member);
         hexCode = await getDominantColor(commandOption, avatarDir);
-        await unlinkFile (avatarDir);
+        fs.unlinkSync(avatarDir);
 
       } else if (subcommand === "remove") {
 
@@ -120,6 +122,7 @@ module.exports = {
         command: commandArgs ?
           { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand, arguments: commandArgs } :
           { id: interaction.commandId, name: interaction.commandName, subcommand: subcommand },
+        guild: interaction.guild,
         message: sentReply
       });
     } catch (err) {
@@ -133,7 +136,7 @@ module.exports = {
 
       let replyText = "The command could not be executed - unknown error.";
       if (err.message.startsWith("Missing permissions")) {
-        replyText = `The command could not be executed - missing permissions : ${err.message.split(" - ")[1]}`;
+        replyText = `The command could not be executed - missing bot permission(s) : ${err.message.split(" - ")[1]}`;
       } else if (err.message.startsWith("Invalid hex code")) {
         replyText = `The command could not be executed - ${err.message.split(" - ")[1]} is not a valid hex color code.`;
       } else if (err.message === "Role too low") {

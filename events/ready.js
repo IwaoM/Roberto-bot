@@ -1,7 +1,7 @@
 const { getGuildConfigs, updateGuildConfigEntry } = require("../helpers/files.helper.js");
 const { checkOwnMissingPermissions, dmUsers } = require("../helpers/discord.helper.js");
 const { processGuildCreate, processGuildDelete } = require("../helpers/processes.helper.js");
-const { robertoNeededPermissions } = require("../config.json");
+const { neededPermissionNames } = require("../publicConfig.js");
 const { logEvent, logAction, logError, pruneLogs } = require("../helpers/logs.helper.js");
 
 module.exports = {
@@ -29,7 +29,7 @@ module.exports = {
       }
       console.log(`\n${descText}`);
 
-      let guildConfigs = await getGuildConfigs();
+      let guildConfigs = getGuildConfigs();
 
       // Check for guilds joined while Roberto was offline & perform join actions for them
       let guildUpdateCount = 0;
@@ -44,13 +44,13 @@ module.exports = {
       console.log(`${guildUpdateCount} guild(s) joined`);
 
       // Check for guilds left while Roberto was offline & perform leave actions for them
-      guildConfigs = await getGuildConfigs();
+      guildConfigs = getGuildConfigs();
       guildUpdateCount = 0;
       console.log("\nChecking for guilds left while offline");
       for (let config of guildConfigs) {
         if (guildList.findIndex(guild => guild.id === config.id) === -1) {
           guildUpdateCount++;
-          await processGuildDelete(config);
+          processGuildDelete(config);
         }
       }
       if (guildUpdateCount) { console.log(""); }
@@ -62,11 +62,11 @@ module.exports = {
       guildUpdateCount = 0;
       console.log("\nChecking for needed permissions update for Roberto in all joined guilds");
 
-      guildConfigs = await getGuildConfigs();
+      guildConfigs = getGuildConfigs();
       for (let guild of guildList) {
         let dmSent;
         const guildConfig = guildConfigs.find(entry => entry.id === guild.id);
-        const newBotMissingPermissions = (await checkOwnMissingPermissions(guild, robertoNeededPermissions)).sort();
+        const newBotMissingPermissions = checkOwnMissingPermissions(guild, [...neededPermissionNames.keys()]).sort();
         const oldBotMissingPermissions = guildConfig.missingPermissions.sort();
         const newlyBotMissingPermissions = newBotMissingPermissions.filter(perm => oldBotMissingPermissions.indexOf(perm) === -1);
 
@@ -79,8 +79,8 @@ module.exports = {
 
           // construct DM text
           dmText = `Hello!
-my permissions on the server **${guild.name}** were updated while I was offline, and the following permission${newlyBotMissingPermissions.length === 1 ? " was" : "s were"} removed from me: [${newlyBotMissingPermissions.join(", ")}].
-I need th${newlyBotMissingPermissions.length === 1 ? "is permission" : "ese permissions"} to function properly (more details on why exactly here: https://github.com/IwaoM/Roberto-bot#readme). Please consider restoring ${newlyBotMissingPermissions.length === 1 ? "it" : "them"} :)
+my permissions on the server **${guild.name}** or my list of needed permissions was updated while I was offline, and I currently miss the following permission${newlyBotMissingPermissions.length === 1 ? "" : "s"}: [${newlyBotMissingPermissions.map(key => neededPermissionNames.get(key)).join(", ")}].
+I need th${newlyBotMissingPermissions.length === 1 ? "is permission" : "ese permissions"} to function properly (more details on why exactly here: https://github.com/IwaoM/Roberto-bot#readme). Please consider giving ${newlyBotMissingPermissions.length === 1 ? "it" : "them"} to me :)
 Thanks!
 
 Note: this automatic DM can be disabled with the \`/config permission-dm\` command.`;
@@ -99,7 +99,7 @@ Note: this automatic DM can be disabled with the \`/config permission-dm\` comma
             console.log("* DM sent to the guild owner");
           }
 
-          await updateGuildConfigEntry(guild.id, { missingPermissions: newBotMissingPermissions });
+          updateGuildConfigEntry(guild.id, { missingPermissions: newBotMissingPermissions });
         }
       }
       if (guildUpdateCount) { console.log(""); }
