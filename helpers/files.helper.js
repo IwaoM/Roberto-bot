@@ -32,20 +32,6 @@ module.exports = {
     }
   },
 
-  unlinkFile (fileDir) {
-    try {
-      fs.unlinkSync(fileDir);
-    } catch (err) {
-      logError({
-        name: `file unlink error`,
-        description: `Failed to unlink the file`,
-        function: { name: "unlinkFile", arguments: [...arguments] },
-        errorObject: err
-      });
-      throw err;
-    }
-  },
-
   // Return the entire config list or a single entry if a guild id is provided
   getGuildConfigs (guildId = "") {
     try {
