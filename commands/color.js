@@ -4,6 +4,7 @@ const { checkOwnMissingPermissions } = require("../helpers/discord.helper.js");
 const { updateColorRole } = require("../helpers/processes.helper.js");
 const { saveUserAvatar, unlinkFile } = require("../helpers/files.helper.js");
 const { logError, logAction, logEvent, consoleError } = require("../helpers/logs.helper.js");
+const { neededPermissionNames } = require("../publicConfig.js");
 
 const dominantChoices = [
   { name: "main", value: "Vibrant" },
@@ -69,7 +70,7 @@ module.exports = {
       const neededPermissionsForCommand = ["ManageRoles"];
       const missingPermissions = checkOwnMissingPermissions(interaction.guild, neededPermissionsForCommand);
       if (missingPermissions.length) {
-        throw new Error(`Missing permissions - [${neededPermissionsForCommand.join(", ")}]`);
+        throw new Error(`Missing permissions - [${neededPermissionsForCommand.map(key => neededPermissionNames.get(key)).join(", ")}]`);
       }
 
       await interaction.deferReply();
@@ -134,7 +135,7 @@ module.exports = {
 
       let replyText = "The command could not be executed - unknown error.";
       if (err.message.startsWith("Missing permissions")) {
-        replyText = `The command could not be executed - missing permissions : ${err.message.split(" - ")[1]}`;
+        replyText = `The command could not be executed - missing bot permission(s) : ${err.message.split(" - ")[1]}`;
       } else if (err.message.startsWith("Invalid hex code")) {
         replyText = `The command could not be executed - ${err.message.split(" - ")[1]} is not a valid hex color code.`;
       } else if (err.message === "Role too low") {

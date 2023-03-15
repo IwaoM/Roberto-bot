@@ -8,10 +8,12 @@ module.exports = {
     let colorValue, hexColorValue;
 
     if (vibrant) {
+      // vibrant : random color from the saturated chromatic circle
       colorValue = Math.floor(Math.random() * 256);
       hexColorValue = colorValue.toString(16).padStart(2, "0");
       hexColorValue = "#" + shuffleArray(["00", "ff", hexColorValue]).join("");
     } else {
+      // non-vibrant : completely random color
       colorValue = Math.floor(Math.random() * 256 * 256 * 256);
       hexColorValue = "#" + colorValue.toString(16).padStart(6, "0");
     }
@@ -20,8 +22,10 @@ module.exports = {
   },
 
   checkHexCode (hexCode = "", strictMode = false) {
-    // strict modes doesn't allow hex codes without "#" or with uppercase letters
-    if (!hexCode) { return false; }
+    // strict mode doesn't allow hex codes without "#" or with uppercase letters
+    if (!hexCode) {
+      return false;
+    }
 
     if (hexCode.startsWith("#")) {
       hexCode = hexCode.slice(1);

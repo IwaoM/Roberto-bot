@@ -1,7 +1,7 @@
 const { checkHexCode } = require("./color.helper.js");
 const { getGuildConfigs, updateGuildConfigEntry, removeGuildConfigEntry, addGuildConfigEntry } = require("../helpers/files.helper.js");
 const { checkOwnMissingPermissions, getPermissionUpdaterUser, dmUsers, createRobertoAdminRole, getInviterUser } = require("../helpers/discord.helper.js");
-const { robertoNeededPermissions } = require("../config.json");
+const { neededPermissionNames } = require("../publicConfig.js");
 const { logAction, logError } = require("../helpers/logs.helper.js");
 
 module.exports = {
@@ -78,7 +78,7 @@ module.exports = {
       // get guild config
       const guildConfig = getGuildConfigs(newElem.guild.id);
 
-      const newBotMissingPermissions = checkOwnMissingPermissions(newElem.guild, robertoNeededPermissions).sort();
+      const newBotMissingPermissions = checkOwnMissingPermissions(newElem.guild, [...neededPermissionNames.keys()]).sort();
       const oldBotMissingPermissions = guildConfig.missingPermissions.sort();
       const newlyBotMissingPermissions = newBotMissingPermissions.filter(perm => oldBotMissingPermissions.indexOf(perm) === -1);
 
@@ -103,7 +103,7 @@ module.exports = {
 
         // construct DM text
         dmText = `Hello!
-  ${missingPermissions.length ? "Someone" : "You"} recently `;
+${missingPermissions.length ? "Someone" : "You"} recently `;
 
         if (eventType === "roleUpdate") {
           dmText += `updated the role **${newElem.name}** in the server **${newElem.guild.name}**, `;
@@ -111,7 +111,7 @@ module.exports = {
           dmText += `updated my role list in the server **${newElem.guild.name}**, `;
         }
 
-        dmText += `which removed the following permission${newlyBotMissingPermissions.length === 1 ? "" : "s"} from me: [${newlyBotMissingPermissions.join(", ")}].
+        dmText += `which removed the following permission${newlyBotMissingPermissions.length === 1 ? "" : "s"} from me: [${newlyBotMissingPermissions.map(key => neededPermissionNames.get(key)).join(", ")}].
 I need th${newlyBotMissingPermissions.length === 1 ? "is permission" : "ese permissions"} to function properly (more details on why exactly here: https://github.com/IwaoM/Roberto-bot#readme). Please consider restoring ${newlyBotMissingPermissions.length === 1 ? "it" : "them"} :)
 Thanks!
 
@@ -147,7 +147,7 @@ Note: this automatic DM can be disabled with the \`/config permission-dm\` comma
       console.log(`\nGuild ${guild.name} (ID ${guild.id}) joined`);
 
       // check own permissions
-      const missingPermissions = checkOwnMissingPermissions(guild, robertoNeededPermissions);
+      const missingPermissions = checkOwnMissingPermissions(guild, [...neededPermissionNames.keys()]);
 
       console.log(`* Missing permissions : [${missingPermissions.join(", ")}] (${missingPermissions.length})`);
 
@@ -193,7 +193,7 @@ Note: this automatic DM can be disabled with the \`/config permission-dm\` comma
       }
 
       if (missingPermissions.length) {
-        dmText += `\n    • **Please note that the following permission${missingPermissions.length === 1 ? " is" : "s are"} missing :** [${missingPermissions.join(", ")}]. I need ${missingPermissions.length === 1 ? "this permission" : "those permissions"} to function correctly! Please refer to the GitHub link for more details about why each requested permission is required.`;
+        dmText += `\n    • **Please note that the following permission${missingPermissions.length === 1 ? " is" : "s are"} missing :** [${missingPermissions.map(key => neededPermissionNames.get(key)).join(", ")}]. I need ${missingPermissions.length === 1 ? "this permission" : "those permissions"} to function correctly! Please refer to the GitHub link for more details about why each requested permission is required.`;
       }
 
       if (missingPermissions.indexOf("ManageRoles") === -1) {
