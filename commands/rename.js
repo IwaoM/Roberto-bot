@@ -5,27 +5,49 @@ const { neededPermissionNames } = require("../publicConfig.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("rename")
+    .setName("nickname")
     .setDescription("Changes a server member's nickname")
-    .addUserOption(option =>
-      option.setName("user")
-        .setDescription("The user you want to rename")
-        .setRequired(true)
+    .addSubcommand(subcommand =>
+      subcommand.setName("set")
+        .setDescription("Give a new nickname")
+        .addUserOption(option =>
+          option.setName("user")
+            .setDescription("The user you want to rename")
+            .setRequired(true)
+        )
+        .addStringOption(option =>
+          option.setName("nickname")
+            .setDescription("The nickname to apply")
+            .setRequired(true)
+        ),
     )
-    .addStringOption(option =>
-      option.setName("nickname")
-        .setDescription("The nickname to apply (leave empty to remove the current nickname)")
+    .addSubcommand(subcommand =>
+      subcommand.setName("remove")
+        .setDescription("Remove nickname")
+        .addUserOption(option =>
+          option.setName("user")
+            .setDescription("The user you want to remove the nickname of")
+            .setRequired(true)
+        )
     ),
 
   async execute (interaction) {
     try {
-      const userOption = interaction.options.getUser("user");
-      const nicknameOption = interaction.options.getString("nickname");
-      const commandArgs = { user: { id: userOption.id, tag: userOption.tag }, nickname: nicknameOption };
+      const subcommand = interaction.options.getSubcommand();
+      let userOption, nicknameOption, commandArgs;
+      if (subcommand === "set") {
+        userOption = interaction.options.getUser("user");
+        nicknameOption = interaction.options.getString("nickname");
+        commandArgs = { user: { id: userOption.id, tag: userOption.tag }, nickname: nicknameOption };
+      } else if (subcommand === "remove") {
+        userOption = interaction.options.getUser("user");
+        nicknameOption = null;
+        commandArgs = { user: { id: userOption.id, tag: userOption.tag } };
+      }
 
       logEvent({
-        name: "rename",
-        description: "The rename command was called",
+        name: "nickname",
+        description: "The nickname command was called",
         command: { id: interaction.commandId, name: interaction.commandName, arguments: commandArgs },
         guild: interaction.guild,
         member: interaction.member
@@ -49,10 +71,10 @@ module.exports = {
         if (nicknameOption) {
           sentReply = await interaction.editReply(`Nickname **${nicknameOption}** was given to <@${userOption.id}> by <@${interaction.user.id}>.`);
         } else {
-          sentReply = await interaction.editReply(`Nickname of <@${userOption.id}> was reset by <@${interaction.user.id}>.`);
+          sentReply = await interaction.editReply(`Nickname of <@${userOption.id}> was removed by <@${interaction.user.id}>.`);
         }
         logAction({
-          name: `handle random command`,
+          name: `nickname command handling`,
           command: { id: interaction.commandId, name: interaction.commandName, arguments: commandArgs },
           guild: interaction.guild,
           message: sentReply
@@ -74,9 +96,9 @@ module.exports = {
     } catch (err) {
       consoleError(err);
       logError({
-        name: `rename command handler error`,
-        description: `Failed to handle the rename command`,
-        function: { name: `rename.execute`, arguments: [...arguments] },
+        name: `nickname command handler error`,
+        description: `Failed to handle the nickname command`,
+        function: { name: `nickname.execute`, arguments: [...arguments] },
         errorObject: err
       });
 
@@ -84,9 +106,9 @@ module.exports = {
       if (err.message.startsWith("Missing permissions")) {
         replyText = `The command could not be executed - missing bot permission(s) : ${err.message.split(" - ")[1]}`;
       } else if (err.message === "Target is server owner") {
-        replyText = `The command could not be executed - the server owner cannot be renamed by Roberto.`;
+        replyText = `The command could not be executed - the server owner's nickname cannot be updated by Roberto.`;
       } else if (err.message === "Role too low") {
-        replyText = `The command could not be executed - the Roberto managed role should be placed above all roles of the user to rename in the server's role list.`;
+        replyText = `The command could not be executed - the Roberto managed role should be placed above all roles of the user to update the nickname of in the server's role list.`;
       }
 
       try {
@@ -101,8 +123,8 @@ module.exports = {
     }
   },
 
-  usage: `• \`/rename @user <name>\`: gives nickname *name* to user *@user*.
-• \`/rename @user\`: removes user *@user*'s current nickname.
+  usage: `• \`/nickname set @user <name>\`: gives nickname *name* to user *@user*.
+• \`/nickname remove @user\`: removes user *@user*'s current nickname.
 
-Note : the server owner cannot be renamed by this command.`
+Note : the server owner's nickname cannot be updated by this command.`
 };
