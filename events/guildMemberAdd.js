@@ -1,6 +1,6 @@
 const { updateColorRole } = require("../helpers/processes.helper.js");
 const { getGuildConfigs, saveUserAvatar } = require("../helpers/files.helper.js");
-const { getDominantColor } = require("../helpers/color.helper.js");
+const { getDominantColor, randomColor } = require("../helpers/color.helper.js");
 const { logError, logAction, logEvent } = require("../helpers/logs.helper.js");
 const fs = require("node:fs");
 
@@ -69,20 +69,16 @@ module.exports = {
 
       // auto color new members
       if (currentGuildConfig.colorNewMembers) {
+        let hexCode;
         try {
           const avatarDir = await saveUserAvatar(member);
-          const hexCode = await getDominantColor("Vibrant", avatarDir);
-          const newUserColorRole = await updateColorRole(hexCode, member);
-          await newUserColorRole.setMentionable(false);
+          hexCode = await getDominantColor("Vibrant", avatarDir);
           fs.unlinkSync(avatarDir);
         } catch (err) {
-          logError({
-            name: `auto color error`,
-            description: `Failed to auto color a new guild member`,
-            function: { name: `${this.name}.execute`, arguments: [...arguments] },
-            errorObject: err
-          });
-          // continue
+          hexCode = randomColor(true);
+        } finally {
+          const newUserColorRole = await updateColorRole(hexCode, member);
+          await newUserColorRole.setMentionable(false);
         }
       }
 
