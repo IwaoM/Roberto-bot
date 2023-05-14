@@ -39,7 +39,7 @@ When inviting Roberto, you will be asked to grant them 5 permissions:
 - **Read messages :** this is mainly used to display Roberto in the right sidebar of Discord.
 - **Send messages :** this is used for Roberto to send auto-greet messages on new member joins if the option is enabled (disabled by default).
   - Note that neither **Read messages** or **Send messages** is needed for commands to be read and responded to by Roberto.
-- **Manage nicknames :** this is obviously needed for the `/rename` command.
+- **Manage nicknames :** this is obviously needed for the `/nickname` command.
 - **Manage roles :** this is needed for the following:
   - Creating the **Roberto Admin** role (performed when Roberto joins your server - this role is needed to call some commands).
   - Calling the `/config roles-repair` command, which may create a new role and delete unused roles.
@@ -103,16 +103,16 @@ Randomly chooses users from your voice channel - can be used to pick people or g
 - `/random-channel teams <teams>`: distributes all channel members in a specific number of teams - the "Generate again" button can be pressed by the command caller to regenerate the teams. This command can only be called when the caller is in a voice channel with at least 3 connected members.
 - `/random-channel draw <draws>`: randomly draws a specific number of users from the voice channel - the "Draw again" button can be pressed by the command caller to redraw channel members. This command can only be called when the caller is in a voice channel with at least 2 connected members.
 
-### /rename
+### /nickname
 
 Adds or changes the nickname of a server member (the command caller or another member).
 
-Roberto needs the permission to manage nicknames for this command to work. Additionally, Roberto's role should be placed above all roles of a user in order to successfully give them a new nickname. For this reason, it is impossible to rename the server owner, as their owner status automatically counts as the highest role in the role list.
+Roberto needs the permission to manage nicknames for this command to work. Additionally, Roberto's role should be placed above all roles of a user in order to successfully give them a new nickname. For this reason, it is impossible to update the nickname of the server owner, as their owner status automatically counts as the highest role in the role list.
 
 #### Usage
 
-- `/rename <user> <nickname>`: gives a nickname to the tagged server member.
-- `/rename <user>`: removes a server member's nickname if they have one.
+- `/nickname set <user> <nickname>`: gives a nickname to the tagged server member.
+- `/nickname remove <user>`: removes a server member's nickname if they have one.
 
 ### /weather
 
