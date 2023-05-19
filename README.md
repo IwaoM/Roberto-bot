@@ -39,7 +39,7 @@ When inviting Roberto, you will be asked to grant them 5 permissions:
 - **Read messages :** this is mainly used to display Roberto in the right sidebar of Discord.
 - **Send messages :** this is used for Roberto to send auto-greet messages on new member joins if the option is enabled (disabled by default).
   - Note that neither **Read messages** or **Send messages** is needed for commands to be read and responded to by Roberto.
-- **Manage nicknames :** this is obviously needed for the `/rename` command.
+- **Manage nicknames :** this is obviously needed for the `/nickname` command.
 - **Manage roles :** this is needed for the following:
   - Creating the **Roberto Admin** role (performed when Roberto joins your server - this role is needed to call some commands).
   - Calling the `/config roles-repair` command, which may create a new role and delete unused roles.
@@ -50,11 +50,11 @@ When inviting Roberto, you will be asked to grant them 5 permissions:
 
 ## Commands
 
-Roberto currently has 10 commands. All of them support Discord's [slash command feature](https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ).
+Roberto currently has 10 commands, some of them having subcommands. All of them support Discord's [slash command feature](https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ).
 
 ### /color
 
-Changes the user's name's color in the server using roles. When a user changes their color, the old color role is automatically deleted if unused.
+Changes the caller's name's color in the server using a dedicated role. When a user changes their color, the previous color role - if any - is automatically deleted if unused.
 
 Roberto needs the permission to manage roles for this command to work. Additionally, Roberto's role should be placed above all color roles in order for this command to work properly.
 
@@ -70,7 +70,7 @@ Note that the created color role is placed at the very bottom of the role list. 
 
 ### /dictionary
 
-Looks up the entered word or expression on [Wiktionary](https://www.wiktionary.org/) and displays an embed with the found definitions.
+Looks up the entered word or expression on [Wiktionary](https://www.wiktionary.org/) and displays an embed with the found definitions. This command currently supports french & english.
 
 #### Usage
 
@@ -103,16 +103,16 @@ Randomly chooses users from your voice channel - can be used to pick people or g
 - `/random-channel teams <teams>`: distributes all channel members in a specific number of teams - the "Generate again" button can be pressed by the command caller to regenerate the teams. This command can only be called when the caller is in a voice channel with at least 3 connected members.
 - `/random-channel draw <draws>`: randomly draws a specific number of users from the voice channel - the "Draw again" button can be pressed by the command caller to redraw channel members. This command can only be called when the caller is in a voice channel with at least 2 connected members.
 
-### /rename
+### /nickname
 
-Adds or changes the nickname of a server member (the command caller or another member).
+Updates or removes the nickname of the chosen server member.
 
-Roberto needs the permission to manage nicknames for this command to work. Additionally, Roberto's role should be placed above all roles of a user in order to successfully give them a new nickname. For this reason, it is impossible to rename the server owner, as their owner status automatically counts as the highest role in the role list.
+Roberto needs the permission to manage nicknames for this command to work. Additionally, Roberto's role should be placed above all roles of a given user in order to successfully give them a new nickname. For this reason, it is impossible to update the nickname of the server owner, as their owner status automatically counts as the highest role in the role list. It is recommended to put Roberto's role above all others, to ensure that everyone can be renamed apart from the server owner.
 
 #### Usage
 
-- `/rename <user> <nickname>`: gives a nickname to the tagged server member.
-- `/rename <user>`: removes a server member's nickname if they have one.
+- `/nickname set <user> <nickname>`: gives a nickname to the tagged server member.
+- `/nickname remove <user>`: removes a server member's nickname if they have one.
 
 ### /weather
 
@@ -124,7 +124,7 @@ Fetches the weather for the entered location on [OpenWeather](https://openweathe
 
 ### /help
 
-Displays informations about available commands and their usage.
+Displays information about available commands and their usage.
 
 #### Usage
 
@@ -135,7 +135,7 @@ Displays informations about available commands and their usage.
 
 This command is used to configure Roberto's behavior on your server. 
 
-Most of its subcommands can only be called by server members with the **Roberto Admin** role - the only exception is the *roles-repair* subcommand.
+Most of its subcommands can only be called by server members with the **Roberto Admin** role - the only exception is the *roles-repair* subcommand, which can be used by anyone.
 
 Roberto needs the permission to manage roles for the *roles-repair* subcommand to work.
 
@@ -163,7 +163,7 @@ Roberto's behavior on your server can be customized through 3 togglable options.
 
 This option is enabled by default.
 
-When this option is enabled, new members joining the server will automatically be given a color role - the chosen color will be the main dominant color from their profile picture (as if the member called the `/color dominant main` command upon joining).
+When this option is enabled, new members joining the server will automatically be given a color role - the chosen color will be the main dominant color from their profile picture (as if the member called the `/color dominant main` command upon joining) - this dominant color extraction has a small chance to fail, in which case a random color will be given instead.
 
 The color role will not be created or applied if Roberto was offline when the new member joined.
 
